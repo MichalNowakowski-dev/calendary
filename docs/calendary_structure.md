@@ -10,7 +10,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 
 - **Frontend:** Next.js
 - **Styling:** Tailwind CSS
-- **Backend/Baza/Auth:** Supabase (PostgreSQL, Auth, RLS, Storage)
+- **Baza/Auth:** Supabase (PostgreSQL, Auth, RLS, Storage)
 
 ---
 
@@ -26,6 +26,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ## 📦 Główne tabele (modele Supabase / PostgreSQL)
 
 ### `companies`
+
 - `id` (UUID)
 - `name`
 - `slug` (np. calendary.pl/firma-auto-max)
@@ -38,12 +39,14 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ---
 
 ### `users`
+
 - Supabase `auth.users` (wbudowane)
 - UUID = `user_id` w innych tabelach
 
 ---
 
 ### `company_users`
+
 Łączenie użytkowników z firmami i przypisanie roli
 
 - `id`
@@ -55,6 +58,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ---
 
 ### `services`
+
 - `id`
 - `company_id`
 - `name`
@@ -66,6 +70,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ---
 
 ### `employees`
+
 - `id`
 - `company_id`
 - `user_id` (opcjonalnie)
@@ -75,12 +80,14 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ---
 
 ### `employee_services`
+
 - `employee_id`
 - `service_id`
 
 ---
 
 ### `schedules`
+
 - `id`
 - `employee_id`
 - `weekday` (0–6)
@@ -90,6 +97,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ---
 
 ### `appointments`
+
 - `id`
 - `company_id`
 - `employee_id` (opcjonalnie)
@@ -108,6 +116,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ## 🧾 Dodatkowe tabele (opcjonalne)
 
 ### `customers`
+
 - `id`
 - `name`
 - `email`
@@ -116,6 +125,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ---
 
 ### `settings` (per firma)
+
 - `company_id`
 - `booking_buffer`
 - `max_bookings_per_day`
@@ -125,5 +135,6 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 ---
 
 ## 📌 Uwagi
+
 - Struktura może ulec zmianie w trakcie rozwoju projektu.
 - RLS (Row Level Security) oraz relacje zostaną skonfigurowane w kolejnych krokach.

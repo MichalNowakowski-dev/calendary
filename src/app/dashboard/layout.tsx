@@ -65,21 +65,17 @@ export default function DashboardLayout({
     const checkUser = async () => {
       try {
         const currentUser = await getCurrentUser();
-        if (!currentUser || currentUser.role !== "company_owner") {
-          router.push("/login");
-          return;
-        }
         setUser(currentUser);
       } catch (error) {
-        console.error("Error checking user:", error);
-        router.push("/login");
+        console.error("Layout: Error getting user:", error);
+        return;
       } finally {
         setIsLoading(false);
       }
     };
 
     checkUser();
-  }, [router]);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -90,19 +86,16 @@ export default function DashboardLayout({
     }
   };
 
-  if (isLoading) {
+  // Show loading while user data is being fetched
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Ładowanie...</p>
+          <p className="mt-4 text-gray-600">Ładowanie danych użytkownika...</p>
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (

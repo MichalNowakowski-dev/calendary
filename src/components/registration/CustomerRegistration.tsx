@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ export default function CustomerRegistration() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const {
     register,
@@ -53,6 +55,9 @@ export default function CustomerRegistration() {
       showToast.success(
         "Rejestracja przebiegła pomyślnie! Sprawdź swoją skrzynkę email, aby potwierdzić konto."
       );
+
+      // Redirect to dashboard
+      router.push("/dashboard");
     } catch (error: any) {
       console.error("Registration error:", error);
       showToast.error(`Błąd rejestracji: ${error.message}`);

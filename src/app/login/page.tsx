@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -23,6 +24,7 @@ import { showToast } from "@/lib/toast";
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const supabase = createClient();
 
@@ -50,13 +52,19 @@ export default function LoginPage() {
       if (error) throw error;
 
       if (authData.user) {
-        // Get user metadata to determine redirect
+        // Check for redirect parameter from middleware
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTo = urlParams.get("redirectTo");
+
+        // Get user metadata to determine default redirect
         const userRole = authData.user.user_metadata?.role;
 
-        if (userRole === "company_owner") {
-          window.location.href = "/dashboard";
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else if (userRole === "company_owner") {
+          router.push("/dashboard");
         } else {
-          window.location.href = "/";
+          router.push("/");
         }
       }
     } catch (error: any) {
