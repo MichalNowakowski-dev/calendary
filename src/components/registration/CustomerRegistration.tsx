@@ -6,20 +6,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   customerRegistrationSchema,
   type CustomerRegistrationFormData,
 } from "@/lib/validations/auth";
 import { showToast } from "@/lib/toast";
+import { registerUser } from "@/lib/auth/utils";
 
 export default function CustomerRegistration() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const supabase = createClient();
 
   const {
     register,
@@ -41,40 +39,20 @@ export default function CustomerRegistration() {
     setIsLoading(true);
 
     try {
-      // Register user with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Use the centralized registerUser function
+      await registerUser({
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            first_name: data.firstName,
-            last_name: data.lastName,
-            phone: data.phone,
-            role: "customer",
-          },
-        },
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        role: "customer",
       });
 
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // Create customer record if needed
-        const { error: customerError } = await supabase
-          .from("customers")
-          .insert({
-            name: `${data.firstName} ${data.lastName}`,
-            email: data.email,
-            phone: data.phone,
-          });
-
-        // Note: We'll ignore customer error for now as the table might not exist yet
-        console.log("Customer record creation:", customerError);
-
-        // Show success message
-        showToast.success(
-          "Rejestracja przebiegła pomyślnie! Sprawdź swoją skrzynkę email, aby potwierdzić konto."
-        );
-      }
+      // Show success message
+      showToast.success(
+        "Rejestracja przebiegła pomyślnie! Sprawdź swoją skrzynkę email, aby potwierdzić konto."
+      );
     } catch (error: any) {
       console.error("Registration error:", error);
       showToast.error(`Błąd rejestracji: ${error.message}`);

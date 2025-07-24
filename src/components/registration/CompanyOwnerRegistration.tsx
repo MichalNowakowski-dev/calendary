@@ -22,7 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   companyOwnerRegistrationSchema,
@@ -30,13 +29,12 @@ import {
   INDUSTRIES,
 } from "@/lib/validations/auth";
 import { showToast } from "@/lib/toast";
+import { registerUser } from "@/lib/auth/utils";
 
 export default function CompanyOwnerRegistration() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const supabase = createClient();
 
   const form = useForm<CompanyOwnerRegistrationFormData>({
     resolver: zodResolver(companyOwnerRegistrationSchema),
@@ -75,41 +73,27 @@ export default function CompanyOwnerRegistration() {
     setIsLoading(true);
 
     try {
-      // Register user with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Use the centralized registerUser function
+      await registerUser({
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            first_name: data.firstName,
-            last_name: data.lastName,
-            role: "company_owner",
-          },
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: "company_owner",
+        companyData: {
+          name: data.companyName,
+          slug: data.companySlug,
+          description: data.description,
+          address: data.address,
+          phone: data.phone,
+          industry: data.industry,
         },
       });
 
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // Create company record
-        const { error: companyError } = await supabase
-          .from("companies")
-          .insert({
-            name: data.companyName,
-            slug: data.companySlug,
-            description: data.description,
-            address: data.address,
-            phone: data.phone,
-            industry: data.industry,
-          });
-
-        if (companyError) throw companyError;
-
-        // Show success message
-        showToast.success(
-          "Rejestracja przebiegła pomyślnie! Sprawdź swoją skrzynkę email, aby potwierdzić konto."
-        );
-      }
+      // Show success message
+      showToast.success(
+        "Rejestracja przebiegła pomyślnie! Sprawdź swoją skrzynkę email, aby potwierdzić konto."
+      );
     } catch (error: any) {
       console.error("Registration error:", error);
       showToast.error(`Błąd rejestracji: ${error.message}`);
