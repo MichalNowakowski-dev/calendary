@@ -27,8 +27,8 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   companyOwnerRegistrationSchema,
   type CompanyOwnerRegistrationFormData,
-  INDUSTRIES,
 } from "@/lib/validations/auth";
+import { INDUSTRIES } from "@/lib/validations/company";
 import { showToast } from "@/lib/toast";
 import { registerUser } from "@/lib/auth/utils";
 
@@ -54,22 +54,6 @@ export default function CompanyOwnerRegistration() {
       description: "",
     },
   });
-
-  // Watch company name to generate slug
-  const companyName = form.watch("companyName");
-
-  // Generate slug from company name
-  const handleCompanyNameChange = (value: string) => {
-    form.setValue("companyName", value);
-
-    const slug = value
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim();
-    form.setValue("companySlug", slug);
-  };
 
   const onSubmit = async (data: CompanyOwnerRegistrationFormData) => {
     setIsLoading(true);
@@ -242,11 +226,7 @@ export default function CompanyOwnerRegistration() {
                 <FormItem>
                   <FormLabel>Nazwa firmy *</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      value={companyName}
-                      onChange={(e) => handleCompanyNameChange(e.target.value)}
-                    />
+                    <Input {...field} placeholder="Nazwa firmy" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -261,7 +241,7 @@ export default function CompanyOwnerRegistration() {
                   <FormControl>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">
-                        calendary.pl/
+                        calendary.pl/business/
                       </span>
                       <Input {...field} placeholder="nazwa-firmy" />
                     </div>

@@ -12,33 +12,40 @@
 
 ## 🏢 Firma (Company)
 
-- [ ] Formularz tworzenia firmy (nazwa, branża, opis, adres, slug)
-- [ ] Możliwość edytowania danych firmy
-- [ ] Powiązanie użytkownika z firmą jako "owner"
-- [ ] Dashboard z widokiem statystyk i danych firmy
+- [x] Formularz tworzenia firmy (nazwa, branża, opis, adres, slug)
+- [x] Możliwość edytowania danych firmy
+- [x] Powiązanie użytkownika z firmą jako "owner"
+- [x] Dashboard z widokiem statystyk i danych firmy
+- [ ] Możliwość ustawienia godzin otwarcia firmy
 
 ## 👥 Pracownicy (Employees)
 
-- [ ] Formularz dodawania pracownika
-- [ ] Lista pracowników w firmie
-- [ ] Możliwość przypisywania usług do pracownika
-- [ ] Edytowalny grafik pracy (tygodniowy)
+- [x] Formularz dodawania pracownika
+- [x] Lista pracowników w firmie
+- [x] Możliwość przypisywania usług do pracownika
+- [x] Edytowalny grafik pracy (tygodniowy)
 
 ## 🛠️ Usługi (Services)
 
-- [ ] Formularz dodawania usługi (nazwa, czas, cena, opis)
-- [ ] Lista usług w firmie
-- [ ] Przypisywanie pracowników do usługi
-- [ ] Widok dostępnych usług na stronie publicznej
+- [x] Formularz dodawania usługi (nazwa, czas, cena, opis)
+- [x] Lista usług w firmie
+- [x] Przypisywanie pracowników do usługi
+
+## 🌐 Publiczny widok firmy
+
+- [x] Strona `calendary.pl/business/[slug]`
+- [x] Wyświetlanie danych firmy (opis, lokalizacja)
+- [x] Lista usług do rezerwacji
+- [x] Wybór terminu i pracownika (opcjonalnie)
 
 ## 📅 Rezerwacje (Appointments)
 
-- [ ] Formularz rezerwacji na stronie publicznej
-- [ ] Walidacja dostępności pracownika i usługi
-- [ ] Tworzenie klienta przy pierwszej rezerwacji
-- [ ] Widok nadchodzących rezerwacji (dashboard)
-- [ ] Historia rezerwacji
-- [ ] Możliwość odwołania rezerwacji
+- [x] Formularz rezerwacji na stronie publicznej
+- [x] Walidacja dostępności pracownika i usługi
+- [x] Tworzenie klienta przy pierwszej rezerwacji
+- [x] Widok nadchodzących rezerwacji (dashboard)
+- [x] Historia rezerwacji
+- [x] Możliwość odwołania rezerwacji
 
 ## 👤 Klienci (Customers)
 
@@ -46,13 +53,6 @@
 - [ ] Lista klientów w firmie
 - [ ] Dane kontaktowe klienta (imię, email, tel)
 - [ ] Historia wizyt klienta
-
-## 🌐 Publiczny widok firmy
-
-- [ ] Strona `calendary.pl/firma/[slug]`
-- [ ] Wyświetlanie danych firmy (opis, lokalizacja)
-- [ ] Lista usług do rezerwacji
-- [ ] Wybór terminu i pracownika (opcjonalnie)
 
 ## ⚙️ Ustawienia firmy
 
@@ -79,4 +79,4 @@
 
 ---
 
-**Postęp:** Ukończone podstawowe strony auth i dashboard. Teraz pora na logikę kont użytkowników i firmę.
+**Postęp:** Ukończone podstawowe funkcje: auth, dashboard, zarządzanie firmą, pracownicy z grafikami i kompletny system rezerwacji. Teraz pora na zarządzanie klientami.

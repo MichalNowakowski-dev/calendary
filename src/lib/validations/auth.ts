@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 // Common validations
-const emailValidation = z
-  .string()
-  .min(1, "Email jest wymagany")
-  .email("Nieprawidłowy format email");
+const emailValidation = z.email("Nieprawidłowy format email");
 
 const passwordValidation = z
   .string()
@@ -80,17 +77,3 @@ export const companyOwnerRegistrationSchema = z
 export type CompanyOwnerRegistrationFormData = z.infer<
   typeof companyOwnerRegistrationSchema
 >;
-
-// Industry options for the form
-export const INDUSTRIES = [
-  { value: "automotive", label: "Warsztat samochodowy" },
-  { value: "beauty", label: "Salon piękności" },
-  { value: "barbershop", label: "Fryzjer/Barber" },
-  { value: "massage", label: "Masaż" },
-  { value: "spa", label: "SPA & Wellness" },
-  { value: "medical", label: "Medycyna estetyczna" },
-  { value: "fitness", label: "Fitness/Trening personalny" },
-  { value: "education", label: "Edukacja/Korepetycje" },
-  { value: "veterinary", label: "Weterynarz" },
-  { value: "other", label: "Inne" },
-] as const;

@@ -25,6 +25,7 @@ import type {
   Company,
 } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
+import AppointmentForm from "@/components/services/AppointmentForm";
 
 interface AppointmentWithDetails extends Appointment {
   service: Service;
@@ -46,54 +47,54 @@ export default function AppointmentsPage() {
 
   const supabase = createClient();
 
-  useEffect(() => {
-    const loadAppointments = async () => {
-      try {
-        const user = await getCurrentUser();
-        if (!user) return;
+  const loadAppointments = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (!user) return;
 
-        // Get user's company
-        const companies = await getUserCompanies(user.id);
-        if (companies.length === 0) return;
+      // Get user's company
+      const companies = await getUserCompanies(user.id);
+      if (companies.length === 0) return;
 
-        const userCompany = companies[0]?.company as unknown as Company;
-        setCompany(userCompany);
+      const userCompany = companies[0]?.company as unknown as Company;
+      setCompany(userCompany);
 
-        // Get appointments with service and employee details
-        const { data: appointmentsData, error } = await supabase
-          .from("appointments")
-          .select(
-            `
-            *,
-            service:services(
-              id,
-              name,
-              duration_minutes,
-              price
-            ),
-            employee:employees(
-              id,
-              name
-            )
+      // Get appointments with service and employee details
+      const { data: appointmentsData, error } = await supabase
+        .from("appointments")
+        .select(
           `
+          *,
+          service:services(
+            id,
+            name,
+            duration_minutes,
+            price
+          ),
+          employee:employees(
+            id,
+            name
           )
-          .eq("company_id", userCompany.id)
-          .order("date", { ascending: true })
-          .order("start_time", { ascending: true });
+        `
+        )
+        .eq("company_id", userCompany.id)
+        .order("date", { ascending: true })
+        .order("start_time", { ascending: true });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        setAppointments((appointmentsData as AppointmentWithDetails[]) || []);
-        setFilteredAppointments(
-          (appointmentsData as AppointmentWithDetails[]) || []
-        );
-      } catch (error) {
-        console.error("Error loading appointments:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      setAppointments((appointmentsData as AppointmentWithDetails[]) || []);
+      setFilteredAppointments(
+        (appointmentsData as AppointmentWithDetails[]) || []
+      );
+    } catch (error) {
+      console.error("Error loading appointments:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadAppointments();
   }, []);
 
@@ -235,10 +236,12 @@ export default function AppointmentsPage() {
             Zarządzaj wizytami w firmie {company?.name}
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Dodaj wizytę
-        </Button>
+        {company && (
+          <AppointmentForm
+            company={company}
+            onAppointmentCreated={loadAppointments}
+          />
+        )}
       </div>
 
       {/* Filters */}
@@ -305,10 +308,12 @@ export default function AppointmentsPage() {
                     ? "Nie znaleziono wizyt odpowiadających filtrom."
                     : "Nie masz jeszcze żadnych wizyt w systemie."}
                 </p>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Dodaj pierwszą wizytę
-                </Button>
+                {company && (
+                  <AppointmentForm
+                    company={company}
+                    onAppointmentCreated={loadAppointments}
+                  />
+                )}
               </div>
             </CardContent>
           </Card>

@@ -24,10 +24,51 @@ import type {
   Company,
 } from "@/lib/types/database";
 import { showToast, showConfirmToast } from "@/lib/toast";
+import EmployeeSchedule from "@/components/services/EmployeeSchedule";
+import ScheduleCalendar from "@/components/services/ScheduleCalendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface EmployeeWithDetails extends Employee {
   services: Service[];
   schedules: Schedule[];
+}
+
+// Add this new component for showing the schedule calendar
+function ScheduleViewModal({ employee }: { employee: EmployeeWithDetails }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="flex-1">
+          <Eye className="h-4 w-4 mr-1" />
+          Pokaż grafik
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="lg:max-w-[95vw] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Grafik pracy - {employee.name}</DialogTitle>
+          <DialogDescription>
+            Kalendarzowy widok grafiku pracy pracownika
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="mt-6">
+          <ScheduleCalendar
+            schedules={employee.schedules}
+            employeeName={employee.name}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function EmployeesPage() {
@@ -532,11 +573,24 @@ export default function EmployeesPage() {
                       <Clock className="h-4 w-4 mr-2 text-gray-500" />
                       <span className="text-sm font-medium">Grafik</span>
                     </div>
-                    <p className="text-xs text-gray-500">
-                      {employee.schedules.length > 0
-                        ? `${employee.schedules.length} dni w tygodniu`
-                        : "Brak grafiku"}
-                    </p>
+                    <div className="flex space-x-2">
+                      <ScheduleViewModal employee={employee} />
+                      <EmployeeSchedule
+                        employee={employee}
+                        schedules={employee.schedules}
+                        onScheduleUpdate={(updatedSchedules) => {
+                          setEmployees((prev) =>
+                            prev.map((emp) =>
+                              emp.id === employee.id
+                                ? { ...emp, schedules: updatedSchedules }
+                                : emp
+                            )
+                          );
+                        }}
+                        hideCurrentSchedule={true}
+                        buttonText="Zmień grafik"
+                      />
+                    </div>
                   </div>
 
                   {/* Status */}

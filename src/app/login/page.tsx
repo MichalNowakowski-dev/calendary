@@ -19,11 +19,47 @@ import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
-import { showToast } from "@/lib/toast";
+
+const translateAuthError = (errorMessage: string): string => {
+  const errorTranslations: Record<string, string> = {
+    "Invalid login credentials": "Nieprawidłowe dane logowania",
+    "Email not confirmed": "Email nie został potwierdzony",
+    "Too many requests": "Zbyt wiele prób logowania",
+    "User not found": "Użytkownik nie został znaleziony",
+    "Invalid email": "Nieprawidłowy adres email",
+    "Invalid password": "Nieprawidłowe hasło",
+    "Email already registered": "Email jest już zarejestrowany",
+    "Password too short": "Hasło jest za krótkie",
+    "Network error": "Błąd połączenia sieciowego",
+    "Server error": "Błąd serwera",
+    "Authentication failed": "Uwierzytelnienie nie powiodło się",
+    "Account locked": "Konto zostało zablokowane",
+    "Account disabled": "Konto zostało wyłączone",
+    "Session expired": "Sesja wygasła",
+    "Access denied": "Dostęp zabroniony",
+  };
+
+  // Check for exact matches first
+  if (errorTranslations[errorMessage]) {
+    return errorTranslations[errorMessage];
+  }
+
+  // Check for partial matches (case insensitive)
+  const lowerErrorMessage = errorMessage.toLowerCase();
+  for (const [englishError, polishError] of Object.entries(errorTranslations)) {
+    if (lowerErrorMessage.includes(englishError.toLowerCase())) {
+      return polishError;
+    }
+  }
+
+  // Return default message if no translation found
+  return "Wystąpił błąd podczas logowania";
+};
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string>("");
   const router = useRouter();
 
   const supabase = createClient();
@@ -42,6 +78,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
+    setAuthError(""); // Clear previous auth errors
 
     try {
       const { data: authData, error } = await supabase.auth.signInWithPassword({
@@ -69,7 +106,8 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      showToast.error(`Błąd logowania: ${error.message}`);
+      const translatedError = translateAuthError(error.message || "");
+      setAuthError(translatedError);
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +139,9 @@ export default function LoginPage() {
                     id="email"
                     type="email"
                     {...register("email")}
-                    className={errors.email ? "border-red-500" : ""}
+                    className={
+                      errors.email || authError ? "border-red-500" : ""
+                    }
                     placeholder="twoj@email.pl"
                   />
                   {errors.email && (
@@ -125,7 +165,9 @@ export default function LoginPage() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       {...register("password")}
-                      className={errors.password ? "border-red-500" : ""}
+                      className={
+                        errors.password || authError ? "border-red-500" : ""
+                      }
                       placeholder="Wprowadź hasło"
                     />
                     <Button
@@ -146,6 +188,9 @@ export default function LoginPage() {
                     <p className="text-sm text-red-500 mt-1">
                       {errors.password.message}
                     </p>
+                  )}
+                  {authError && (
+                    <p className="text-sm text-red-500 mt-1">{authError}</p>
                   )}
                 </div>
               </div>
