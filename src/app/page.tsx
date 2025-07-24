@@ -1,102 +1,282 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Building2, Calendar, Clock, Star, Users, Zap } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Navigation */}
+      <nav className="px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-bold text-blue-600">Calendary.pl</h1>
+          </div>
+          <div className="hidden md:flex space-x-8">
+            <a href="#features" className="text-gray-600 hover:text-gray-900">
+              Funkcje
+            </a>
+            <a href="#industries" className="text-gray-600 hover:text-gray-900">
+              Branże
+            </a>
+            <a href="#pricing" className="text-gray-600 hover:text-gray-900">
+              Cennik
+            </a>
+          </div>
+          <div className="flex space-x-4">
+            <Link href="/login">
+              <Button variant="outline">Zaloguj się</Button>
+            </Link>
+            <Link href="/register">
+              <Button>Rozpocznij za darmo</Button>
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <Badge variant="secondary" className="mb-4">
+            Nowa platforma rezerwacji online
+          </Badge>
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            Profesjonalny system rezerwacji dla{" "}
+            <span className="text-blue-600">Twojej firmy</span>
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Umożliw swoim klientom łatwe rezerwowanie wizyt online. Zautomatyzuj
+            zarządzanie kalendarzem i zwiększ przychody swojej firmy.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/register">
+              <Button size="lg" className="text-lg px-8 py-3">
+                <Building2 className="mr-2 h-5 w-5" />
+                Załóż konto firmowe
+              </Button>
+            </Link>
+            <Link href="/demo">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+                Zobacz demo
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="px-4 sm:px-6 lg:px-8 py-16 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+              Wszystko czego potrzebujesz w jednym miejscu
+            </h3>
+            <p className="text-xl text-gray-600">
+              Kompletne rozwiązanie do zarządzania rezerwacjami i klientami
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card>
+              <CardHeader>
+                <Calendar className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>Inteligentny kalendarz</CardTitle>
+                <CardDescription>
+                  Automatyczne zarządzanie harmonogramem pracy i dostępnością
+                  pracowników
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Clock className="h-8 w-8 text-green-600 mb-2" />
+                <CardTitle>Rezerwacje 24/7</CardTitle>
+                <CardDescription>
+                  Klienci mogą rezerwować wizyty o każdej porze dnia i nocy
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Users className="h-8 w-8 text-purple-600 mb-2" />
+                <CardTitle>Zarządzanie klientami</CardTitle>
+                <CardDescription>
+                  Pełna historia wizyt, preferencje klientów i automatyczne
+                  przypomnienia
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Zap className="h-8 w-8 text-yellow-600 mb-2" />
+                <CardTitle>Automatyzacja</CardTitle>
+                <CardDescription>
+                  SMS i email przypomnienia, potwierdzenia rezerwacji i
+                  follow-up
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Star className="h-8 w-8 text-red-600 mb-2" />
+                <CardTitle>Własna strona</CardTitle>
+                <CardDescription>
+                  calendary.pl/twoja-firma - profesjonalna strona rezerwacji
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Building2 className="h-8 w-8 text-indigo-600 mb-2" />
+                <CardTitle>Multi-lokalizacje</CardTitle>
+                <CardDescription>
+                  Zarządzaj wieloma punktami usługowymi z jednego panelu
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Industries Section */}
+      <section
+        id="industries"
+        className="px-4 sm:px-6 lg:px-8 py-16 bg-gray-50"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+              Idealne dla każdej branży
+            </h3>
+            <p className="text-xl text-gray-600">
+              Dostosowane rozwiązania dla różnych typów usług
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {[
+              "Warsztaty samochodowe",
+              "Salony piękności",
+              "Fryzjerzy & Barberzy",
+              "Masaż & SPA",
+              "Medycyna estetyczna",
+              "Fitness & trening",
+              "Edukacja",
+              "Weterynarz",
+              "Konsulting",
+              "I wiele innych...",
+            ].map((industry, index) => (
+              <div
+                key={index}
+                className="text-center p-4 bg-white rounded-lg shadow-sm"
+              >
+                <p className="text-sm font-medium text-gray-700">{industry}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-blue-600">
+        <div className="max-w-4xl mx-auto text-center text-white">
+          <h3 className="text-3xl font-bold mb-4">
+            Gotowy na zwiększenie przychodów?
+          </h3>
+          <p className="text-xl mb-8 opacity-90">
+            Dołącz do tysięcy firm, które już korzystają z Calendary.pl
+          </p>
+          <Link href="/register">
+            <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
+              Rozpocznij 30-dniowy darmowy okres próbny
+            </Button>
+          </Link>
+          <p className="text-sm mt-4 opacity-75">
+            Bez zobowiązań • Anuluj w każdej chwili • Pełne wsparcie
+          </p>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="px-4 sm:px-6 lg:px-8 py-8 bg-gray-900 text-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h4 className="text-lg font-bold mb-4">Calendary.pl</h4>
+              <p className="text-gray-400">
+                Profesjonalny system rezerwacji online dla firm z każdej branży.
+              </p>
+            </div>
+            <div>
+              <h5 className="font-semibold mb-3">Produkt</h5>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Funkcje
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Cennik
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Demo
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-semibold mb-3">Wsparcie</h5>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Pomoc
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Kontakt
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    API
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-semibold mb-3">Firma</h5>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-white">
+                    O nas
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white">
+                    Praca
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 Calendary.pl. Wszystkie prawa zastrzeżone.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
