@@ -345,9 +345,11 @@ export default function BookingModal({
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span>{formatDuration(service.duration_minutes)}</span>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {formatDuration(service.duration_minutes)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 font-semibold">
                   <span>{formatPrice(service.price)}</span>
@@ -355,13 +357,15 @@ export default function BookingModal({
               </div>
 
               {service.description && (
-                <p className="text-gray-600 mt-3">{service.description}</p>
+                <p className="text-gray-600 dark:text-gray-300 mt-3">
+                  {service.description}
+                </p>
               )}
 
               {service.employees && service.employees.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-sm text-gray-600 mb-2">
-                    Dostępni specjaliści:
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    Wybierz pracownika (opcjonalnie):
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {service.employees.map((employee: any) => (

@@ -26,6 +26,7 @@ import type {
 } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
 import AppointmentForm from "@/components/services/AppointmentForm";
+import PageHeading from "@/components/PageHeading";
 
 interface AppointmentWithDetails extends Appointment {
   service: Service;
@@ -144,11 +145,11 @@ export default function AppointmentsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />;
       case "cancelled":
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-red-500 mt-0.5" />;
       default:
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-5 w-5 text-blue-500 mt-0.5" />;
     }
   };
 
@@ -215,10 +216,13 @@ export default function AppointmentsPage() {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
+              <div
+                key={i}
+                className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"
+              ></div>
             ))}
           </div>
         </div>
@@ -230,12 +234,10 @@ export default function AppointmentsPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Kalendarz wizyt</h1>
-          <p className="text-gray-600 mt-1">
-            Zarządzaj wizytami w firmie {company?.name}
-          </p>
-        </div>
+        <PageHeading
+          text="Kalendarz wizyt"
+          description={`Zarządzaj wizytami w firmie ${company?.name}`}
+        />
         {company && (
           <AppointmentForm
             company={company}
@@ -250,7 +252,7 @@ export default function AppointmentsPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
               <Input
                 placeholder="Szukaj klienta lub usługi..."
                 value={searchTerm}
@@ -263,7 +265,7 @@ export default function AppointmentsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Wszystkie statusy</option>
               <option value="booked">Zarezerwowane</option>
@@ -275,7 +277,7 @@ export default function AppointmentsPage() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Wszystkie daty</option>
               <option value="today">Dzisiaj</option>
@@ -285,7 +287,7 @@ export default function AppointmentsPage() {
             </select>
 
             {/* Results count */}
-            <div className="flex items-center text-gray-600">
+            <div className="flex items-center text-gray-600 dark:text-gray-300">
               <Filter className="h-4 w-4 mr-2" />
               {filteredAppointments.length} wizyt
             </div>
@@ -299,11 +301,11 @@ export default function AppointmentsPage() {
           <Card>
             <CardContent className="py-12">
               <div className="text-center">
-                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <Calendar className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   Brak wizyt
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   {searchTerm || statusFilter !== "all" || dateFilter !== "all"
                     ? "Nie znaleziono wizyt odpowiadających filtrom."
                     : "Nie masz jeszcze żadnych wizyt w systemie."}
@@ -332,7 +334,7 @@ export default function AppointmentsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-medium text-gray-900">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                           {appointment.customer_name}
                         </h3>
                         <span

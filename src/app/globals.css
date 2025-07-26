@@ -173,6 +173,10 @@ body {
   letter-spacing: var(--tracking-normal);
 }
 
+button:hover {
+  cursor: pointer;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

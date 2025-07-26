@@ -2,42 +2,26 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { ToggleLeft, ToggleRight } from "lucide-react";
+
 import type { Service } from "@/lib/types/database";
-import { showToast, showConfirmToast } from "@/lib/toast";
-import { useRouter } from "next/navigation";
+import { showToast } from "@/lib/toast";
 
 interface ServiceActionsProps {
   service: Service;
-  onEdit?: (service: Service) => void;
+  onToggle: () => void;
 }
 
 export default function ServiceActions({
   service,
-  onEdit,
+  onToggle,
 }: ServiceActionsProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
 
-  const toggleServiceStatus = async () => {
-    setIsUpdating(true);
-
+  const handleToggle = async () => {
     try {
-      const { error } = await supabase
-        .from("services")
-        .update({ active: !service.active })
-        .eq("id", service.id);
-
-      if (error) throw error;
-
-      showToast.success(
-        `Usługa została ${service.active ? "dezaktywowana" : "aktywowana"}`
-      );
-
-      // Refresh the page to show updated data
-      router.refresh();
+      setIsUpdating(true);
+      onToggle();
     } catch (error) {
       console.error("Error toggling service status:", error);
       showToast.error("Błąd podczas zmiany statusu usługi");
@@ -46,65 +30,28 @@ export default function ServiceActions({
     }
   };
 
-  const deleteService = async () => {
-    showConfirmToast(
-      `Czy na pewno chcesz usunąć usługę "${service.name}"?`,
-      async () => {
-        try {
-          const { error } = await supabase
-            .from("services")
-            .delete()
-            .eq("id", service.id);
-
-          if (error) throw error;
-
-          showToast.success("Usługa została usunięta");
-
-          // Refresh the page to show updated data
-          router.refresh();
-        } catch (error) {
-          console.error("Error deleting service:", error);
-          showToast.error("Błąd podczas usuwania usługi");
-        }
-      }
-    );
-  };
-
   return (
     <>
       {/* Status toggle button */}
-      <button
-        onClick={toggleServiceStatus}
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={handleToggle}
         disabled={isUpdating}
-        className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+        className="flex items-center"
       >
         {service.active ? (
-          <ToggleRight className="h-6 w-6 text-green-500" />
+          <>
+            <ToggleRight className="h-4 w-4 mr-1 text-green-500" />
+            Dezaktywuj
+          </>
         ) : (
-          <ToggleLeft className="h-6 w-6" />
+          <>
+            <ToggleLeft className="h-4 w-4 mr-1" />
+            Aktywuj
+          </>
         )}
-      </button>
-
-      {/* Action buttons */}
-      <div className="flex space-x-2 mt-4">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onEdit?.(service)}
-          className="flex-1"
-        >
-          <Edit className="h-4 w-4 mr-1" />
-          Edytuj
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={deleteService}
-          className="text-red-600 hover:text-red-700"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
+      </Button>
     </>
   );
 }

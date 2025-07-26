@@ -25,6 +25,7 @@ import {
 import type { Company } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
+import PageHeading from "@/components/PageHeading";
 
 export default function CompanySettingsPage() {
   const [company, setCompany] = useState<Company | null>(null);
@@ -147,8 +148,8 @@ export default function CompanySettingsPage() {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="h-96 bg-gray-200 rounded-lg"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
+          <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
         </div>
       </div>
     );
@@ -157,15 +158,15 @@ export default function CompanySettingsPage() {
   if (!company) {
     return (
       <div className="text-center py-12">
-        <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Brak danych firmy
+        <Building2 className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          Nie znaleziono firmy
         </h2>
-        <p className="text-gray-600 mb-6">
-          Nie znaleziono firmy przypisanej do Twojego konta.
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          Nie udało się załadować danych firmy.
         </p>
         <Button onClick={() => router.push("/dashboard")}>
-          Powrót do panelu
+          Wróć do dashboardu
         </Button>
       </div>
     );
@@ -174,55 +175,49 @@ export default function CompanySettingsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Ustawienia firmy</h1>
-        <p className="text-gray-600 mt-1">
-          Zarządzaj danymi swojej firmy i ustawieniami profilu
-        </p>
-      </div>
+      <PageHeading
+        text="Ustawienia firmy"
+        description="Edytuj informacje o swojej firmie"
+      />
 
-      {/* Company settings form */}
+      {/* Company form */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Dane firmy
-          </CardTitle>
+          <CardTitle>Dane firmy</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Company name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="name">Nazwa firmy *</Label>
                 <Input
                   id="name"
                   {...form.register("name")}
-                  placeholder="Wprowadź nazwę firmy"
                   onChange={(e) => handleCompanyNameChange(e.target.value)}
+                  placeholder="Nazwa firmy"
                 />
                 {form.formState.errors.name && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-red-500 mt-1">
                     {form.formState.errors.name.message}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="slug">Adres strony *</Label>
+              <div>
+                <Label htmlFor="slug">Adres strony</Label>
                 <div className="flex">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                    calendary.pl/
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
+                    calendary.pl/business/
                   </span>
                   <Input
                     id="slug"
                     {...form.register("slug")}
-                    placeholder="nazwa-firmy"
                     className="rounded-l-none"
+                    placeholder="nazwa-firmy"
                   />
                 </div>
                 {form.formState.errors.slug && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-red-500 mt-1">
                     {form.formState.errors.slug.message}
                   </p>
                 )}

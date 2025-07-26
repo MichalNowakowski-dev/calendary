@@ -1,35 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useActionState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { serviceSchema, type ServiceFormData } from "@/lib/validations/service";
 import type { Service } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
+import {
+  createServiceAction,
+  updateServiceAction,
+} from "@/lib/actions/services";
 
 interface ServiceFormProps {
   service?: Service | null;
   companyId: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export default function ServiceForm({
   service,
-  companyId,
+
   onSuccess,
   onCancel,
 }: ServiceFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+
+  // Use action state for server actions
+  const [createState, createAction, isCreating] = useActionState(
+    createServiceAction,
+    {
+      success: undefined,
+      message: "",
+      errors: {},
+    }
+  );
+
+  const [updateState, updateAction, isUpdating] = useActionState(
+    updateServiceAction,
+    {
+      success: undefined,
+      message: "",
+      errors: {},
+    }
+  );
+
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
@@ -42,54 +65,60 @@ export default function ServiceForm({
     },
   });
 
-  const onSubmit = async (data: ServiceFormData) => {
-    setIsSubmitting(true);
+  // Handle form submission
+  const handleSubmit = async (data: ServiceFormData) => {
+    // Create FormData for server action
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("description", data.description || "");
+    formData.append("duration_minutes", data.duration_minutes.toString());
+    formData.append("price", data.price.toString());
+    formData.append("active", data.active ? "on" : "off");
 
-    try {
-      if (service) {
-        // Update existing service
-        const { error } = await supabase
-          .from("services")
-          .update({
-            name: data.name,
-            description: data.description || null,
-            duration_minutes: data.duration_minutes,
-            price: data.price,
-            active: data.active,
-          })
-          .eq("id", service.id);
+    if (service) {
+      // Update existing service
+      formData.append("serviceId", service.id);
+      startTransition(() => {
+        updateAction(formData);
+      });
+    } else {
+      // Create new service
+      startTransition(() => {
+        createAction(formData);
+      });
+    }
+  };
 
-        if (error) throw error;
-        showToast.success("Usługa została zaktualizowana");
-      } else {
-        // Create new service
-        const { error } = await supabase.from("services").insert({
-          company_id: companyId,
-          name: data.name,
-          description: data.description || null,
-          duration_minutes: data.duration_minutes,
-          price: data.price,
-          active: data.active,
-        });
+  // Handle action state changes
+  const currentState = service ? updateState : createState;
 
-        if (error) throw error;
-        showToast.success("Usługa została utworzona");
-      }
-
-      // Refresh the page to show updated data
+  useEffect(() => {
+    if (currentState.success === true) {
+      showToast.success(
+        currentState.message || "Operacja zakończona pomyślnie"
+      );
       router.refresh();
-
-      // Call success callback if provided
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error: any) {
-      console.error("Error saving service:", error);
-      showToast.error(`Błąd podczas zapisywania usługi: ${error.message}`);
-    } finally {
-      setIsSubmitting(false);
+    } else if (currentState.success === false) {
+      showToast.error(currentState.message || "Wystąpił błąd");
     }
-  };
+  }, [currentState.success, currentState.message, router, onSuccess]);
+
+  // Handle server-side validation errors
+  useEffect(() => {
+    if (currentState.errors) {
+      Object.entries(currentState.errors).forEach(([field, messages]) => {
+        if (messages && messages.length > 0) {
+          form.setError(field as keyof ServiceFormData, {
+            type: "server",
+            message: messages[0],
+          });
+        }
+      });
+    }
+  }, [currentState.errors, form]);
 
   return (
     <Card>
@@ -97,7 +126,7 @@ export default function ServiceForm({
         <CardTitle>{service ? "Edytuj usługę" : "Dodaj nową usługę"}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nazwa usługi *</Label>
@@ -174,8 +203,8 @@ export default function ServiceForm({
           </div>
 
           <div className="flex space-x-3">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
+            <Button type="submit" disabled={isCreating || isUpdating}>
+              {isCreating || isUpdating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Zapisywanie...
@@ -189,7 +218,7 @@ export default function ServiceForm({
                 type="button"
                 variant="outline"
                 onClick={onCancel}
-                disabled={isSubmitting}
+                disabled={isCreating || isUpdating}
               >
                 Anuluj
               </Button>

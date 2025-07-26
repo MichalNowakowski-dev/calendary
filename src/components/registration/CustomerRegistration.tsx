@@ -70,7 +70,9 @@ export default function CustomerRegistration() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Personal Information */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Dane osobowe</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          Dane osobowe
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="customerFirstName">Imię *</Label>
@@ -105,7 +107,9 @@ export default function CustomerRegistration() {
 
       {/* Contact Information */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Dane kontaktowe</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          Dane kontaktowe
+        </h3>
         <div className="space-y-4">
           <div>
             <Label htmlFor="customerEmail">Email *</Label>
@@ -135,7 +139,7 @@ export default function CustomerRegistration() {
                 {errors.phone.message}
               </p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Telefon pomoże firmom skontaktować się z Tobą w razie potrzeby
             </p>
           </div>
@@ -144,7 +148,9 @@ export default function CustomerRegistration() {
 
       {/* Account Information */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Dane logowania</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          Dane logowania
+        </h3>
         <div className="space-y-4">
           <div>
             <Label htmlFor="customerPassword">Hasło *</Label>
@@ -207,11 +213,11 @@ export default function CustomerRegistration() {
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <h4 className="font-medium text-green-900 mb-2">
+      <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4">
+        <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">
           Co zyskujesz z kontem klienta?
         </h4>
-        <ul className="text-sm text-green-800 space-y-1">
+        <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
           <li>• Szybsze rezerwacje - zapisane dane kontaktowe</li>
           <li>• Historia wszystkich wizyt w jednym miejscu</li>
           <li>• Automatyczne przypomnienia o nadchodzących wizytach</li>
@@ -232,9 +238,9 @@ export default function CustomerRegistration() {
       </Button>
 
       <div className="text-center">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Nie chcesz zakładać konta?{" "}
-          <span className="text-blue-600 font-medium">
+          <span className="text-blue-600 dark:text-blue-400 font-medium">
             Możesz rezerwować także bez rejestracji
           </span>
         </p>

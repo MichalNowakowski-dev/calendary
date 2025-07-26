@@ -12,21 +12,32 @@ import { Building2, Calendar, Clock, Star, Users, Zap } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900">
       {/* Navigation */}
       <nav className="px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-blue-600">Calendary.pl</h1>
+            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              Calendary.pl
+            </h1>
           </div>
           <div className="hidden md:flex space-x-8">
-            <a href="#features" className="text-gray-600 hover:text-gray-900">
+            <a
+              href="#features"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+            >
               Funkcje
             </a>
-            <a href="#industries" className="text-gray-600 hover:text-gray-900">
+            <a
+              href="#industries"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+            >
               Branże
             </a>
-            <a href="#pricing" className="text-gray-600 hover:text-gray-900">
+            <a
+              href="#pricing"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+            >
               Cennik
             </a>
           </div>
@@ -47,11 +58,13 @@ export default function Home() {
           <Badge variant="secondary" className="mb-4">
             Nowa platforma rezerwacji online
           </Badge>
-          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Profesjonalny system rezerwacji dla{" "}
-            <span className="text-blue-600">Twojej firmy</span>
+            <span className="text-blue-600 dark:text-blue-400">
+              Twojej firmy
+            </span>
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
             Umożliw swoim klientom łatwe rezerwowanie wizyt online. Zautomatyzuj
             zarządzanie kalendarzem i zwiększ przychody swojej firmy.
           </p>
@@ -72,20 +85,23 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="px-4 sm:px-6 lg:px-8 py-16 bg-white">
+      <section
+        id="features"
+        className="px-4 sm:px-6 lg:px-8 py-16 bg-white dark:bg-gray-900"
+      >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+            <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Wszystko czego potrzebujesz w jednym miejscu
             </h3>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 dark:text-gray-300">
               Kompletne rozwiązanie do zarządzania rezerwacjami i klientami
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card>
               <CardHeader>
-                <Calendar className="h-8 w-8 text-blue-600 mb-2" />
+                <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-2" />
                 <CardTitle>Inteligentny kalendarz</CardTitle>
                 <CardDescription>
                   Automatyczne zarządzanie harmonogramem pracy i dostępnością
@@ -95,7 +111,7 @@ export default function Home() {
             </Card>
             <Card>
               <CardHeader>
-                <Clock className="h-8 w-8 text-green-600 mb-2" />
+                <Clock className="h-8 w-8 text-green-600 dark:text-green-400 mb-2" />
                 <CardTitle>Rezerwacje 24/7</CardTitle>
                 <CardDescription>
                   Klienci mogą rezerwować wizyty o każdej porze dnia i nocy
@@ -104,7 +120,7 @@ export default function Home() {
             </Card>
             <Card>
               <CardHeader>
-                <Users className="h-8 w-8 text-purple-600 mb-2" />
+                <Users className="h-8 w-8 text-purple-600 dark:text-purple-400 mb-2" />
                 <CardTitle>Zarządzanie klientami</CardTitle>
                 <CardDescription>
                   Pełna historia wizyt, preferencje klientów i automatyczne
@@ -114,7 +130,7 @@ export default function Home() {
             </Card>
             <Card>
               <CardHeader>
-                <Zap className="h-8 w-8 text-yellow-600 mb-2" />
+                <Zap className="h-8 w-8 text-yellow-600 dark:text-yellow-400 mb-2" />
                 <CardTitle>Automatyzacja</CardTitle>
                 <CardDescription>
                   SMS i email przypomnienia, potwierdzenia rezerwacji i
@@ -124,7 +140,7 @@ export default function Home() {
             </Card>
             <Card>
               <CardHeader>
-                <Star className="h-8 w-8 text-red-600 mb-2" />
+                <Star className="h-8 w-8 text-red-600 dark:text-red-400 mb-2" />
                 <CardTitle>Własna strona</CardTitle>
                 <CardDescription>
                   calendary.pl/twoja-firma - profesjonalna strona rezerwacji
@@ -133,7 +149,7 @@ export default function Home() {
             </Card>
             <Card>
               <CardHeader>
-                <Building2 className="h-8 w-8 text-indigo-600 mb-2" />
+                <Building2 className="h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2" />
                 <CardTitle>Multi-lokalizacje</CardTitle>
                 <CardDescription>
                   Zarządzaj wieloma punktami usługowymi z jednego panelu
@@ -147,14 +163,14 @@ export default function Home() {
       {/* Industries Section */}
       <section
         id="industries"
-        className="px-4 sm:px-6 lg:px-8 py-16 bg-gray-50"
+        className="px-4 sm:px-6 lg:px-8 py-16 bg-gray-50 dark:bg-gray-800"
       >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+            <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Idealne dla każdej branży
             </h3>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 dark:text-gray-300">
               Dostosowane rozwiązania dla różnych typów usług
             </p>
           </div>
@@ -173,9 +189,11 @@ export default function Home() {
             ].map((industry, index) => (
               <div
                 key={index}
-                className="text-center p-4 bg-white rounded-lg shadow-sm"
+                className="text-center p-4 bg-white dark:bg-gray-700 rounded-lg shadow-sm"
               >
-                <p className="text-sm font-medium text-gray-700">{industry}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {industry}
+                </p>
               </div>
             ))}
           </div>
@@ -183,7 +201,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-blue-600">
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-blue-600 dark:bg-blue-700">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h3 className="text-3xl font-bold mb-4">
             Gotowy na zwiększenie przychodów?
@@ -203,7 +221,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="px-4 sm:px-6 lg:px-8 py-8 bg-gray-900 text-white">
+      <footer className="px-4 sm:px-6 lg:px-8 py-8 bg-gray-900 dark:bg-gray-950 text-white">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>

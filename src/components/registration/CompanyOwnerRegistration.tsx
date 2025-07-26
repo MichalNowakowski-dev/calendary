@@ -96,7 +96,9 @@ export default function CompanyOwnerRegistration() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Personal Information */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Dane osobowe</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+            Dane osobowe
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -131,7 +133,9 @@ export default function CompanyOwnerRegistration() {
 
         {/* Account Information */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Dane logowania</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+            Dane logowania
+          </h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -217,7 +221,9 @@ export default function CompanyOwnerRegistration() {
 
         {/* Company Information */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Dane firmy</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+            Dane firmy
+          </h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -240,13 +246,13 @@ export default function CompanyOwnerRegistration() {
                   <FormLabel>Adres strony</FormLabel>
                   <FormControl>
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         calendary.pl/business/
                       </span>
                       <Input {...field} placeholder="nazwa-firmy" />
                     </div>
                   </FormControl>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     To będzie adres Twojej strony rezerwacji
                   </p>
                   <FormMessage />

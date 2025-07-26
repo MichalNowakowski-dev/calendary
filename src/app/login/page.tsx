@@ -114,13 +114,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            <span className="text-blue-600">Calendary.pl</span>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <span className="text-blue-600 dark:text-blue-400">
+              Calendary.pl
+            </span>
           </h1>
-          <p className="text-lg text-gray-600">Zaloguj się do swojego konta</p>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Zaloguj się do swojego konta
+          </p>
         </div>
 
         <Card>
@@ -155,7 +159,7 @@ export default function LoginPage() {
                     <Label htmlFor="password">Hasło</Label>
                     <Link
                       href="/forgot-password"
-                      className="text-sm text-blue-600 hover:text-blue-700"
+                      className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       Zapomniałeś hasła?
                     </Link>
@@ -210,11 +214,11 @@ export default function LoginPage() {
             <div className="mt-6">
               <Separator />
               <div className="text-center mt-6">
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   Nie masz jeszcze konta?{" "}
                   <Link
                     href="/register"
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                   >
                     Zarejestruj się
                   </Link>
@@ -225,7 +229,10 @@ export default function LoginPage() {
         </Card>
 
         <div className="text-center mt-8">
-          <Link href="/" className="text-gray-600 hover:text-gray-700">
+          <Link
+            href="/"
+            className="text-gray-600 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200"
+          >
             ← Wróć do strony głównej
           </Link>
         </div>

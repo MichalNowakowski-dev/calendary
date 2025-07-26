@@ -22,13 +22,17 @@ import type {
   Company,
 } from "@/lib/types/database";
 import Link from "next/link";
+import PageHeading from "@/components/PageHeading";
 
 interface DashboardStats {
   totalAppointments: number;
   todayAppointments: number;
   totalServices: number;
   totalEmployees: number;
-  recentAppointments: Appointment[];
+  recentAppointments: (Appointment & {
+    service?: { name: string };
+    employee?: { name: string };
+  })[];
   popularServices: (Service & { appointment_count: number })[];
 }
 
@@ -163,10 +167,13 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+              <div
+                key={i}
+                className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"
+              ></div>
             ))}
           </div>
         </div>
@@ -177,56 +184,53 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Panel główny</h1>
-          {company && (
-            <p className="text-gray-600 mt-1">
-              Witaj w panelu zarządzania firmą <strong>{company.name}</strong>
-            </p>
-          )}
-        </div>
-        <div className="flex space-x-3">
-          <Button asChild>
-            <Link href="/dashboard/appointments">
-              <Plus className="h-4 w-4 mr-2" />
-              Nowa wizyta
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeading
+        text="Panel główny"
+        description={`Witaj w panelu zarządzania firmą ${company?.name}`}
+      />
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Wizyty dzisiaj
+              Wszystkie wizyty
             </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.todayAppointments ?? 0}
+              {stats?.totalAppointments || 0}
             </div>
-            <p className="text-xs text-muted-foreground">
-              +{stats?.totalAppointments ?? 0} wszystkich wizyt
-            </p>
+            <p className="text-xs text-muted-foreground">Łączna liczba wizyt</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Aktywne usługi
+              Dzisiejsze wizyty
             </CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats?.todayAppointments || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Wizyty na dzisiaj</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Usługi</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalServices ?? 0}
+              {stats?.totalServices || 0}
             </div>
-            <p className="text-xs text-muted-foreground">Dostępne w ofercie</p>
+            <p className="text-xs text-muted-foreground">Aktywne usługi</p>
           </CardContent>
         </Card>
 
@@ -237,24 +241,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalEmployees ?? 0}
+              {stats?.totalEmployees || 0}
             </div>
-            <p className="text-xs text-muted-foreground">Zespół firmy</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Łączne wizyty</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.totalAppointments ?? 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Od początku działalności
-            </p>
+            <p className="text-xs text-muted-foreground">Zespół pracowników</p>
           </CardContent>
         </Card>
       </div>
@@ -264,89 +253,72 @@ export default function DashboardPage() {
         {/* Recent appointments */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Ostatnie wizyty</CardTitle>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/appointments">Zobacz wszystkie</Link>
-              </Button>
-            </div>
+            <CardTitle>Ostatnie wizyty</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {stats?.recentAppointments.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">
-                  Brak wizyt do wyświetlenia
-                </p>
-              ) : (
-                stats?.recentAppointments.map((appointment) => (
+            {stats?.recentAppointments &&
+            stats.recentAppointments.length > 0 ? (
+              <div className="space-y-3">
+                {stats.recentAppointments.map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                   >
                     <div className="flex items-center space-x-3">
                       {getStatusIcon(appointment.status)}
                       <div>
-                        <p className="font-medium">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
                           {appointment.customer_name}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          {(appointment as any).service?.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {appointment.date} o {appointment.start_time}
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {appointment.service?.name}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                        {getStatusText(appointment.status)}
-                      </span>
-                    </div>
+                    <span className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                      {getStatusText(appointment.status)}
+                    </span>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                Brak ostatnich wizyt
+              </p>
+            )}
           </CardContent>
         </Card>
 
         {/* Popular services */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Popularne usługi</CardTitle>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/services">Zarządzaj usługami</Link>
-              </Button>
-            </div>
+            <CardTitle>Popularne usługi</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {stats?.popularServices.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">
-                  Brak usług do wyświetlenia
-                </p>
-              ) : (
-                stats?.popularServices.map((service) => (
+            {stats?.popularServices && stats.popularServices.length > 0 ? (
+              <div className="space-y-3">
+                {stats.popularServices.map((service) => (
                   <div
                     key={service.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                   >
                     <div>
-                      <p className="font-medium">{service.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {service.duration_minutes} min •{" "}
-                        {service.price.toFixed(2)} zł
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {service.name}
                       </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {service.appointment_count} wizyt
                       </p>
                     </div>
+                    <TrendingUp className="h-4 w-4 text-green-500" />
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                Brak danych o popularnych usługach
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

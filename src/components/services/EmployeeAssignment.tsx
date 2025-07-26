@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Users, X, UserCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
+import { useRouter } from "next/navigation";
 import type { Employee } from "@/lib/types/database";
 
 interface EmployeeAssignmentProps {
@@ -33,6 +34,7 @@ export default function EmployeeAssignment({
   );
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
+  const router = useRouter();
 
   const handleToggleEmployee = (employeeId: string) => {
     if (selectedEmployees.includes(employeeId)) {
@@ -74,6 +76,10 @@ export default function EmployeeAssignment({
 
       onUpdate(newAssignedEmployees);
       showToast.success("Przypisania pracowników zostały zaktualizowane");
+
+      // Refresh the page to show updated data
+      router.refresh();
+
       onClose();
     } catch (error) {
       console.error("Error updating employee assignments:", error);
