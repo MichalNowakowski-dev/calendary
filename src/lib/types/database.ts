@@ -138,26 +138,32 @@ export interface Database {
         Row: {
           id: string;
           employee_id: string;
-          weekday: number; // 0-6
+          start_date: string;
+          end_date: string;
           start_time: string; // "08:00"
           end_time: string; // "16:00"
           created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
           employee_id: string;
-          weekday: number;
+          start_date: string;
+          end_date: string;
           start_time: string;
           end_time: string;
           created_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
           employee_id?: string;
-          weekday?: number;
+          start_date?: string;
+          end_date?: string;
           start_time?: string;
           end_time?: string;
           created_at?: string;
+          updated_at?: string;
         };
       };
       appointments: {

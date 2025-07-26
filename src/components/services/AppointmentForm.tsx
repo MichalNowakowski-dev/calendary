@@ -220,15 +220,14 @@ export default function AppointmentForm({
       if (!service) return;
 
       // Get employee schedule for the selected date
-      const selectedDateObj = new Date(selectedDate);
-      const weekday = selectedDateObj.getDay();
-
-      const { data: schedule, error: scheduleError } = await supabase
+      const { data: schedules, error: scheduleError } = await supabase
         .from("schedules")
         .select("start_time, end_time")
         .eq("employee_id", employeeId)
-        .eq("weekday", weekday)
-        .single();
+        .lte("start_date", selectedDate)
+        .gte("end_date", selectedDate);
+
+      const schedule = schedules && schedules.length > 0 ? schedules[0] : null;
 
       if (scheduleError || !schedule) {
         setAvailableTimeSlots([]);

@@ -89,16 +89,6 @@ export default function EmployeesPage() {
 
   const supabase = createClient();
 
-  const weekdays = [
-    { value: 0, label: "Niedziela" },
-    { value: 1, label: "Poniedziałek" },
-    { value: 2, label: "Wtorek" },
-    { value: 3, label: "Środa" },
-    { value: 4, label: "Czwartek" },
-    { value: 5, label: "Piątek" },
-    { value: 6, label: "Sobota" },
-  ];
-
   useEffect(() => {
     const loadData = async () => {
       try {

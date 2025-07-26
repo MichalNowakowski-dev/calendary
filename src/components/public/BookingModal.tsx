@@ -158,15 +158,13 @@ export default function BookingModal({
         return;
       }
 
-      // Get employee schedules for the selected date
-      const selectedDateObj = new Date(selectedDate);
-      const weekday = selectedDateObj.getDay();
-
+      // Get employee schedules that include the selected date
       const { data: schedules, error: schedulesError } = await supabase
         .from("schedules")
-        .select("employee_id, start_time, end_time")
+        .select("employee_id, start_time, end_time, start_date, end_date")
         .in("employee_id", employeeIds)
-        .eq("weekday", weekday);
+        .lte("start_date", selectedDate)
+        .gte("end_date", selectedDate);
 
       if (schedulesError) throw schedulesError;
 
@@ -255,16 +253,17 @@ export default function BookingModal({
       let selectedEmployeeId = data.employeeId;
       if (!selectedEmployeeId && service.employees.length > 0) {
         // Find first available employee for this slot
-        const weekday = new Date(data.date).getDay();
-
         for (const employee of service.employees) {
           // Check if employee has schedule for this day
-          const { data: schedule } = await supabase
+          const { data: schedules } = await supabase
             .from("schedules")
             .select("*")
             .eq("employee_id", employee.id)
-            .eq("weekday", weekday)
-            .single();
+            .lte("start_date", data.date)
+            .gte("end_date", data.date);
+
+          const schedule =
+            schedules && schedules.length > 0 ? schedules[0] : null;
 
           if (schedule) {
             // Check if no conflicting appointments

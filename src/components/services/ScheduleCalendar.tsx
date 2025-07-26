@@ -16,7 +16,10 @@ import {
   isSameDay,
   addMonths,
   subMonths,
-  getDay,
+  parseISO,
+  isWithinInterval,
+  startOfDay,
+  endOfDay,
 } from "date-fns";
 import { pl } from "date-fns/locale";
 import type { Schedule } from "@/lib/types/database";
@@ -59,15 +62,20 @@ export default function ScheduleCalendar({
     end: calendarEnd,
   });
 
-  const getScheduleForDay = (date: Date) => {
-    const jsWeekday = getDay(date); // JavaScript: 0=Sunday, 1=Monday, etc.
-    // Convert to database format: 0=Monday, 1=Tuesday, etc.
-    const dbWeekday = jsWeekday === 0 ? 6 : jsWeekday - 1;
-    return schedules.find((schedule) => schedule.weekday === dbWeekday);
+  // Find schedules that include the given date
+  const getSchedulesForDay = (date: Date) => {
+    return schedules.filter((schedule) => {
+      const scheduleStart = parseISO(schedule.start_date);
+      const scheduleEnd = parseISO(schedule.end_date);
+      return isWithinInterval(date, {
+        start: startOfDay(scheduleStart),
+        end: endOfDay(scheduleEnd),
+      });
+    });
   };
 
   const isWorkingDay = (date: Date) => {
-    return getScheduleForDay(date) !== undefined;
+    return getSchedulesForDay(date).length > 0;
   };
 
   const goToPreviousMonth = () => {
@@ -88,54 +96,66 @@ export default function ScheduleCalendar({
     const monthEnd = endOfMonth(currentDate);
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    const workingDays = daysInMonth.filter((day) => {
-      const jsWeekday = getDay(day);
-      // Convert to database format: 0=Monday, 1=Tuesday, etc.
-      const dbWeekday = jsWeekday === 0 ? 6 : jsWeekday - 1;
-      return schedules.some((schedule) => schedule.weekday === dbWeekday);
-    });
-
-    return workingDays.length;
+    return daysInMonth.filter((day) => isWorkingDay(day)).length;
   };
 
-  // Calculate total weekly hours
-  const getWeeklyHours = () => {
-    // Create a map to ensure we only count each weekday once
-    const weeklyScheduleMap = new Map();
+  // Calculate total hours in current month
+  const getMonthlyHours = () => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    schedules.forEach((schedule) => {
-      if (!weeklyScheduleMap.has(schedule.weekday)) {
+    let totalHours = 0;
+
+    daysInMonth.forEach((day) => {
+      const daySchedules = getSchedulesForDay(day);
+      daySchedules.forEach((schedule) => {
         const dailyHours = calculateDuration(
           schedule.start_time,
           schedule.end_time
         );
-        weeklyScheduleMap.set(schedule.weekday, dailyHours);
-      }
+        totalHours += dailyHours;
+      });
     });
 
-    // Sum up all daily hours to get weekly total
-    return Array.from(weeklyScheduleMap.values()).reduce(
-      (total, hours) => total + hours,
-      0
-    );
+    return totalHours;
   };
 
-  // Calculate total monthly hours based on actual working days
-  const getMonthlyHours = () => {
-    const workingDaysInMonth = getWorkingDaysInMonth();
-    if (schedules.length === 0 || workingDaysInMonth === 0) return 0;
+  // Get all unique time ranges for summary
+  const getUniqueTimeRanges = () => {
+    const timeRanges = new Map();
 
-    // Calculate average daily hours from actual schedule
-    const totalWeeklyHours = getWeeklyHours();
+    schedules.forEach((schedule) => {
+      const timeKey = `${schedule.start_time.substring(
+        0,
+        5
+      )}-${schedule.end_time.substring(0, 5)}`;
+      if (!timeRanges.has(timeKey)) {
+        timeRanges.set(timeKey, {
+          start_time: schedule.start_time,
+          end_time: schedule.end_time,
+          schedules: [],
+        });
+      }
+      timeRanges.get(timeKey).schedules.push(schedule);
+    });
 
-    // Get unique weekdays to calculate actual working days per week
-    const uniqueWeekdays = new Set(
-      schedules.map((schedule) => schedule.weekday)
-    );
-    const workingDaysPerWeek = uniqueWeekdays.size;
-    const avgDailyHours = totalWeeklyHours / workingDaysPerWeek;
+    return Array.from(timeRanges.values());
+  };
 
-    return workingDaysInMonth * avgDailyHours;
+  // Calculate total scheduled days across all schedules
+  const getTotalScheduledDays = () => {
+    let totalDays = 0;
+    schedules.forEach((schedule) => {
+      const startDate = parseISO(schedule.start_date);
+      const endDate = parseISO(schedule.end_date);
+      const daysInPeriod = eachDayOfInterval({
+        start: startDate,
+        end: endDate,
+      }).length;
+      totalDays += daysInPeriod;
+    });
+    return totalDays;
   };
 
   return (
@@ -191,7 +211,7 @@ export default function ScheduleCalendar({
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isToday = isSameDay(day, new Date());
               const isWorking = isWorkingDay(day);
-              const schedule = getScheduleForDay(day);
+              const daySchedules = getSchedulesForDay(day);
 
               return (
                 <div
@@ -230,7 +250,7 @@ export default function ScheduleCalendar({
                     </div>
 
                     {/* Schedule Info */}
-                    {isWorking && isCurrentMonth && schedule && (
+                    {isWorking && isCurrentMonth && daySchedules.length > 0 && (
                       <div className="space-y-1">
                         <Badge
                           variant="secondary"
@@ -238,10 +258,20 @@ export default function ScheduleCalendar({
                         >
                           Praca
                         </Badge>
-                        <div className="text-xs text-blue-700 font-medium text-center bg-blue-50 rounded px-1 py-0.5">
-                          {schedule.start_time.substring(0, 5)} -{" "}
-                          {schedule.end_time.substring(0, 5)}
-                        </div>
+                        {daySchedules.slice(0, 2).map((schedule, index) => (
+                          <div
+                            key={`${schedule.id}-${index}`}
+                            className="text-xs text-blue-700 font-medium text-center bg-blue-50 rounded px-1 py-0.5"
+                          >
+                            {schedule.start_time.substring(0, 5)} -{" "}
+                            {schedule.end_time.substring(0, 5)}
+                          </div>
+                        ))}
+                        {daySchedules.length > 2 && (
+                          <div className="text-xs text-blue-600 text-center">
+                            +{daySchedules.length - 2} więcej
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -267,18 +297,40 @@ export default function ScheduleCalendar({
           )}
 
           {schedules.length > 0 && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="space-y-6">
+              {/* Time Ranges Summary */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">
+                  Godziny pracy:
+                </h4>
+                <div className="space-y-2">
+                  {getUniqueTimeRanges().map((range, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium">
+                          {range.start_time.substring(0, 5)} -{" "}
+                          {range.end_time.substring(0, 5)}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {range.schedules.length}{" "}
+                        {range.schedules.length === 1 ? "okres" : "okresów"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Monthly Statistics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg text-sm">
                 <div className="text-center">
                   <div className="text-gray-600">Dni robocze w miesiącu</div>
                   <div className="font-semibold text-gray-900">
                     {getWorkingDaysInMonth()}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-gray-600">Godzin tygodniowo</div>
-                  <div className="font-semibold text-gray-900">
-                    {getWeeklyHours().toFixed(1)}h
                   </div>
                 </div>
                 <div className="text-center">
@@ -288,10 +340,50 @@ export default function ScheduleCalendar({
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-gray-600">Status</div>
+                  <div className="text-gray-600">Łącznie okresów</div>
                   <div className="font-semibold text-gray-900">
-                    {schedules.length === 7 ? "Pełny etat" : "Część etatu"}
+                    {schedules.length}
                   </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-gray-600">Łącznie zaplanowane dni</div>
+                  <div className="font-semibold text-gray-900">
+                    {getTotalScheduledDays()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Schedules List */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">
+                  Aktywne okresy pracy:
+                </h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {schedules
+                    .filter(
+                      (schedule) => parseISO(schedule.end_date) >= new Date()
+                    )
+                    .map((schedule) => (
+                      <div
+                        key={schedule.id}
+                        className="flex items-center justify-between p-2 border border-gray-200 rounded-md"
+                      >
+                        <div className="text-sm">
+                          <span className="font-medium">
+                            {format(
+                              parseISO(schedule.start_date),
+                              "dd.MM.yyyy"
+                            )}{" "}
+                            -{" "}
+                            {format(parseISO(schedule.end_date), "dd.MM.yyyy")}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {schedule.start_time.substring(0, 5)} -{" "}
+                          {schedule.end_time.substring(0, 5)}
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
