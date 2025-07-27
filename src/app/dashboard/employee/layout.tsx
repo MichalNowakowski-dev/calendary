@@ -3,9 +3,9 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { serverAuth } from "@/lib/auth/server";
 import type { AuthUser } from "@/lib/auth/server";
-import DashboardClient from "./DashboardClient";
+import EmployeeDashboardClient from "./EmployeeDashboardClient";
 
-export default async function DashboardLayout({
+export default async function EmployeeDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -33,11 +33,16 @@ export default async function DashboardLayout({
     phone: user.user_metadata?.phone,
   };
 
+  // Check if user is an employee
+  if (authUser.role !== "employee") {
+    redirect("/dashboard");
+  }
+
   // Get user's companies
   const companies = await serverAuth.getUserCompanies(user.id);
   if (companies.length === 0) {
     redirect("/login");
   }
 
-  return <DashboardClient user={authUser} children={children} />;
+  return <EmployeeDashboardClient user={authUser} children={children} />;
 }

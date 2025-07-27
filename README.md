@@ -2,7 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, set up your environment variables. Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+**Important**: The `SUPABASE_SERVICE_ROLE_KEY` is required for admin operations like creating employee accounts. You can find this key in your Supabase dashboard under Settings > API.
+
+Then, run the development server:
 
 ```bash
 npm run dev

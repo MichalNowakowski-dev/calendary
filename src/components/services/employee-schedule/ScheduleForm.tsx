@@ -190,10 +190,10 @@ export const ScheduleForm = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
         {hideCurrentSchedule ? "Zarządzaj grafikiem" : "Dodaj nowy grafik"}
       </h3>
-      <Card className="border border-gray-200 shadow-sm">
+      <Card className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
         <CardContent className="p-6">
           <form onSubmit={handleAddSchedule} className="space-y-6">
             {/* Date Range Selection */}
@@ -234,7 +234,7 @@ export const ScheduleForm = ({
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium text-base shadow-sm"
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium text-base shadow-sm"
             >
               {isLoading ? (
                 <>

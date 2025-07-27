@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye, EyeOff, UserCheck, Clock } from "lucide-react";
-import type { Employee, Service, Schedule } from "@/lib/types/database";
-import { showToast, showConfirmToast } from "@/lib/toast";
+import { Eye, EyeOff, Edit, Trash2, UserCheck, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
+import { deleteEmployee as deleteEmployeeAction } from "@/lib/actions/employees";
+import EmployeeForm from "./EmployeeForm";
 import EmployeeSchedule from "@/components/services/EmployeeSchedule";
 import ScheduleViewModal from "./ScheduleViewModal";
-import EmployeeForm from "./EmployeeForm";
+import type { Employee, Service, Schedule } from "@/lib/types/database";
 
 interface EmployeeWithDetails extends Employee {
   services: Service[];
@@ -25,32 +27,28 @@ export default function EmployeeCard({
   employee,
   companyId,
 }: EmployeeCardProps) {
+  const [currentEmployee, setCurrentEmployee] = useState(employee);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [currentEmployee, setCurrentEmployee] =
-    useState<EmployeeWithDetails>(employee);
   const [services, setServices] = useState<Service[]>([]);
+  const router = useRouter();
 
   const supabase = createClient();
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("services")
-          .select("*")
-          .eq("company_id", companyId)
-          .eq("active", true)
-          .order("name", { ascending: true });
+  const fetchServices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("company_id", companyId)
+        .eq("active", true)
+        .order("name", { ascending: true });
 
-        if (error) throw error;
-        setServices(data || []);
-      } catch (error) {
-        console.error("Error fetching services:", error);
-      }
-    };
-
-    fetchServices();
-  }, [companyId, supabase]);
+      if (error) throw error;
+      setServices(data || []);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
 
   const toggleEmployeeVisibility = async () => {
     try {
@@ -61,9 +59,13 @@ export default function EmployeeCard({
 
       if (error) throw error;
 
-      setCurrentEmployee((prev) => ({ ...prev, visible: !prev.visible }));
+      setCurrentEmployee((prev) => ({
+        ...prev,
+        visible: !prev.visible,
+      }));
+
       showToast.success(
-        `Pracownik został ${currentEmployee.visible ? "ukryty" : "pokazany"}`
+        `Pracownik ${currentEmployee.visible ? "ukryty" : "widoczny"}`
       );
     } catch (error) {
       console.error("Error toggling employee visibility:", error);
@@ -72,97 +74,54 @@ export default function EmployeeCard({
   };
 
   const deleteEmployee = async () => {
-    showConfirmToast(
-      `Czy na pewno chcesz usunąć pracownika "${currentEmployee.name}"?`,
-      async () => {
-        try {
-          // Delete employee services first
-          const { error: servicesError } = await supabase
-            .from("employee_services")
-            .delete()
-            .eq("employee_id", currentEmployee.id);
+    if (
+      !confirm(`Czy na pewno chcesz usunąć pracownika ${currentEmployee.name}?`)
+    ) {
+      return;
+    }
 
-          if (servicesError) throw servicesError;
-
-          // Delete schedules
-          const { error: schedulesError } = await supabase
-            .from("schedules")
-            .delete()
-            .eq("employee_id", currentEmployee.id);
-
-          if (schedulesError) throw schedulesError;
-
-          // Delete employee
-          const { error } = await supabase
-            .from("employees")
-            .delete()
-            .eq("id", currentEmployee.id);
-
-          if (error) throw error;
-
-          showToast.success("Pracownik został usunięty");
-          // Refresh the page to update the list
-          window.location.reload();
-        } catch (error) {
-          console.error("Error deleting employee:", error);
-          showToast.error("Błąd podczas usuwania pracownika");
-        }
-      }
-    );
-  };
-
-  const handleEditSubmit = async (formData: {
-    name: string;
-    visible: boolean;
-    selectedServices: string[];
-  }) => {
     try {
-      // Update employee
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from("employees")
-        .update({
-          name: formData.name,
-          visible: formData.visible,
-        })
+        .delete()
         .eq("id", currentEmployee.id);
 
-      if (updateError) throw updateError;
-
-      // Update employee services
-      // First, delete existing ones
-      const { error: deleteError } = await supabase
-        .from("employee_services")
+      const { error: companyUserError } = await supabase
+        .from("company_users")
         .delete()
-        .eq("employee_id", currentEmployee.id);
+        .eq("user_id", currentEmployee.auth_user_id!);
 
-      if (deleteError) throw deleteError;
+      if (currentEmployee.auth_user_id) {
+        const { success, message } = await deleteEmployeeAction(
+          currentEmployee.auth_user_id
+        );
 
-      // Then add new ones
-      if (formData.selectedServices.length > 0) {
-        const { error: insertError } = await supabase
-          .from("employee_services")
-          .insert(
-            formData.selectedServices.map((serviceId) => ({
-              employee_id: currentEmployee.id,
-              service_id: serviceId,
-            }))
-          );
-
-        if (insertError) throw insertError;
+        if (!success) {
+          throw new Error(message);
+        }
       }
 
-      setShowEditForm(false);
-      showToast.success("Pracownik został zaktualizowany");
-      // Refresh the page to get updated data
-      window.location.reload();
+      if (companyUserError) throw companyUserError;
+
+      if (error) throw error;
+
+      showToast.success("Pracownik został usunięty");
+      // Refresh the data without full page reload
+      router.refresh();
     } catch (error) {
-      console.error("Error updating employee:", error);
-      showToast.error("Błąd podczas aktualizacji pracownika");
+      console.error("Error deleting employee:", error);
+      showToast.error("Błąd podczas usuwania pracownika");
     }
   };
 
   const handleEditCancel = () => {
     setShowEditForm(false);
+  };
+
+  const handleEditSuccess = () => {
+    setShowEditForm(false);
+    // Refresh the data without full page reload
+    router.refresh();
   };
 
   if (showEditForm) {
@@ -172,8 +131,9 @@ export default function EmployeeCard({
           <EmployeeForm
             services={services}
             editingEmployee={currentEmployee}
-            onSubmit={handleEditSubmit}
+            companyId={companyId}
             onCancel={handleEditCancel}
+            onSuccess={handleEditSuccess}
           />
         </CardContent>
       </Card>
@@ -215,7 +175,10 @@ export default function EmployeeCard({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setShowEditForm(true)}
+              onClick={() => {
+                setShowEditForm(true);
+                fetchServices();
+              }}
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -278,7 +241,7 @@ export default function EmployeeCard({
           <EmployeeSchedule
             employee={currentEmployee}
             schedules={currentEmployee.schedules}
-            onScheduleUpdate={(updatedSchedules) => {
+            onScheduleUpdate={(updatedSchedules: Schedule[]) => {
               setCurrentEmployee((prev) => ({
                 ...prev,
                 schedules: updatedSchedules,

@@ -26,13 +26,12 @@ export interface RegistrationData {
     industry: string;
   };
 }
+const supabase = createClient();
 
 /**
  * Register a new user with the specified role
  */
 export const registerUser = async (data: RegistrationData) => {
-  const supabase = createClient();
-
   try {
     // Register user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -107,8 +106,6 @@ export const registerUser = async (data: RegistrationData) => {
  * Sign in an existing user
  */
 export const signInUser = async (email: string, password: string) => {
-  const supabase = createClient();
-
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -128,8 +125,6 @@ export const signInUser = async (email: string, password: string) => {
  * Sign out the current user
  */
 export const signOut = async () => {
-  const supabase = createClient();
-
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -140,11 +135,9 @@ export const signOut = async () => {
 };
 
 /**
- * Get the current user from the session
+ * Get the current user from the session (client-side)
  */
 export const getCurrentUser = async (): Promise<AuthUser | null> => {
-  const supabase = createClient();
-
   try {
     const {
       data: { user },
@@ -168,11 +161,9 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
 };
 
 /**
- * Get user's companies (for company owners/employees)
+ * Get user's companies (for company owners/employees) - client-side
  */
 export const getUserCompanies = async (userId: string) => {
-  const supabase = createClient();
-
   try {
     const { data, error } = await supabase
       .from("company_users")
@@ -209,8 +200,6 @@ export const getUserCompanies = async (userId: string) => {
  * Check if a company slug is available
  */
 export const isSlugAvailable = async (slug: string): Promise<boolean> => {
-  const supabase = createClient();
-
   try {
     const { data, error } = await supabase
       .from("companies")

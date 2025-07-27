@@ -30,10 +30,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl">
-      <ThemeProvider>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ThemeProvider>
           {children}
           <ToastContainer
             position="bottom-center"
@@ -47,8 +47,8 @@ export default function RootLayout({
             pauseOnHover
             theme="light"
           />
-        </body>
-      </ThemeProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

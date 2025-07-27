@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { getCurrentUserServer } from "@/lib/auth/server";
-import { getUserCompanies } from "@/lib/auth/utils";
+import { serverAuth } from "@/lib/auth/server";
 import { EmployeeCardSkeleton } from "@/components/employees";
 import EmployeesList from "@/components/employees/EmployeesList";
 import EmployeesListClient from "@/components/employees/EmployeesListClient";
@@ -8,13 +7,13 @@ import { Company } from "@/lib/types/database";
 import PageHeading from "@/components/PageHeading";
 
 async function EmployeesPageContent() {
-  const user = await getCurrentUserServer();
+  const user = await serverAuth.getCurrentUser();
   if (!user) {
     throw new Error("User not authenticated");
   }
 
   // Get user's company
-  const companies = await getUserCompanies(user.id);
+  const companies = await serverAuth.getUserCompanies(user.id);
   if (companies.length === 0) {
     throw new Error("No company found for user");
   }

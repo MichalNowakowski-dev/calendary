@@ -2,8 +2,6 @@ import {
   format,
   parseISO,
   isWithinInterval,
-  isSameDay,
-  addDays,
   eachDayOfInterval,
 } from "date-fns";
 import type { Schedule } from "@/lib/types/database";
@@ -101,10 +99,6 @@ export const getActiveSchedules = (schedules: Schedule[]) => {
 
 export const getScheduleStats = (schedules: Schedule[]) => {
   const activeSchedules = getActiveSchedules(schedules);
-  console.log("activeSchedules");
-  console.log(activeSchedules);
-  console.log("schedules");
-  console.log(schedules);
 
   let totalWorkingDays = 0;
   let totalHours = 0;
@@ -125,8 +119,8 @@ export const getScheduleStats = (schedules: Schedule[]) => {
       return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday = 1, Friday = 5
     }).length;
 
-    const startTime = new Date(`2000-01-01T${schedule.start_time}:00`);
-    const endTime = new Date(`2000-01-01T${schedule.end_time}:00`);
+    const startTime = new Date(`2000-01-01T${schedule.start_time}`);
+    const endTime = new Date(`2000-01-01T${schedule.end_time}`);
     const hoursPerDay =
       (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 

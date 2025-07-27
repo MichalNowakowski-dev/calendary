@@ -6,16 +6,19 @@ import { ToggleLeft, ToggleRight } from "lucide-react";
 
 import type { Service } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 
-interface ServiceActionsProps {
+interface ServiceStatusBtnProps {
   service: Service;
   onToggle: () => void;
+  className?: string;
 }
 
-export default function ServiceActions({
+export default function ServiceStatusBtn({
   service,
   onToggle,
-}: ServiceActionsProps) {
+  className,
+}: ServiceStatusBtnProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleToggle = async () => {
@@ -31,27 +34,24 @@ export default function ServiceActions({
   };
 
   return (
-    <>
-      {/* Status toggle button */}
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={handleToggle}
-        disabled={isUpdating}
-        className="flex items-center"
-      >
-        {service.active ? (
-          <>
-            <ToggleRight className="h-4 w-4 mr-1 text-green-500" />
-            Dezaktywuj
-          </>
-        ) : (
-          <>
-            <ToggleLeft className="h-4 w-4 mr-1" />
-            Aktywuj
-          </>
-        )}
-      </Button>
-    </>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={handleToggle}
+      disabled={isUpdating}
+      className={cn("", className)}
+    >
+      {service.active ? (
+        <div className="flex items-center">
+          <ToggleRight className="h-4 w-4 mr-1 text-green-500" />
+          <span>Dezaktywuj</span>
+        </div>
+      ) : (
+        <div className="flex items-center">
+          <ToggleLeft className="h-4 w-4 mr-1" />
+          <span>Aktywuj</span>
+        </div>
+      )}
+    </Button>
   );
 }

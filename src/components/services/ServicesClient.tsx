@@ -4,12 +4,12 @@ import { useState, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, UserCheck, Edit, Trash2 } from "lucide-react";
 import ServiceForm from "./ServiceForm";
-import ServiceActions from "./ServiceActions";
 import EmployeeAssignment from "./EmployeeAssignment";
 import type { Service, Employee } from "@/lib/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { showToast, showConfirmToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
+import ServiceStatusBtn from "./ServiceStatusBtn";
 
 interface ServiceWithEmployees extends Service {
   employee_services: {
@@ -213,22 +213,27 @@ function ServiceCard({
         !service.active ? "opacity-50" : ""
       }`}
     >
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col items-center gap-3 mb-4 ">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">
             {service.name}
           </h3>
-          <div className="flex items-center space-x-2">
+          <div className="flex gap-2 w-full">
             <Button
               size="sm"
               variant="outline"
               onClick={() => onAssignEmployees(service)}
-              className="flex items-center"
+              className="flex items-center text-xs sm:text-sm flex-1"
             >
-              <UserCheck className="h-4 w-4 mr-1" />
-              Pracownicy
+              <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Pracownicy</span>
+              <span className="sm:hidden">Prac.</span>
             </Button>
-            <ServiceActions service={service} onToggle={toggleServiceStatus} />
+            <ServiceStatusBtn
+              service={service}
+              onToggle={toggleServiceStatus}
+              className="flex-1"
+            />
           </div>
         </div>
 
@@ -252,9 +257,9 @@ function ServiceCard({
         {/* Assigned Employees */}
         <div className="mb-4">
           <div className="flex items-center mb-2">
-            <Users className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Pracownicy ({assignedEmployees.length})
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 dark:text-gray-400" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+              Przypisani pracownicy ({assignedEmployees.length})
             </span>
           </div>
           <div className="space-y-1">
@@ -263,14 +268,16 @@ function ServiceCard({
                 Brak przypisanych pracowników
               </p>
             ) : (
-              assignedEmployees.slice(0, 3).map((employee) => (
-                <div
-                  key={employee.id}
-                  className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded"
-                >
-                  {employee.name}
-                </div>
-              ))
+              <div className="flex flex-wrap gap-1">
+                {assignedEmployees.slice(0, 3).map((employee) => (
+                  <div
+                    key={employee.id}
+                    className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded"
+                  >
+                    {employee.name}
+                  </div>
+                ))}
+              </div>
             )}
             {assignedEmployees.length > 3 && (
               <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -281,24 +288,26 @@ function ServiceCard({
         </div>
 
         {/* Bottom action buttons */}
-        <div className="flex space-x-2 mt-6 pt-4 border-t dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row gap-4 mt-6 pt-4 border-t dark:border-gray-700 flex-wrap">
           <Button
             size="sm"
             variant="outline"
             onClick={() => onEdit?.(service)}
-            className="flex-1"
+            className="flex-1 text-xs sm:text-sm"
           >
-            <Edit className="h-4 w-4 mr-1" />
-            Edytuj usługę
+            <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden sm:inline">Edytuj usługę</span>
+            <span className="sm:hidden">Edytuj</span>
           </Button>
           <Button
             size="sm"
-            variant="outline"
+            variant="destructive"
             onClick={deleteService}
-            className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            className="flex-1 text-xs sm:text-sm"
           >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Usuń usługę
+            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden sm:inline">Usuń usługę</span>
+            <span className="sm:hidden">Usuń</span>
           </Button>
         </div>
       </div>

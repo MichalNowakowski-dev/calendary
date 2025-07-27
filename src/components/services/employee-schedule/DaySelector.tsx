@@ -32,10 +32,10 @@ export const DaySelector = ({
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
         Dni tygodnia do uwzględnienia
       </Label>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
         {Object.entries(dayLabels).map(([key, label]) => (
           <label
             key={key}
@@ -50,9 +50,11 @@ export const DaySelector = ({
                   e.target.checked
                 )
               }
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-500 rounded focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
             />
-            <span className="text-sm font-medium text-gray-700">{label}</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {label}
+            </span>
           </label>
         ))}
       </div>

@@ -32,7 +32,7 @@ export const DateRangeSelector = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-gray-700">
+        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Data rozpoczęcia
         </Label>
         <Popover open={isStartDateOpen} onOpenChange={setIsStartDateOpen}>
@@ -40,7 +40,7 @@ export const DateRangeSelector = ({
             <Button
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal h-12 bg-gray-50 border-gray-200 hover:bg-gray-100",
+                "w-full justify-start text-left font-normal h-12 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700",
                 !startDate && "text-muted-foreground"
               )}
             >
@@ -68,7 +68,7 @@ export const DateRangeSelector = ({
       </div>
 
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-gray-700">
+        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Data zakończenia
         </Label>
         <Popover open={isEndDateOpen} onOpenChange={setIsEndDateOpen}>
@@ -76,7 +76,7 @@ export const DateRangeSelector = ({
             <Button
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal h-12 bg-gray-50 border-gray-200 hover:bg-gray-100",
+                "w-full justify-start text-left font-normal h-12 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700",
                 !endDate && "text-muted-foreground"
               )}
             >

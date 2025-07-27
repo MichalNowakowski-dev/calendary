@@ -98,6 +98,9 @@ export interface Database {
           user_id: string | null;
           name: string;
           visible: boolean;
+          phone_number: string | null;
+          email: string | null;
+          auth_user_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -106,6 +109,9 @@ export interface Database {
           user_id?: string | null;
           name: string;
           visible?: boolean;
+          phone_number?: string | null;
+          email?: string | null;
+          auth_user_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -114,6 +120,9 @@ export interface Database {
           user_id?: string | null;
           name?: string;
           visible?: boolean;
+          phone_number?: string | null;
+          email?: string | null;
+          auth_user_id?: string | null;
           created_at?: string;
         };
       };

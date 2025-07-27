@@ -39,7 +39,7 @@ export default function ScheduleViewModal({
       <DialogContent className="lg:max-w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Grafik pracy - {employee.name}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="dark:text-gray-400">
             Kalendarzowy widok grafiku pracy pracownika
           </DialogDescription>
         </DialogHeader>

@@ -17,7 +17,6 @@ import { showConfirmToast, showToast } from "@/lib/toast";
 import { format, parseISO } from "date-fns";
 import type { EmployeeScheduleProps } from "./types";
 import { ScheduleStats } from "./ScheduleStats";
-import { ScheduleList } from "./ScheduleList";
 import { ScheduleForm } from "./ScheduleForm";
 
 export const EmployeeSchedule = ({
@@ -83,7 +82,7 @@ export const EmployeeSchedule = ({
           <DialogTitle className="text-xl">
             Grafik pracy - {employee.name}
           </DialogTitle>
-          <DialogDescription className="text-base text-gray-600">
+          <DialogDescription className="text-base text-gray-600 dark:text-gray-400">
             Zarządzaj grafikiem pracy pracownika - dodawaj grafiki dla
             konkretnych okresów dat
           </DialogDescription>
@@ -94,10 +93,7 @@ export const EmployeeSchedule = ({
           {!hideCurrentSchedule && (
             <>
               <ScheduleStats schedules={currentSchedules} />
-              <ScheduleList
-                schedules={currentSchedules}
-                onDeleteSchedule={handleDeleteSchedule}
-              />
+
               <Separator className="my-8" />
             </>
           )}
