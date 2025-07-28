@@ -7,7 +7,8 @@ export interface Database {
           name: string;
           slug: string;
           description: string | null;
-          address: string | null;
+          address_street: string | null;
+          address_city: string | null;
           phone: string | null;
           industry: string;
           created_at: string;
@@ -17,7 +18,8 @@ export interface Database {
           name: string;
           slug: string;
           description?: string | null;
-          address?: string | null;
+          address_street?: string | null;
+          address_city?: string | null;
           phone?: string | null;
           industry: string;
           created_at?: string;
@@ -27,7 +29,8 @@ export interface Database {
           name?: string;
           slug?: string;
           description?: string | null;
-          address?: string | null;
+          address_street?: string | null;
+          address_city?: string | null;
           phone?: string | null;
           industry?: string;
           created_at?: string;

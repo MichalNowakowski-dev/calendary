@@ -12,20 +12,25 @@ import {
 } from "@/components/ui/card";
 
 interface MapLocationProps {
-  address: string;
+  address_street?: string;
+  address_city?: string;
   businessName: string;
   phone?: string;
 }
 
 export default function MapLocation({
-  address,
+  address_street,
+  address_city,
   businessName,
   phone,
 }: MapLocationProps) {
   const [mapError, setMapError] = useState(false);
 
+  // Combine street and city for full address
+  const fullAddress = [address_street, address_city].filter(Boolean).join(", ");
+
   // Encode address for URL
-  const encodedAddress = encodeURIComponent(address);
+  const encodedAddress = encodeURIComponent(fullAddress);
   const encodedBusinessName = encodeURIComponent(businessName);
 
   // Simple iframe embed (doesn't require API key)
@@ -49,6 +54,11 @@ export default function MapLocation({
     setMapError(true);
   };
 
+  // Don't render if no address is provided
+  if (!address_street && !address_city) {
+    return null;
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardHeader>
@@ -56,7 +66,7 @@ export default function MapLocation({
           <MapPin className="h-5 w-5" />
           Lokalizacja
         </CardTitle>
-        <CardDescription>{address}</CardDescription>
+        <CardDescription>{fullAddress}</CardDescription>
       </CardHeader>
 
       <CardContent className="p-0">
@@ -105,7 +115,7 @@ export default function MapLocation({
             <h3 className="font-semibold text-gray-900 mb-2">
               Nie można załadować mapy
             </h3>
-            <p className="text-gray-600 mb-4 text-sm">{address}</p>
+            <p className="text-gray-600 mb-4 text-sm">{fullAddress}</p>
 
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button

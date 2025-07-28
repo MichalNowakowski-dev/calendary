@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Calendar, Menu, X, LogOut, User } from "lucide-react";
+import {
+  Calendar,
+  Menu,
+  X,
+  LogOut,
+  User,
+  Clock,
+  Briefcase,
+} from "lucide-react";
 import { signOut } from "@/lib/auth/utils";
 import type { AuthUser } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -12,13 +20,23 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 const employeeSidebarItems = [
   {
     name: "Panel pracownika",
-    href: "/dashboard/employee",
+    href: "/employee",
     icon: User,
   },
   {
-    name: "Dzisiejsze wizyty",
-    href: "/dashboard/employee/appointments",
+    name: "Wszystkie wizyty",
+    href: "/employee/appointments",
     icon: Calendar,
+  },
+  {
+    name: "Harmonogram",
+    href: "/employee/schedule",
+    icon: Clock,
+  },
+  {
+    name: "Moje usługi",
+    href: "/employee/services",
+    icon: Briefcase,
   },
 ];
 

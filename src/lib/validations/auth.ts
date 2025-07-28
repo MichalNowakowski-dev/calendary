@@ -66,7 +66,8 @@ export const companyOwnerRegistrationSchema = z
       .min(3, "Adres musi mieć co najmniej 3 znaki"),
     industry: z.string().min(1, "Branża jest wymagana"),
     phone: z.string().min(1, "Telefon jest wymagany"),
-    address: z.string().optional().or(z.literal("")),
+    address_street: z.string().optional().or(z.literal("")),
+    address_city: z.string().optional().or(z.literal("")),
     description: z.string().optional().or(z.literal("")),
   })
   .refine((data) => data.password === data.confirmPassword, {

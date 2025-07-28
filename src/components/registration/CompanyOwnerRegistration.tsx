@@ -50,7 +50,8 @@ export default function CompanyOwnerRegistration() {
       companySlug: "",
       industry: "",
       phone: "",
-      address: "",
+      address_street: "",
+      address_city: "",
       description: "",
     },
   });
@@ -70,7 +71,8 @@ export default function CompanyOwnerRegistration() {
           name: data.companyName,
           slug: data.companySlug,
           description: data.description,
-          address: data.address,
+          address_street: data.address_street,
+          address_city: data.address_city,
           phone: data.phone,
           industry: data.industry,
         },
@@ -305,15 +307,25 @@ export default function CompanyOwnerRegistration() {
             />
             <FormField
               control={form.control}
-              name="address"
+              name="address_street"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Adres</FormLabel>
+                  <FormLabel>Ulica i numer</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="ul. Przykładowa 123, 00-000 Warszawa"
-                      {...field}
-                    />
+                    <Input placeholder="ul. Przykładowa 123" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address_city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Miasto</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Warszawa" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

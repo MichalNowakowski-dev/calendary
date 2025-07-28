@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { Company, Service, Employee } from "@/lib/types/database";
-import PublicCompanyView from "@/components/public/PublicCompanyView";
+import ClientReservationView from "@/components/client/ClientReservationView";
+import MapLocation from "@/components/public/MapLocation";
 
 interface PageProps {
   params: Promise<{
@@ -106,8 +107,25 @@ export default async function BusinessPage({ params }: PageProps) {
   const { company, services } = data;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PublicCompanyView company={company} services={services} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <ClientReservationView company={company} services={services} />
+
+      {/* Google Maps Section */}
+      {(company.address_street || company.address_city) && (
+        <div className="container mx-auto px-4 pb-8">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 dark:border-blue-800 p-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Lokalizacja
+            </h2>
+            <MapLocation
+              address_street={company.address_street || undefined}
+              address_city={company.address_city || undefined}
+              businessName={company.name}
+              phone={company.phone || undefined}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

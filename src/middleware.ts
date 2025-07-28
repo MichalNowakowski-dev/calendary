@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // Protected routes that require authentication
-  const protectedRoutes = ["/dashboard"];
+  const protectedRoutes = ["/dashboard", "/employee"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
@@ -33,13 +33,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // If user is authenticated and trying to access auth routes, redirect to dashboard
+  // If user is authenticated and trying to access auth routes, redirect to appropriate dashboard
   if (user && isAuthRoute) {
     const userRole = user.user_metadata?.role;
     const url = request.nextUrl.clone();
 
     if (userRole === "company_owner") {
       url.pathname = "/dashboard";
+    } else if (userRole === "employee") {
+      url.pathname = "/employee";
     } else {
       url.pathname = "/";
     }
@@ -51,7 +53,20 @@ export async function middleware(request: NextRequest) {
   if (user && pathname.startsWith("/dashboard")) {
     const userRole = user.user_metadata?.role;
 
+    // Only allow company owners to access dashboard
     if (userRole !== "company_owner") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // For employee routes, ensure user has the right role
+  if (user && pathname.startsWith("/employee")) {
+    const userRole = user.user_metadata?.role;
+
+    // Only allow employees to access employee routes
+    if (userRole !== "employee") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);

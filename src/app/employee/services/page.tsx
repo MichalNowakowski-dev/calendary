@@ -2,28 +2,11 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { serverAuth } from "@/lib/auth/server";
 import { serverDb } from "@/lib/db-server";
-import { EmployeeDashboardContent } from "../EmployeeDashboardContent";
-import { Company, Service, Employee } from "@/lib/types/database";
+import { EmployeeServicesContent } from "./EmployeeServicesContent";
+import { Company, Service } from "@/lib/types/database";
 import PageHeading from "@/components/PageHeading";
 
-interface AppointmentWithDetails {
-  id: string;
-  company_id: string;
-  employee_id: string | null;
-  service_id: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string | null;
-  date: string;
-  start_time: string;
-  end_time: string;
-  status: "booked" | "cancelled" | "completed";
-  created_at: string;
-  service: Service;
-  employee?: Employee;
-}
-
-async function EmployeeAppointmentsContent() {
+async function EmployeeServicesPageContent() {
   const user = await serverAuth.getCurrentUser();
   if (!user) {
     redirect("/login");
@@ -31,7 +14,7 @@ async function EmployeeAppointmentsContent() {
 
   // Check if user is an employee
   if (user.role !== "employee") {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   // Get user's company
@@ -45,23 +28,24 @@ async function EmployeeAppointmentsContent() {
     redirect("/login");
   }
 
-  // Get today's appointments for this employee
-  const today = new Date().toISOString().split("T")[0];
-  const appointments = await serverDb.getAppointments(userCompany.id);
-  const todayAppointments = appointments.filter(
-    (appointment) =>
-      appointment.date === today && appointment.employee_id === user.id
-  ) as AppointmentWithDetails[];
+  // Get employee's assigned services
+  const employeesWithDetails = await serverDb.getEmployeesWithDetails(
+    userCompany.id
+  );
+  const currentEmployee = employeesWithDetails.find(
+    (emp) => emp.auth_user_id === user.id || emp.user_id === user.id
+  );
+  const assignedServices = currentEmployee?.services || [];
 
   return (
     <div className="space-y-6">
       <PageHeading
-        text="Dzisiejsze wizyty"
-        description="Twoje zaplanowane wizyty na dzisiaj"
+        text="Moje usługi"
+        description="Usługi, które świadczysz w firmie"
       />
 
-      <EmployeeDashboardContent
-        appointments={todayAppointments}
+      <EmployeeServicesContent
+        services={assignedServices}
         company={userCompany}
         user={user}
       />
@@ -87,10 +71,10 @@ function LoadingFallback() {
   );
 }
 
-export default function EmployeeAppointmentsPage() {
+export default function EmployeeServicesPage() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <EmployeeAppointmentsContent />
+      <EmployeeServicesPageContent />
     </Suspense>
   );
 }

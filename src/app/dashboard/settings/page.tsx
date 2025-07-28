@@ -42,7 +42,8 @@ export default function CompanySettingsPage() {
       slug: "",
       industry: "",
       phone: "",
-      address: "",
+      address_street: "",
+      address_city: "",
       description: "",
     },
   });
@@ -90,7 +91,8 @@ export default function CompanySettingsPage() {
           slug: userCompany.slug,
           industry: userCompany.industry,
           phone: userCompany.phone ?? "",
-          address: userCompany.address ?? "",
+          address_street: userCompany.address_street ?? "",
+          address_city: userCompany.address_city ?? "",
           description: userCompany.description ?? "",
         });
       } catch (error) {
@@ -117,7 +119,8 @@ export default function CompanySettingsPage() {
           slug: data.slug,
           industry: data.industry,
           phone: data.phone || null,
-          address: data.address || null,
+          address_street: data.address_street || null,
+          address_city: data.address_city || null,
           description: data.description || null,
         })
         .eq("id", company.id);
@@ -131,7 +134,8 @@ export default function CompanySettingsPage() {
         slug: data.slug,
         industry: data.industry,
         phone: data.phone || null,
-        address: data.address || null,
+        address_street: data.address_street || null,
+        address_city: data.address_city || null,
         description: data.description || null,
       });
 
@@ -267,15 +271,30 @@ export default function CompanySettingsPage() {
 
             {/* Address */}
             <div className="space-y-2">
-              <Label htmlFor="address">Adres</Label>
+              <Label htmlFor="address_street">Adres</Label>
               <Input
-                id="address"
-                {...form.register("address")}
-                placeholder="np. ul. Główna 123, 00-001 Warszawa"
+                id="address_street"
+                {...form.register("address_street")}
+                placeholder="np. ul. Główna 123"
               />
-              {form.formState.errors.address && (
+              {form.formState.errors.address_street && (
                 <p className="text-sm text-red-600">
-                  {form.formState.errors.address.message}
+                  {form.formState.errors.address_street.message}
+                </p>
+              )}
+            </div>
+
+            {/* City */}
+            <div className="space-y-2">
+              <Label htmlFor="address_city">Miasto</Label>
+              <Input
+                id="address_city"
+                {...form.register("address_city")}
+                placeholder="np. Warszawa"
+              />
+              {form.formState.errors.address_city && (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.address_city.message}
                 </p>
               )}
             </div>

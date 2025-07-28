@@ -21,7 +21,8 @@ export interface RegistrationData {
     name: string;
     slug: string;
     description?: string;
-    address?: string;
+    address_street?: string;
+    address_city?: string;
     phone?: string;
     industry: string;
   };
@@ -61,7 +62,8 @@ export const registerUser = async (data: RegistrationData) => {
           name: data.companyData.name,
           slug: data.companyData.slug,
           description: data.companyData.description,
-          address: data.companyData.address,
+          address_street: data.companyData.address_street,
+          address_city: data.companyData.address_city,
           phone: data.companyData.phone,
           industry: data.companyData.industry,
         })
@@ -177,7 +179,8 @@ export const getUserCompanies = async (userId: string) => {
           name,
           slug,
           description,
-          address,
+          address_street,
+          address_city,
           phone,
           industry,
           created_at
@@ -185,7 +188,7 @@ export const getUserCompanies = async (userId: string) => {
       `
       )
       .eq("user_id", userId)
-      .eq("status", "active");
+      .in("status", ["active", "invited"]);
 
     if (error) throw error;
 

@@ -50,7 +50,8 @@ export async function createCompanyAction(
       name: formData.get("name") as string,
       slug: formData.get("slug") as string,
       description: formData.get("description") as string,
-      address: formData.get("address") as string,
+      address_street: formData.get("address_street") as string,
+      address_city: formData.get("address_city") as string,
       phone: formData.get("phone") as string,
       industry: formData.get("industry") as string,
     };
@@ -119,7 +120,8 @@ export async function updateCompanyAction(
       name: formData.get("name") as string,
       slug: formData.get("slug") as string,
       description: formData.get("description") as string,
-      address: formData.get("address") as string,
+      address_street: formData.get("address_street") as string,
+      address_city: formData.get("address_city") as string,
       phone: formData.get("phone") as string,
       industry: formData.get("industry") as string,
     };
@@ -1028,7 +1030,8 @@ export async function getServicesData() {
         name,
         slug,
         description,
-        address,
+        address_street,
+        address_city,
         phone,
         industry,
         created_at

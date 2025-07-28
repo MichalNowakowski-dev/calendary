@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import BookingModal from "./BookingModal";
+import EnhancedBookingModal from "./EnhancedBookingModal";
 import MapLocation from "./MapLocation";
 
 interface PublicCompanyViewProps {
@@ -94,10 +94,14 @@ export default function PublicCompanyView({
             )}
 
             <div className="flex flex-col sm:flex-row gap-4">
-              {company.address && (
+              {(company.address_street || company.address_city) && (
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="h-5 w-5" />
-                  <span>{company.address}</span>
+                  <span>
+                    {[company.address_street, company.address_city]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </span>
                 </div>
               )}
 
@@ -121,8 +125,8 @@ export default function PublicCompanyView({
             {services.length === 1
               ? "usługa"
               : services.length < 5
-              ? "usługi"
-              : "usług"}
+                ? "usługi"
+                : "usług"}
           </span>
         </div>
 
@@ -208,10 +212,11 @@ export default function PublicCompanyView({
       </div>
 
       {/* Location Section */}
-      {company.address && (
+      {(company.address_street || company.address_city) && (
         <div className="mt-12">
           <MapLocation
-            address={company.address}
+            address_street={company.address_street || undefined}
+            address_city={company.address_city || undefined}
             businessName={company.name}
             phone={company.phone || undefined}
           />
@@ -232,12 +237,16 @@ export default function PublicCompanyView({
             </div>
           )}
 
-          {company.address && (
+          {(company.address_street || company.address_city) && (
             <div className="flex items-center gap-3">
               <MapPin className="h-5 w-5 text-gray-500" />
               <div>
                 <p className="font-medium">Adres</p>
-                <p className="text-gray-600">{company.address}</p>
+                <p className="text-gray-600">
+                  {[company.address_street, company.address_city]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
               </div>
             </div>
           )}
@@ -246,7 +255,7 @@ export default function PublicCompanyView({
 
       {/* Booking Modal */}
       {selectedService && (
-        <BookingModal
+        <EnhancedBookingModal
           isOpen={isBookingModalOpen}
           onClose={closeBookingModal}
           company={company}

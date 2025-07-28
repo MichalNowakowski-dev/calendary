@@ -35,12 +35,19 @@ export default async function EmployeeDashboardLayout({
 
   // Check if user is an employee
   if (authUser.role !== "employee") {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   // Get user's companies
   const companies = await serverAuth.getUserCompanies(user.id);
   if (companies.length === 0) {
+    // Check if user is an employee but not yet linked to a company
+    // This can happen if the employee was just created but hasn't accepted the invitation
+    if (authUser.role === "employee") {
+      // For employees, we'll allow access even without company_users record
+      // They might be in the process of accepting invitation
+      return <EmployeeDashboardClient user={authUser} children={children} />;
+    }
     redirect("/login");
   }
 

@@ -100,6 +100,8 @@ export default function LoginPage() {
           router.push(redirectTo);
         } else if (userRole === "company_owner") {
           router.push("/dashboard");
+        } else if (userRole === "employee") {
+          router.push("/employee");
         } else {
           router.push("/");
         }

@@ -73,7 +73,8 @@ export const serverDb = {
           name,
           slug,
           description,
-          address,
+          address_street,
+          address_city,
           phone,
           industry,
           created_at
@@ -81,7 +82,7 @@ export const serverDb = {
       `
       )
       .eq("user_id", userId)
-      .eq("status", "active");
+      .in("status", ["active", "invited"]);
 
     if (error) throw error;
     return data || [];
