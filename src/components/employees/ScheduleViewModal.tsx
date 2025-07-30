@@ -12,12 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ScheduleCalendar from "@/components/services/ScheduleCalendar";
-import type { Employee, Service, Schedule } from "@/lib/types/database";
-
-interface EmployeeWithDetails extends Employee {
-  services: Service[];
-  schedules: Schedule[];
-}
+import type { EmployeeWithDetails } from "@/lib/types/database";
 
 interface ScheduleViewModalProps {
   employee: EmployeeWithDetails;

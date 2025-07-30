@@ -21,12 +21,12 @@ import {
   employeeFormSchema,
   type EmployeeFormData,
 } from "@/lib/validations/employee";
-import type { EmployeeWithServices, Service } from "@/lib/types/database";
+import type { EmployeeWithDetails, Service } from "@/lib/types/database";
 import React, { useTransition } from "react";
 
 interface EmployeeFormProps {
   services: Service[];
-  editingEmployee: EmployeeWithServices | null;
+  editingEmployee: EmployeeWithDetails | null;
   companyId: string;
   onCancel: () => void;
   onSuccess?: () => void;

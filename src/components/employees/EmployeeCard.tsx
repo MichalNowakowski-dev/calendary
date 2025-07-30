@@ -11,12 +11,11 @@ import { deleteEmployee as deleteEmployeeAction } from "@/lib/actions/employees"
 import EmployeeForm from "./EmployeeForm";
 import EmployeeSchedule from "@/components/services/EmployeeSchedule";
 import ScheduleViewModal from "./ScheduleViewModal";
-import type { Employee, Service, Schedule } from "@/lib/types/database";
-
-interface EmployeeWithDetails extends Employee {
-  services: Service[];
-  schedules: Schedule[];
-}
+import type {
+  EmployeeWithDetails,
+  Service,
+  Schedule,
+} from "@/lib/types/database";
 
 interface EmployeeCardProps {
   employee: EmployeeWithDetails;

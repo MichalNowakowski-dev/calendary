@@ -118,127 +118,123 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            <span className="text-blue-600 dark:text-blue-400">
-              Calendary.pl
-            </span>
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Zaloguj się do swojego konta
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 shadow-2xl rounded-2xl overflow-hidden">
+        <div className="hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 p-12 text-white">
+          <h1 className="text-5xl font-bold mb-4">Calendary.pl</h1>
+          <p className="text-xl text-center">
+            Zarządzaj swoimi rezerwacjami w jednym miejscu.
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Logowanie</CardTitle>
-            <CardDescription className="text-center">
-              Wprowadź swoje dane logowania
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register("email")}
-                    className={
-                      errors.email || authError ? "border-red-500" : ""
-                    }
-                    placeholder="twoj@email.pl"
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Hasło</Label>
-                    <Link
-                      href="/forgot-password"
-                      className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      Zapomniałeś hasła?
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      {...register("password")}
-                      className={
-                        errors.password || authError ? "border-red-500" : ""
-                      }
-                      placeholder="Wprowadź hasło"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {errors.password.message}
-                    </p>
-                  )}
-                  {authError && (
-                    <p className="text-sm text-red-500 mt-1">{authError}</p>
-                  )}
-                </div>
-              </div>
+        <div className="bg-card p-8 sm:p-12">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-foreground">
+              Witaj z powrotem!
+            </h2>
+            <p className="text-muted-foreground">
+              Zaloguj się, aby kontynuować.
+            </p>
+          </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logowanie...
-                  </>
-                ) : (
-                  "Zaloguj się"
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  className={
+                    errors.email || authError ? "border-destructive" : ""
+                  }
+                  placeholder="twoj@email.pl"
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive mt-1">
+                    {errors.email.message}
+                  </p>
                 )}
-              </Button>
-            </form>
-
-            <div className="mt-6">
-              <Separator />
-              <div className="text-center mt-6">
-                <p className="text-gray-600 dark:text-gray-300">
-                  Nie masz jeszcze konta?{" "}
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Hasło</Label>
                   <Link
-                    href="/register"
-                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                    href="/forgot-password"
+                    className="text-sm text-primary hover:underline"
                   >
-                    Zarejestruj się
+                    Zapomniałeś hasła?
                   </Link>
-                </p>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    className={
+                      errors.password || authError ? "border-destructive" : ""
+                    }
+                    placeholder="Wprowadź hasło"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {errors.password && (
+                  <p className="text-sm text-destructive mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+                {authError && (
+                  <p className="text-sm text-destructive mt-1">{authError}</p>
+                )}
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="text-center mt-8">
-          <Link
-            href="/"
-            className="text-gray-600 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200"
-          >
-            ← Wróć do strony głównej
-          </Link>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logowanie...
+                </>
+              ) : (
+                "Zaloguj się"
+              )}
+            </Button>
+          </form>
+
+          <div className="mt-6">
+            <Separator />
+            <div className="text-center mt-6">
+              <p className="text-muted-foreground">
+                Nie masz jeszcze konta?{" "}
+                <Link
+                  href="/register"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Zarejestruj się
+                </Link>
+              </p>
+            </div>
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              href="/"
+              className="text-muted-foreground hover:text-foreground text-sm"
+            >
+              ← Wróć do strony głównej
+            </Link>
+          </div>
         </div>
       </div>
     </div>

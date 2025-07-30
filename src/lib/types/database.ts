@@ -386,15 +386,15 @@ export interface ServiceWithCompany extends Service {
   company: Company;
 }
 
+export interface EmployeeWithDetails extends Employee {
+  services: Service[];
+  schedules: Schedule[];
+}
+
 export interface AppointmentWithDetails extends Appointment {
   service: Service;
   company: Company;
   employee?: Employee;
-}
-
-export interface EmployeeWithServices extends Employee {
-  services: Service[];
-  schedules: Schedule[];
 }
 
 // Types for getEmployeesWithDetails function
@@ -402,11 +402,6 @@ export interface EmployeeWithDetailsRaw extends Employee {
   employee_services: Array<{
     service: Service;
   }>;
-  schedules: Schedule[];
-}
-
-export interface EmployeeWithDetailsTransformed extends Employee {
-  services: Service[];
   schedules: Schedule[];
 }
 

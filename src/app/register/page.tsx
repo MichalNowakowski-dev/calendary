@@ -52,17 +52,14 @@ export default function RegisterPage() {
               <TabsList className="grid w-full grid-cols-2 mb-8">
                 <TabsTrigger
                   value="company"
-                  className="flex items-center gap-2"
+                  className={`${selectedRole === "company" ? "bg-blue-700!" : "bg-background"} flex items-center gap-2`}
                 >
                   <Building2 className="w-4 h-4" />
                   Właściciel firmy
-                  <Badge variant="secondary" className="ml-1">
-                    Popularne
-                  </Badge>
                 </TabsTrigger>
                 <TabsTrigger
                   value="customer"
-                  className="flex items-center gap-2"
+                  className={`${selectedRole === "customer" ? "bg-green-700!" : "bg-background"} flex items-center gap-2`}
                 >
                   <User className="w-4 h-4" />
                   Klient

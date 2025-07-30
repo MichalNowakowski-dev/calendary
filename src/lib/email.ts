@@ -1,6 +1,6 @@
 // Basic email service for sending employee invitations
 // In a production environment, you would use a proper email service like SendGrid, Mailgun, etc.
-import { EmailTemplate } from "@/components/email-template";
+import { EmailTemplate } from "@/components/EmailTemplate";
 import { Resend } from "resend";
 
 interface EmailData {

@@ -4,14 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import type { Employee, Service, Schedule } from "@/lib/types/database";
+import type { EmployeeWithDetails, Service } from "@/lib/types/database";
 import EmployeeForm from "./EmployeeForm";
 import { createClient } from "@/lib/supabase/client";
-
-interface EmployeeWithDetails extends Employee {
-  services: Service[];
-  schedules: Schedule[];
-}
 
 interface EmployeesListClientProps {
   employees: EmployeeWithDetails[];
