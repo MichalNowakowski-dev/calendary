@@ -2,7 +2,15 @@
 
 import { useState, use } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, UserCheck, Edit, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Users,
+  UserCheck,
+  Edit,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import ServiceForm from "./ServiceForm";
 import EmployeeAssignment from "./EmployeeAssignment";
 import type {
@@ -28,6 +36,8 @@ interface ServicesClientProps {
   dataPromise: Promise<ServicesData>;
 }
 
+const EMPLOYEES_LIMIT = 2;
+
 export default function ServicesClient({ dataPromise }: ServicesClientProps) {
   const { services, employees, company } = use(dataPromise);
 
@@ -35,6 +45,9 @@ export default function ServicesClient({ dataPromise }: ServicesClientProps) {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [assigningEmployees, setAssigningEmployees] =
     useState<ServiceWithEmployees | null>(null);
+  const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(
+    new Set()
+  );
 
   const handleEdit = (service: Service) => {
     setEditingService(service);
@@ -57,6 +70,18 @@ export default function ServicesClient({ dataPromise }: ServicesClientProps) {
 
   const handleEmployeeAssignmentUpdate = () => {
     setAssigningEmployees(null);
+  };
+
+  const handleToggleEmployeesExpansion = (serviceId: string) => {
+    setExpandedEmployees((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(serviceId)) {
+        newSet.delete(serviceId);
+      } else {
+        newSet.add(serviceId);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -105,6 +130,8 @@ export default function ServicesClient({ dataPromise }: ServicesClientProps) {
               companyId={company.id}
               onEdit={handleEdit}
               onAssignEmployees={handleAssignEmployees}
+              expandedEmployees={expandedEmployees}
+              onToggleEmployeesExpansion={handleToggleEmployeesExpansion}
             />
           ))}
         </div>
@@ -134,9 +161,17 @@ interface ServiceCardProps {
   companyId: string;
   onEdit: (service: Service) => void;
   onAssignEmployees: (service: ServiceWithEmployees) => void;
+  expandedEmployees: Set<string>;
+  onToggleEmployeesExpansion: (serviceId: string) => void;
 }
 
-function ServiceCard({ service, onEdit, onAssignEmployees }: ServiceCardProps) {
+function ServiceCard({
+  service,
+  onEdit,
+  onAssignEmployees,
+  expandedEmployees,
+  onToggleEmployeesExpansion,
+}: ServiceCardProps) {
   const assignedEmployees =
     service.employee_services?.map((es) => es.employee) || [];
   const router = useRouter();
@@ -219,7 +254,7 @@ function ServiceCard({ service, onEdit, onAssignEmployees }: ServiceCardProps) {
 
         {service.description && (
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-            {service.description}
+            {`Opis: ${service.description}`}
           </p>
         )}
 
@@ -236,11 +271,27 @@ function ServiceCard({ service, onEdit, onAssignEmployees }: ServiceCardProps) {
 
         {/* Assigned Employees */}
         <div className="mb-4">
-          <div className="flex items-center mb-2">
-            <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 dark:text-gray-400" />
-            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-              Przypisani pracownicy ({assignedEmployees.length})
-            </span>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 dark:text-gray-400" />
+              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                Przypisani pracownicy ({assignedEmployees.length})
+              </span>
+            </div>
+            {assignedEmployees.length > EMPLOYEES_LIMIT && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onToggleEmployeesExpansion(service.id)}
+                className="h-6 w-6 p-0 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                {expandedEmployees.has(service.id) ? (
+                  <ChevronUp className="h-3 w-3" />
+                ) : (
+                  <ChevronDown className="h-3 w-3" />
+                )}
+              </Button>
+            )}
           </div>
           <div className="space-y-1">
             {assignedEmployees.length === 0 ? (
@@ -249,21 +300,29 @@ function ServiceCard({ service, onEdit, onAssignEmployees }: ServiceCardProps) {
               </p>
             ) : (
               <div className="flex flex-wrap gap-1">
-                {assignedEmployees.slice(0, 3).map((employee) => (
-                  <div
-                    key={employee.id}
-                    className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded"
-                  >
-                    {employee.name}
-                  </div>
-                ))}
+                {assignedEmployees
+                  .slice(
+                    0,
+                    expandedEmployees.has(service.id)
+                      ? undefined
+                      : EMPLOYEES_LIMIT
+                  )
+                  .map((employee) => (
+                    <div
+                      key={employee.id}
+                      className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded"
+                    >
+                      {employee.name}
+                    </div>
+                  ))}
               </div>
             )}
-            {assignedEmployees.length > 3 && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                +{assignedEmployees.length - 3} więcej
-              </p>
-            )}
+            {assignedEmployees.length > EMPLOYEES_LIMIT &&
+              !expandedEmployees.has(service.id) && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  +{assignedEmployees.length - EMPLOYEES_LIMIT} więcej
+                </p>
+              )}
           </div>
         </div>
 

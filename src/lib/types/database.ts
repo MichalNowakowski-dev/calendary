@@ -283,6 +283,38 @@ export interface Database {
           created_at?: string;
         };
       };
+      business_hours: {
+        Row: {
+          id: string;
+          company_id: string;
+          day_of_week: number; // 0 = Sunday, 1 = Monday, etc.
+          open_time: string | null; // "08:00"
+          close_time: string | null; // "17:00"
+          is_open: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          day_of_week: number;
+          open_time?: string | null;
+          close_time?: string | null;
+          is_open?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          day_of_week?: number;
+          open_time?: string | null;
+          close_time?: string | null;
+          is_open?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -362,6 +394,13 @@ export type CustomerUpdate =
 export type Settings = Database["public"]["Tables"]["settings"]["Row"];
 export type SettingsInsert = Database["public"]["Tables"]["settings"]["Insert"];
 export type SettingsUpdate = Database["public"]["Tables"]["settings"]["Update"];
+
+export type BusinessHours =
+  Database["public"]["Tables"]["business_hours"]["Row"];
+export type BusinessHoursInsert =
+  Database["public"]["Tables"]["business_hours"]["Insert"];
+export type BusinessHoursUpdate =
+  Database["public"]["Tables"]["business_hours"]["Update"];
 
 // Enum types
 export type UserRole = Database["public"]["Enums"]["user_role"];

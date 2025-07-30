@@ -2,6 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { serverAuth } from "@/lib/auth/server";
+import type { CompanyInsert, CompanyUpdate } from "@/lib/types/database";
+import type {
+  BusinessHoursInsert,
+  BusinessHoursUpdate,
+} from "@/lib/types/database";
 
 import type { ActionState } from "./types";
 
@@ -131,3 +137,190 @@ export async function updateCompanyAction(
     };
   }
 }
+
+export const createCompany = async (data: CompanyInsert) => {
+  const supabase = createClient();
+  const user = await serverAuth.getCurrentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { data: company, error } = await supabase
+    .from("companies")
+    .insert(data)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  // Create company_user relationship
+  const { error: userError } = await supabase.from("company_users").insert({
+    company_id: company.id,
+    user_id: user.id,
+    role: "owner",
+    status: "active",
+  });
+
+  if (userError) throw userError;
+
+  return company;
+};
+
+export const updateCompany = async (id: string, data: CompanyUpdate) => {
+  const supabase = createClient();
+  const user = await serverAuth.getCurrentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  // Check if user has access to this company
+  const { data: companyUser } = await supabase
+    .from("company_users")
+    .select("role")
+    .eq("company_id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!companyUser) {
+    throw new Error("Access denied");
+  }
+
+  const { data: company, error } = await supabase
+    .from("companies")
+    .update(data)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return company;
+};
+
+export const getCompanyBySlug = async (slug: string) => {
+  const supabase = createClient();
+
+  const { data: company, error } = await supabase
+    .from("companies")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) throw error;
+
+  return company;
+};
+
+export const getUserCompany = async () => {
+  const supabase = createClient();
+  const user = await serverAuth.getCurrentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { data: companyUser, error } = await supabase
+    .from("company_users")
+    .select(
+      `
+      company:companies(*)
+    `
+    )
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (error) throw error;
+
+  return companyUser?.company;
+};
+
+// Business Hours Actions
+export const getBusinessHours = async (companyId: string) => {
+  const supabase = createClient();
+  const user = await serverAuth.getCurrentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  // Check if user has access to this company
+  const { data: companyUser } = await supabase
+    .from("company_users")
+    .select("role")
+    .eq("company_id", companyId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!companyUser) {
+    throw new Error("Access denied");
+  }
+
+  const { data: businessHours, error } = await supabase
+    .from("business_hours")
+    .select("*")
+    .eq("company_id", companyId)
+    .order("day_of_week");
+
+  if (error) throw error;
+
+  return businessHours;
+};
+
+export const upsertBusinessHours = async (
+  companyId: string,
+  businessHours: BusinessHoursInsert[]
+) => {
+  const supabase = createClient();
+  const user = await serverAuth.getCurrentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  // Check if user has access to this company
+  const { data: companyUser } = await supabase
+    .from("company_users")
+    .select("role")
+    .eq("company_id", companyId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!companyUser) {
+    throw new Error("Access denied");
+  }
+
+  // Delete existing business hours for this company
+  const { error: deleteError } = await supabase
+    .from("business_hours")
+    .delete()
+    .eq("company_id", companyId);
+
+  if (deleteError) throw deleteError;
+
+  // Insert new business hours
+  const { data: newBusinessHours, error } = await supabase
+    .from("business_hours")
+    .insert(businessHours)
+    .select();
+
+  if (error) throw error;
+
+  return newBusinessHours;
+};
+
+export const getPublicBusinessHours = async (companyId: string) => {
+  const supabase = createClient();
+
+  const { data: businessHours, error } = await supabase
+    .from("business_hours")
+    .select("*")
+    .eq("company_id", companyId)
+    .order("day_of_week");
+
+  if (error) throw error;
+
+  return businessHours;
+};

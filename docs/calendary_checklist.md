@@ -16,7 +16,7 @@
 - [x] Możliwość edytowania danych firmy
 - [x] Powiązanie użytkownika z firmą jako "owner"
 - [x] Dashboard z widokiem statystyk i danych firmy
-- [ ] Możliwość ustawienia godzin otwarcia firmy
+- [x] Możliwość ustawienia godzin otwarcia firmy
 
 ## 👥 Pracownicy (Employees)
 
@@ -49,14 +49,14 @@
 
 ## 👤 Klienci (Customers)
 
-- [ ] Automatyczne tworzenie klienta przy rezerwacji
-- [ ] Lista klientów w firmie
-- [ ] Dane kontaktowe klienta (imię, email, tel)
+- [x] Automatyczne tworzenie klienta przy rezerwacji
+- [x] Lista klientów w firmie
+- [x] Dane kontaktowe klienta (imię, email, tel)
 - [ ] Historia wizyt klienta
 
 ## ⚙️ Ustawienia firmy
 
-- [ ] Ustawianie godzin otwarcia
+- [x] Ustawianie godzin otwarcia
 - [ ] Przerwy / dni wolne / urlopy
 - [ ] Limity dzienne dla pracownika
 - [ ] Limity czasu między rezerwacjami

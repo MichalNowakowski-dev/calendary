@@ -26,6 +26,7 @@ import type { Company } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import PageHeading from "@/components/PageHeading";
+import BusinessHoursForm from "@/components/BusinessHoursForm";
 
 export default function CompanySettingsPage() {
   const [company, setCompany] = useState<Company | null>(null);
@@ -332,6 +333,9 @@ export default function CompanySettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Business Hours Form */}
+      {company && <BusinessHoursForm companyId={company.id} />}
     </div>
   );
 }

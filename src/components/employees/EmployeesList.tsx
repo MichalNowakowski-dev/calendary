@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import EmployeeCard from "./EmployeeCard";
-import { getEmployeesWithDetails } from "@/lib/employees";
+import { db } from "@/lib/db-client";
 import EmployeesListClient from "./EmployeesListClient";
 
 interface EmployeesListProps {
@@ -9,7 +9,7 @@ interface EmployeesListProps {
 }
 
 export default async function EmployeesList({ companyId }: EmployeesListProps) {
-  const employees = await getEmployeesWithDetails(companyId);
+  const employees = await db.getEmployeesWithDetails(companyId);
 
   if (employees.length === 0) {
     return (

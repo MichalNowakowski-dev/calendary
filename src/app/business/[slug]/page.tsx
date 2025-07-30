@@ -1,9 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Service, Employee } from "@/lib/types/database";
+import { Service, Employee, BusinessHours } from "@/lib/types/database";
 import ClientReservationView from "@/components/client/ClientReservationView";
 import MapLocation from "@/components/public/MapLocation";
+import BusinessHoursDisplay from "@/components/public/BusinessHoursDisplay";
 
 interface PageProps {
   params: Promise<{
@@ -62,6 +63,17 @@ async function getCompanyBySlug(slug: string) {
       return { company, services: [] };
     }
 
+    // Get business hours for the company
+    const { data: businessHours, error: businessHoursError } = await supabase
+      .from("business_hours")
+      .select("*")
+      .eq("company_id", company.id)
+      .order("day_of_week");
+
+    if (businessHoursError) {
+      console.error("Error loading business hours:", businessHoursError);
+    }
+
     // Transform services to include assigned employees
     const servicesWithEmployees: ServiceWithEmployees[] = (services || []).map(
       (service: ServiceWithEmployeeData) => ({
@@ -76,6 +88,7 @@ async function getCompanyBySlug(slug: string) {
     return {
       company,
       services: servicesWithEmployees,
+      businessHours: businessHours || [],
     };
   } catch (error) {
     console.error("Error loading company data:", error);
@@ -116,11 +129,18 @@ export default async function BusinessPage({ params }: PageProps) {
     notFound();
   }
 
-  const { company, services } = data;
+  const { company, services, businessHours } = data;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <ClientReservationView company={company} services={services} />
+
+      {/* Business Hours Section */}
+      {businessHours && businessHours.length > 0 && (
+        <div className="container mx-auto px-4 py-8">
+          <BusinessHoursDisplay businessHours={businessHours} />
+        </div>
+      )}
 
       {/* Google Maps Section */}
       {(company.address_street || company.address_city) && (
