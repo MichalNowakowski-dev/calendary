@@ -15,7 +15,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendEmail(data: EmailData) {
   try {
-    const { data: emailData, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "Calendary <calendary@cinebase.pl>",
       to: [data.to],
       subject: data.subject,

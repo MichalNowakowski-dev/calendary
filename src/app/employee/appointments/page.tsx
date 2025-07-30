@@ -3,25 +3,8 @@ import { redirect } from "next/navigation";
 import { serverAuth } from "@/lib/auth/server";
 import { serverDb } from "@/lib/db-server";
 import { EmployeeAppointmentsContent } from "./EmployeeAppointmentsContent";
-import { Company, Service, Employee } from "@/lib/types/database";
+import { Company, AppointmentWithDetails } from "@/lib/types/database";
 import PageHeading from "@/components/PageHeading";
-
-interface AppointmentWithDetails {
-  id: string;
-  company_id: string;
-  employee_id: string | null;
-  service_id: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string | null;
-  date: string;
-  start_time: string;
-  end_time: string;
-  status: "booked" | "cancelled" | "completed";
-  created_at: string;
-  service: Service;
-  employee?: Employee;
-}
 
 async function EmployeeAppointmentsPageContent() {
   const user = await serverAuth.getCurrentUser();
@@ -46,10 +29,10 @@ async function EmployeeAppointmentsPageContent() {
   }
 
   // Get all appointments for this employee
-  const appointments = await serverDb.getAppointments(userCompany.id);
-  const employeeAppointments = appointments.filter(
-    (appointment) => appointment.employee_id === user.id
-  ) as AppointmentWithDetails[];
+  const employeeAppointments = (await serverDb.getEmployeeAppointmentsByCompany(
+    userCompany.id,
+    user.id
+  )) as AppointmentWithDetails[];
 
   return (
     <div className="space-y-6">

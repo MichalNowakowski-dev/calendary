@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { serverAuth } from "@/lib/auth/server";
 import { serverDb } from "@/lib/db-server";
 import { EmployeeServicesContent } from "./EmployeeServicesContent";
-import { Company, Service } from "@/lib/types/database";
+import { Company } from "@/lib/types/database";
 import PageHeading from "@/components/PageHeading";
 
 async function EmployeeServicesPageContent() {

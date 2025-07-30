@@ -4,7 +4,6 @@ import {
   createClient as createServerClient,
   createAdminClient,
 } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 import { serverDb } from "@/lib/db-server";
 import { sendEmail } from "@/lib/email";
 import {
@@ -12,7 +11,6 @@ import {
   type EmployeeFormData,
   type EmployeeActionResult,
 } from "@/lib/validations/employee";
-import type { Service } from "@/lib/types/database";
 import { z } from "zod";
 
 interface CreateEmployeeData extends EmployeeFormData {
@@ -22,8 +20,7 @@ interface CreateEmployeeData extends EmployeeFormData {
 export async function createEmployee(
   data: CreateEmployeeData
 ): Promise<EmployeeActionResult> {
-  const cookieStore = cookies();
-  const supabase = createServerClient(cookieStore);
+  const supabase = createServerClient();
 
   // Server-side validation
   const validationResult = employeeFormSchema.safeParse(data);
@@ -205,8 +202,7 @@ export async function updateEmployee(
   employeeId: string,
   data: EmployeeFormData
 ): Promise<EmployeeActionResult> {
-  const cookieStore = cookies();
-  const supabase = createServerClient(cookieStore);
+  const supabase = createServerClient();
 
   // Server-side validation
   const validationResult = employeeFormSchema.safeParse(data);

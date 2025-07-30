@@ -1,15 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Users, Plus } from "lucide-react";
+import { Users } from "lucide-react";
 import EmployeeCard from "./EmployeeCard";
-import type { Employee, Service, Schedule } from "@/lib/types/database";
 import { getEmployeesWithDetails } from "@/lib/employees";
 import EmployeesListClient from "./EmployeesListClient";
-
-interface EmployeeWithDetails extends Employee {
-  services: Service[];
-  schedules: Schedule[];
-}
 
 interface EmployeesListProps {
   companyId: string;

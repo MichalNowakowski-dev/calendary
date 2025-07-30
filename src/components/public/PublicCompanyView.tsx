@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MapPin, Phone, Clock, Euro } from "lucide-react";
-import { Company, Service } from "@/lib/types/database";
+import { Company, Employee, Service } from "@/lib/types/database";
 import {
   Card,
   CardContent,
@@ -17,7 +17,7 @@ import MapLocation from "./MapLocation";
 
 interface PublicCompanyViewProps {
   company: Company;
-  services: (Service & { employees: any[] })[];
+  services: (Service & { employees: Employee[] })[];
 }
 
 const industryLabels: Record<string, string> = {
@@ -58,11 +58,11 @@ export default function PublicCompanyView({
   services,
 }: PublicCompanyViewProps) {
   const [selectedService, setSelectedService] = useState<
-    (Service & { employees: any[] }) | null
+    (Service & { employees: Employee[] }) | null
   >(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  const handleBookService = (service: Service & { employees: any[] }) => {
+  const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedService(service);
     setIsBookingModalOpen(true);
   };
@@ -182,7 +182,7 @@ export default function PublicCompanyView({
                           Dostępni specjaliści:
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          {service.employees.map((employee: any) => (
+                          {service.employees.map((employee: Employee) => (
                             <Badge
                               key={employee.id}
                               variant="outline"

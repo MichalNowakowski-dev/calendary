@@ -15,7 +15,6 @@ import {
 import {
   Calendar,
   Clock,
-  User,
   Phone,
   Mail,
   CheckCircle,
@@ -23,20 +22,10 @@ import {
   Briefcase,
   Search,
 } from "lucide-react";
-import type {
-  Appointment,
-  Company,
-  Service,
-  Employee,
-} from "@/lib/types/database";
+import type { Company, AppointmentWithDetails } from "@/lib/types/database";
 import type { AuthUser } from "@/lib/auth/server";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
-
-interface AppointmentWithDetails extends Appointment {
-  service: Service;
-  employee?: Employee;
-}
 
 interface EmployeeAppointmentsContentProps {
   appointments: AppointmentWithDetails[];
@@ -46,8 +35,6 @@ interface EmployeeAppointmentsContentProps {
 
 export function EmployeeAppointmentsContent({
   appointments,
-  company,
-  user,
 }: EmployeeAppointmentsContentProps) {
   const [filteredAppointments, setFilteredAppointments] =
     useState<AppointmentWithDetails[]>(appointments);

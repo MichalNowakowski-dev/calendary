@@ -25,7 +25,6 @@ export default function EmployeeAssignment({
   serviceName,
   assignedEmployees,
   allEmployees,
-  companyId,
   onClose,
   onUpdate,
 }: EmployeeAssignmentProps) {
@@ -115,7 +114,7 @@ export default function EmployeeAssignment({
             {allEmployees.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">
                 Brak dostępnych pracowników. Dodaj pracowników w sekcji
-                "Pracownicy".
+                &quot;Pracownicy&quot;.
               </p>
             ) : (
               allEmployees.map((employee) => (

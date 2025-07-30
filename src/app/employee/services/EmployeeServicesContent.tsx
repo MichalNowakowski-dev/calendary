@@ -20,8 +20,6 @@ interface EmployeeServicesContentProps {
 
 export function EmployeeServicesContent({
   services,
-  company,
-  user,
 }: EmployeeServicesContentProps) {
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);

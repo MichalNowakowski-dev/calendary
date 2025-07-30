@@ -58,9 +58,11 @@ export default function CustomerRegistration() {
 
       // Redirect to dashboard
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Registration error:", error);
-      showToast.error(`Błąd rejestracji: ${error.message}`);
+      showToast.error(
+        `Błąd rejestracji: ${(error as { message?: string })?.message || "Nieznany błąd"}`
+      );
     } finally {
       setIsLoading(false);
     }

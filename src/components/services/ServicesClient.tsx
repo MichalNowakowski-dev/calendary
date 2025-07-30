@@ -5,21 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Plus, Users, UserCheck, Edit, Trash2 } from "lucide-react";
 import ServiceForm from "./ServiceForm";
 import EmployeeAssignment from "./EmployeeAssignment";
-import type { Service, Employee } from "@/lib/types/database";
+import type {
+  Service,
+  Employee,
+  ServiceWithEmployees,
+} from "@/lib/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { showToast, showConfirmToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import ServiceStatusBtn from "./ServiceStatusBtn";
-
-interface ServiceWithEmployees extends Service {
-  employee_services: {
-    employee: {
-      id: string;
-      name: string;
-      visible: boolean;
-    };
-  }[];
-}
 
 interface ServicesData {
   services: ServiceWithEmployees[];
@@ -61,10 +55,7 @@ export default function ServicesClient({ dataPromise }: ServicesClientProps) {
     setAssigningEmployees(service);
   };
 
-  const handleEmployeeAssignmentUpdate = (
-    serviceId: string,
-    newAssignments: { id: string; name: string; visible: boolean }[]
-  ) => {
+  const handleEmployeeAssignmentUpdate = () => {
     setAssigningEmployees(null);
   };
 
@@ -130,12 +121,7 @@ export default function ServicesClient({ dataPromise }: ServicesClientProps) {
           allEmployees={employees}
           companyId={company.id}
           onClose={() => setAssigningEmployees(null)}
-          onUpdate={(newAssignments) =>
-            handleEmployeeAssignmentUpdate(
-              assigningEmployees.id,
-              newAssignments
-            )
-          }
+          onUpdate={() => handleEmployeeAssignmentUpdate()}
         />
       )}
     </div>
@@ -150,13 +136,7 @@ interface ServiceCardProps {
   onAssignEmployees: (service: ServiceWithEmployees) => void;
 }
 
-function ServiceCard({
-  service,
-  employees,
-  companyId,
-  onEdit,
-  onAssignEmployees,
-}: ServiceCardProps) {
+function ServiceCard({ service, onEdit, onAssignEmployees }: ServiceCardProps) {
   const assignedEmployees =
     service.employee_services?.map((es) => es.employee) || [];
   const router = useRouter();

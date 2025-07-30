@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MapPin, Navigation, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +31,6 @@ export default function MapLocation({
 
   // Encode address for URL
   const encodedAddress = encodeURIComponent(fullAddress);
-  const encodedBusinessName = encodeURIComponent(businessName);
 
   // Simple iframe embed (doesn't require API key)
   const simpleEmbedUrl = `https://www.google.com/maps?q=${encodedAddress}&output=embed&z=15`;

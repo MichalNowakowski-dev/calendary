@@ -5,10 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Calendar,
-  Clock,
   User,
-  Phone,
-  Mail,
   X,
   CheckCircle,
   AlertCircle,
@@ -16,25 +13,15 @@ import {
   ChevronLeft,
   FileText,
   Shield,
-  Star,
-  MapPin,
-  Euro,
 } from "lucide-react";
-import { Company, Service } from "@/lib/types/database";
+import { Company, Employee, Service } from "@/lib/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { bookingSchema, BookingFormData } from "@/lib/validations/booking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Form,
@@ -59,7 +46,7 @@ interface EnhancedBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   company: Company;
-  service: Service & { employees: any[] };
+  service: Service & { employees: Employee[] };
 }
 
 const generateTimeSlots = () => {
@@ -94,19 +81,6 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const formatDuration = (minutes: number) => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-
-  if (hours > 0 && mins > 0) {
-    return `${hours}h ${mins}min`;
-  } else if (hours > 0) {
-    return `${hours}h`;
-  } else {
-    return `${mins}min`;
-  }
-};
-
 const steps = [
   { id: 1, title: "Dane kontaktowe", description: "Podaj swoje dane" },
   { id: 2, title: "Termin wizyty", description: "Wybierz datę i godzinę" },
@@ -124,6 +98,9 @@ export default function EnhancedBookingModal({
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [assignedEmployee, setAssignedEmployee] = useState<Employee | null>(
+    null
+  );
 
   const supabase = createClient();
 
@@ -135,7 +112,7 @@ export default function EnhancedBookingModal({
       customerPhone: "",
       date: "",
       time: "",
-      employeeId: "",
+      employeeId: "no-preference",
       notes: "",
       termsAccepted: false,
       privacyAccepted: false,
@@ -165,9 +142,10 @@ export default function EnhancedBookingModal({
 
     setIsLoadingAvailability(true);
     try {
-      const employeeIds = selectedEmployeeId
-        ? [selectedEmployeeId]
-        : service.employees.map((emp: any) => emp.id);
+      const employeeIds =
+        selectedEmployeeId && selectedEmployeeId !== "no-preference"
+          ? [selectedEmployeeId]
+          : service.employees.map((emp) => emp.id);
 
       if (employeeIds.length === 0) {
         setAvailableTimeSlots([]);
@@ -245,6 +223,13 @@ export default function EnhancedBookingModal({
     }
   };
 
+  const handleCloseSuccessModal = () => {
+    onClose();
+    form.reset();
+    setBookingSuccess(false);
+    setCurrentStep(1);
+  };
+
   const handleNextStep = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
@@ -269,7 +254,10 @@ export default function EnhancedBookingModal({
       const endTime = endDate.toTimeString().substring(0, 5);
 
       let selectedEmployeeId = data.employeeId;
-      if (!selectedEmployeeId && service.employees.length > 0) {
+      if (
+        (!selectedEmployeeId || selectedEmployeeId === "no-preference") &&
+        service.employees.length > 0
+      ) {
         for (const employee of service.employees) {
           const { data: schedules } = await supabase
             .from("schedules")
@@ -302,12 +290,56 @@ export default function EnhancedBookingModal({
         throw new Error("Brak dostępnych specjalistów w wybranym terminie");
       }
 
-      const { data: appointment, error: appointmentError } = await supabase
+      const assignedEmployee = service.employees.find(
+        (emp) => emp.id === selectedEmployeeId
+      );
+      setAssignedEmployee(assignedEmployee || null);
+
+      // First, find or create customer
+      let customerId: string | null = null;
+
+      try {
+        // Try to find existing customer by email
+        const { data: existingCustomer } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("email", data.customerEmail)
+          .eq("company_id", company.id)
+          .single();
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+        } else {
+          // Create new customer
+          const { data: newCustomer, error: customerError } = await supabase
+            .from("customers")
+            .insert({
+              company_id: company.id,
+              name: data.customerName,
+              email: data.customerEmail,
+              phone: data.customerPhone || null,
+            })
+            .select("id")
+            .single();
+
+          if (customerError) {
+            throw customerError;
+          }
+
+          customerId = newCustomer.id;
+        }
+      } catch (error) {
+        console.error("Customer creation error:", error);
+        customerId = null;
+      }
+
+      const { error: appointmentError } = await supabase
         .from("appointments")
         .insert({
           company_id: company.id,
           service_id: service.id,
           employee_id: selectedEmployeeId,
+          customer_id: customerId,
           customer_name: data.customerName,
           customer_email: data.customerEmail,
           customer_phone: data.customerPhone || null,
@@ -323,16 +355,11 @@ export default function EnhancedBookingModal({
       if (appointmentError) throw appointmentError;
 
       setBookingSuccess(true);
-      setTimeout(() => {
-        onClose();
-        form.reset();
-        setBookingSuccess(false);
-        setCurrentStep(1);
-      }, 3000);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Booking error:", error);
       alert(
-        error.message || "Wystąpił błąd podczas rezerwacji. Spróbuj ponownie."
+        (error as { message?: string })?.message ||
+          "Wystąpił błąd podczas rezerwacji. Spróbuj ponownie."
       );
     } finally {
       setIsSubmitting(false);
@@ -343,27 +370,87 @@ export default function EnhancedBookingModal({
 
   if (bookingSuccess) {
     return (
-      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full p-8 text-center border border-gray-200 dark:border-gray-700">
-          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-2xl max-w-lg w-full p-8 text-center border-2 border-green-400 dark:border-green-600 transform transition-all scale-100 opacity-100">
+          <div className="relative">
+            <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-green-500 dark:bg-green-600 rounded-full p-4 border-8 border-white dark:border-gray-950">
+              <CheckCircle className="h-12 w-12 text-white" />
+            </div>
+          </div>
+
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mt-12 mb-3">
             Rezerwacja potwierdzona!
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Twoja wizyta została pomyślnie zarezerwowana. Otrzymasz
-            potwierdzenie na adres email.
+          <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-sm mx-auto">
+            Twoja wizyta została pomyślnie zarezerwowana. Szczegóły znajdziesz
+            poniżej oraz w mailu z potwierdzeniem.
           </p>
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
-            <p className="text-sm text-green-800 dark:text-green-200">
-              <strong>Szczegóły rezerwacji:</strong>
-              <br />
-              {service.name}
-              <br />
-              {form.getValues("date")} o {form.getValues("time")}
-              <br />
-              {company.name}
-            </p>
-          </div>
+
+          <Card className="text-left bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-3 text-gray-900 dark:text-white">
+                <FileText className="h-5 w-5 text-blue-500" />
+                Szczegóły rezerwacji
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500 dark:text-gray-400">Usługa</span>
+                <span className="font-bold text-gray-900 dark:text-white">
+                  {service.name}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500 dark:text-gray-400">Data</span>
+                <span className="font-bold text-gray-900 dark:text-white">
+                  {form.getValues("date")}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Godzina
+                </span>
+                <span className="font-bold text-gray-900 dark:text-white">
+                  {form.getValues("time")}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Specjalista
+                </span>
+                <span className="font-bold text-gray-900 dark:text-white">
+                  {assignedEmployee?.name || "Dowolny specjalista"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500 dark:text-gray-400">Cena</span>
+                <Badge
+                  variant="secondary"
+                  className="text-base bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
+                >
+                  {formatPrice(service.price)}
+                </Badge>
+              </div>
+              <Separator />
+              <div className="text-center pt-2">
+                <p className="font-semibold text-gray-900 dark:text-white">
+                  {company.name}
+                </p>
+                <p className="text-gray-500 dark:text-gray-400">
+                  {company.address_street}, {company.address_city}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button
+            onClick={handleCloseSuccessModal}
+            className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105"
+          >
+            Świetnie, dziękuję!
+          </Button>
         </div>
       </div>
     );
@@ -426,49 +513,6 @@ export default function EnhancedBookingModal({
         </div>
 
         <div className="p-6">
-          {/* Service Info Card */}
-          <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-blue-200 dark:border-blue-800">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-xl flex items-center gap-2 text-gray-900 dark:text-white">
-                    <Star className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    {service.name}
-                  </CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-1 text-gray-600 dark:text-gray-400">
-                    <MapPin className="h-4 w-4" />
-                    {company.name}
-                  </CardDescription>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className="text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-                >
-                  {formatPrice(service.price)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {formatDuration(service.duration_minutes)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 font-semibold text-blue-600 dark:text-blue-400">
-                  <Euro className="h-4 w-4" />
-                  <span>{formatPrice(service.price)}</span>
-                </div>
-              </div>
-              {service.description && (
-                <p className="text-gray-600 dark:text-gray-300 mt-3 text-sm">
-                  {service.description}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Form */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -645,7 +689,7 @@ export default function EnhancedBookingModal({
                           </FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                             disabled={
                               !form.watch("date") || isLoadingAvailability
                             }
@@ -696,7 +740,7 @@ export default function EnhancedBookingModal({
                             </FormLabel>
                             <Select
                               onValueChange={field.onChange}
-                              defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger className="focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
@@ -705,12 +749,12 @@ export default function EnhancedBookingModal({
                               </FormControl>
                               <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                                 <SelectItem
-                                  value=""
+                                  value="no-preference"
                                   className="dark:text-white"
                                 >
                                   Bez preferencji
                                 </SelectItem>
-                                {service.employees.map((employee: any) => (
+                                {service.employees.map((employee) => (
                                   <SelectItem
                                     key={employee.id}
                                     value={employee.id}
@@ -829,6 +873,7 @@ export default function EnhancedBookingModal({
                             <FormDescription className="text-gray-600 dark:text-gray-400">
                               Zobowiązuję się do przestrzegania zasad rezerwacji
                             </FormDescription>
+                            <FormMessage />
                           </div>
                         </FormItem>
                       )}
@@ -853,6 +898,7 @@ export default function EnhancedBookingModal({
                             <FormDescription className="text-gray-600 dark:text-gray-400">
                               Wyrażam zgodę na przetwarzanie danych osobowych
                             </FormDescription>
+                            <FormMessage />
                           </div>
                         </FormItem>
                       )}

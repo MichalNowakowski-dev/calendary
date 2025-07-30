@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Calendar, TrendingUp } from "lucide-react";
+import { Clock } from "lucide-react";
 
 interface TimeAnalyticsProps {
   peakHours: Array<{ hour: string; appointments: number }>;

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import ServicesClient from "@/components/services/ServicesClient";
 import PageHeading from "@/components/PageHeading";
-import { getServicesData } from "@/lib/actions/db-actions";
+import { getServicesData } from "@/lib/actions";
 
 // Loading component
 function ServicesLoading() {

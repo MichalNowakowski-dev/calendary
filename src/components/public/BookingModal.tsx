@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Calendar, Clock, User, Phone, Mail, X } from "lucide-react";
-import { Company, Service } from "@/lib/types/database";
+import { Calendar, Clock, User, X } from "lucide-react";
+import { Company, Employee, Service } from "@/lib/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -51,7 +50,7 @@ interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   company: Company;
-  service: Service & { employees: any[] };
+  service: Service & { employees: Employee[] };
 }
 
 const generateTimeSlots = () => {
@@ -119,7 +118,7 @@ export default function BookingModal({
       customerPhone: "",
       date: "",
       time: "",
-      employeeId: "",
+      employeeId: "no-preference",
     },
   });
 
@@ -149,9 +148,10 @@ export default function BookingModal({
     setIsLoadingAvailability(true);
     try {
       // Get employees for this service (either selected one or all)
-      const employeeIds = selectedEmployeeId
-        ? [selectedEmployeeId]
-        : service.employees.map((emp: any) => emp.id);
+      const employeeIds =
+        selectedEmployeeId && selectedEmployeeId !== "no-preference"
+          ? [selectedEmployeeId]
+          : service.employees.map((emp: Employee) => emp.id);
 
       if (employeeIds.length === 0) {
         setAvailableTimeSlots([]);
@@ -251,7 +251,10 @@ export default function BookingModal({
 
       // Select employee (either specified or first available)
       let selectedEmployeeId = data.employeeId;
-      if (!selectedEmployeeId && service.employees.length > 0) {
+      if (
+        (!selectedEmployeeId || selectedEmployeeId === "no-preference") &&
+        service.employees.length > 0
+      ) {
         // Find first available employee for this slot
         for (const employee of service.employees) {
           // Check if employee has schedule for this day
@@ -312,10 +315,11 @@ export default function BookingModal({
       );
       onClose();
       form.reset();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Booking error:", error);
       alert(
-        error.message || "Wystąpił błąd podczas rezerwacji. Spróbuj ponownie."
+        (error as { message?: string })?.message ||
+          "Wystąpił błąd podczas rezerwacji. Spróbuj ponownie."
       );
     } finally {
       setIsSubmitting(false);
@@ -368,7 +372,7 @@ export default function BookingModal({
                     Wybierz pracownika (opcjonalnie):
                   </p>
                   <div className="flex flex-wrap gap-1">
-                    {service.employees.map((employee: any) => (
+                    {service.employees.map((employee: Employee) => (
                       <Badge
                         key={employee.id}
                         variant="outline"
@@ -497,7 +501,7 @@ export default function BookingModal({
                         <FormLabel>Godzina *</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           disabled={
                             !form.watch("date") || isLoadingAvailability
                           }
@@ -509,10 +513,10 @@ export default function BookingModal({
                                   !form.watch("date")
                                     ? "Najpierw wybierz datę"
                                     : isLoadingAvailability
-                                    ? "Sprawdzam dostępność..."
-                                    : availableTimeSlots.length === 0
-                                    ? "Brak dostępnych terminów"
-                                    : "Wybierz godzinę"
+                                      ? "Sprawdzam dostępność..."
+                                      : availableTimeSlots.length === 0
+                                        ? "Brak dostępnych terminów"
+                                        : "Wybierz godzinę"
                                 }
                               />
                             </SelectTrigger>
@@ -526,7 +530,7 @@ export default function BookingModal({
                             {availableTimeSlots.length === 0 &&
                               form.watch("date") &&
                               !isLoadingAvailability && (
-                                <SelectItem value="" disabled>
+                                <SelectItem value="no-available-slots" disabled>
                                   Brak dostępnych terminów w tym dniu
                                 </SelectItem>
                               )}
@@ -552,7 +556,7 @@ export default function BookingModal({
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -560,8 +564,10 @@ export default function BookingModal({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Bez preferencji</SelectItem>
-                            {service.employees.map((employee: any) => (
+                            <SelectItem value="no-preference">
+                              Bez preferencji
+                            </SelectItem>
+                            {service.employees.map((employee: Employee) => (
                               <SelectItem key={employee.id} value={employee.id}>
                                 {employee.name}
                               </SelectItem>

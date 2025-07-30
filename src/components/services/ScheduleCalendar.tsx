@@ -21,7 +21,6 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
-import { pl } from "date-fns/locale";
 import type { Schedule } from "@/lib/types/database";
 
 interface ScheduleCalendarProps {
@@ -207,7 +206,7 @@ export default function ScheduleCalendar({
 
           {/* Calendar Body */}
           <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((day, dayIdx) => {
+            {calendarDays.map((day) => {
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isToday = isSameDay(day, new Date());
               const isWorking = isWorkingDay(day);

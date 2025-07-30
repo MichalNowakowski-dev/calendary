@@ -41,6 +41,11 @@ const sidebarItems = [
     icon: Users,
   },
   {
+    name: "Klienci",
+    href: "/dashboard/customers",
+    icon: Users,
+  },
+  {
     name: "Statystyki",
     href: "/dashboard/analytics",
     icon: BarChart3,

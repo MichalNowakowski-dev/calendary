@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -85,9 +84,11 @@ export default function CompanyOwnerRegistration() {
 
       // Redirect to dashboard
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Registration error:", error);
-      showToast.error(`Błąd rejestracji: ${error.message}`);
+      showToast.error(
+        `Błąd rejestracji: ${(error as { message?: string })?.message || "Nieznany błąd"}`
+      );
     } finally {
       setIsLoading(false);
     }

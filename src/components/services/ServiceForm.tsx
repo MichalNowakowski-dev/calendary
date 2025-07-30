@@ -52,7 +52,7 @@ export default function ServiceForm({
     }
   );
 
-  const [isPending, startTransition] = useTransition();
+  const [_, startTransition] = useTransition();
 
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),

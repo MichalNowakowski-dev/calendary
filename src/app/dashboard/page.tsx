@@ -11,16 +11,10 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Plus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentUser, getUserCompanies } from "@/lib/auth/utils";
-import type {
-  Appointment,
-  Service,
-  Employee,
-  Company,
-} from "@/lib/types/database";
+import type { Appointment, Service, Company } from "@/lib/types/database";
 import Link from "next/link";
 import PageHeading from "@/components/PageHeading";
 
@@ -126,7 +120,7 @@ export default function DashboardPage() {
           todayAppointments,
           totalServices: services.length,
           totalEmployees: employees.length,
-          recentAppointments: recentAppointments as any,
+          recentAppointments: recentAppointments as unknown as Appointment[],
           popularServices: serviceStats.slice(0, 3),
         });
       } catch (error) {

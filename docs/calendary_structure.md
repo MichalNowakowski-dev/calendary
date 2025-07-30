@@ -29,7 +29,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 
 - `id` (UUID)
 - `name`
-- `slug` (np. calendary.pl/firma-auto-max)
+- `slug`
 - `description`
 - `address`
 - `phone`

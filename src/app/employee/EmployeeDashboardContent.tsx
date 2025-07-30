@@ -104,14 +104,6 @@ export function EmployeeDashboardContent({
       showToast.success(
         `Status wizyty został zaktualizowany na "${getStatusText(newStatus)}"`
       );
-
-      // Update local state instead of refreshing
-      const updatedAppointments = todayAppointments.map((apt) =>
-        apt.id === appointmentId ? { ...apt, status: newStatus } : apt
-      );
-
-      // Note: In a real app, you'd want to update the parent component state
-      // For now, we'll just show the success message
     } catch (error) {
       console.error("Error updating appointment status:", error);
       showToast.error("Błąd podczas aktualizacji statusu wizyty");
@@ -126,12 +118,12 @@ export function EmployeeDashboardContent({
   ) => (
     <div
       key={appointment.id}
-      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-850 flex flex-col dark:hover:bg-gray-800 dark:bg-gray-900"
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">
               {appointment.customer_name}
             </h3>
             <Badge className={getStatusColor(appointment.status)}>
@@ -140,144 +132,125 @@ export function EmployeeDashboardContent({
           </div>
 
           <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+            <div className="flex items-center gap-2 font-medium text-gray-800 dark:text-gray-200">
+              <Calendar className="h-4 w-4 text-blue-500" />
               <span>{formatDate(appointment.date)}</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
+            <div className="flex items-center gap-2 font-medium text-gray-800 dark:text-gray-200">
+              <Clock className="h-4 w-4 text-blue-500" />
               <span>
                 {formatTime(appointment.start_time)} -{" "}
                 {formatTime(appointment.end_time)}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4" />
-              <span>Usługa: {appointment.service?.name}</span>
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <Briefcase className="h-4 w-4 text-purple-500" />
+              <span>
+                Usługa:{" "}
+                <span className="font-semibold">
+                  {appointment.service?.name}
+                </span>
+              </span>
             </div>
-
-            {appointment.customer_email && (
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <span>{appointment.customer_email}</span>
-              </div>
-            )}
-
-            {appointment.customer_phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                <span>{appointment.customer_phone}</span>
-              </div>
-            )}
           </div>
         </div>
-
-        {isToday && appointment.status === "booked" && (
-          <div className="flex flex-col gap-2 ml-4">
-            <Button
-              size="sm"
-              onClick={() => handleStatusChange(appointment.id, "completed")}
-              disabled={updatingStatus === appointment.id}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Zakończ
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleStatusChange(appointment.id, "cancelled")}
-              disabled={updatingStatus === appointment.id}
-              className="text-red-600 border-red-600 hover:bg-red-50"
-            >
-              <XCircle className="h-4 w-4 mr-1" />
-              Anuluj
-            </Button>
-          </div>
-        )}
       </div>
+
+      <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
+        {" "}
+        {/* Separator for contact info */}
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Dane kontaktowe:
+        </p>
+        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+          {appointment.customer_email && (
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-gray-500" />
+              <span>{appointment.customer_email}</span>
+            </div>
+          )}
+
+          {appointment.customer_phone && (
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4 text-gray-500" />
+              <span>{appointment.customer_phone}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {isToday && appointment.status === "booked" && (
+        <div className="flex flex-col gap-2 mt-4">
+          <Button
+            size="sm"
+            onClick={() => handleStatusChange(appointment.id, "completed")}
+            disabled={updatingStatus === appointment.id}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Zakończ
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleStatusChange(appointment.id, "cancelled")}
+            disabled={updatingStatus === appointment.id}
+            className="w-full text-red-600 border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
+            <XCircle className="h-4 w-4 mr-2" />
+            Anuluj
+          </Button>
+        </div>
+      )}
     </div>
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Welcome Section */}
-      <Card>
+      <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg dark:from-gray-800 dark:to-gray-900 dark:border dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+            <User className="h-7 w-7" />
             Witaj, {user.first_name}!
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-gray-600 dark:text-gray-400">
-            Pracujesz w firmie <strong>{company.name}</strong>
+        <CardContent className="space-y-2">
+          <p className="text-blue-100">
+            Pracujesz w firmie{" "}
+            <strong className="text-white">{company.name}</strong>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Dzisiaj masz {todayAppointments.length} wizyt, a w przyszłości{" "}
-            {upcomingAppointments.length} zaplanowanych
+          <p className="text-blue-200 text-sm">
+            Dzisiaj masz{" "}
+            <span className="font-semibold">{todayAppointments.length}</span>{" "}
+            wizyt, a w przyszłości{" "}
+            <span className="font-semibold">{upcomingAppointments.length}</span>{" "}
+            zaplanowanych.
           </p>
-        </CardContent>
-      </Card>
-
-      {/* Assigned Services */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5" />
-            Twoje przypisane usługi
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {assignedServices.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Nie masz przypisanych usług</p>
-              <p className="text-sm">Skontaktuj się z administratorem</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {assignedServices.map((service) => (
-                <div
-                  key={service.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    {service.name}
-                  </h3>
-                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                    <p>Czas: {service.duration_minutes} min</p>
-                    <p>Cena: {service.price} zł</p>
-                    {service.description && (
-                      <p className="text-xs">{service.description}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
 
       {/* Today's Appointments */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-blue-500" />
             Dzisiejsze wizyty ({todayAppointments.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {todayAppointments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Brak wizyt na dzisiaj</p>
-              <p className="text-sm">Możesz odpocząć!</p>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+              <Calendar className="h-16 w-16 mx-auto mb-4 opacity-60 text-gray-400" />
+              <p className="text-lg font-medium">Brak wizyt na dzisiaj</p>
+              <p className="text-sm">
+                Możesz odpocząć lub zająć się innymi zadaniami!
+              </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {todayAppointments.map((appointment) =>
                 renderAppointmentCard(appointment, true)
               )}
@@ -288,15 +261,15 @@ export function EmployeeDashboardContent({
 
       {/* Upcoming Appointments */}
       {upcomingAppointments.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+        <Card className="dark:bg-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-purple-500" />
               Nadchodzące wizyty ({upcomingAppointments.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {upcomingAppointments.map((appointment) =>
                 renderAppointmentCard(appointment, false)
               )}
@@ -305,32 +278,84 @@ export function EmployeeDashboardContent({
         </Card>
       )}
 
-      {/* Optional Availability Calendar */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Twój harmonogram
-            </span>
-            <button
-              onClick={() => setShowCalendar(!showCalendar)}
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              {showCalendar ? "Ukryj" : "Pokaż"}
-            </button>
+      {/* Assigned Services */}
+      <Card className="dark:bg-gray-900">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-green-500" />
+            Twoje przypisane usługi
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
+          {assignedServices.length === 0 ? (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+              <Briefcase className="h-16 w-16 mx-auto mb-4 opacity-60 text-gray-400" />
+              <p className="text-lg font-medium">Nie masz przypisanych usług</p>
+              <p className="text-sm">
+                Skontaktuj się z administratorem, aby przypisać usługi.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 dark:bg-gray-900">
+              {assignedServices.map((service) => (
+                <div
+                  key={service.id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-850 dark:hover:bg-gray-800 dark:bg-gray-900"
+                >
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-2">
+                    {service.name}
+                  </h3>
+                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <p>
+                      <span className="font-medium">Czas:</span>{" "}
+                      {service.duration_minutes} min
+                    </p>
+                    <p>
+                      <span className="font-medium">Cena:</span> {service.price}{" "}
+                      zł
+                    </p>
+                    {service.description && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {service.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Optional Availability Calendar */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-orange-500" />
+            Twój harmonogram
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            {showCalendar ? "Ukryj" : "Pokaż"}
+          </Button>
+        </CardHeader>
+        <CardContent className="pt-4">
           {showCalendar ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Harmonogram dostępności</p>
-              <p className="text-sm">Funkcja w trakcie rozwoju</p>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+              <Calendar className="h-16 w-16 mx-auto mb-4 opacity-60 text-gray-400" />
+              <p className="text-lg font-medium">Harmonogram dostępności</p>
+              <p className="text-sm">
+                Funkcja w trakcie rozwoju. Sprawdź zakładkę
+                &quot;Harmonogram&quot; w menu.
+              </p>
             </div>
           ) : (
             <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-              <p>Kliknij "Pokaż" aby zobaczyć swój harmonogram</p>
+              <p>Kliknij &quot;Pokaż&quot; aby zobaczyć swój harmonogram</p>
             </div>
           )}
         </CardContent>

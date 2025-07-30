@@ -4,11 +4,10 @@ import type {
   Company,
   Employee,
   Service,
-  Appointment,
   Schedule,
   Customer,
-  CompanyUser,
   Settings,
+  EmployeeWithDetailsRaw,
 } from "@/lib/types/database";
 
 // Client-side database operations
@@ -148,8 +147,10 @@ export const db = {
     return (data || []).map((emp) => ({
       ...emp,
       services:
-        (emp as any).employee_services?.map((es: any) => es.service) || [],
-      schedules: (emp as any).schedules || [],
+        (emp as EmployeeWithDetailsRaw).employee_services?.map(
+          (es) => es.service
+        ) || [],
+      schedules: (emp as EmployeeWithDetailsRaw).schedules || [],
     }));
   },
 
@@ -165,7 +166,7 @@ export const db = {
       .eq("employee_id", employeeId);
 
     if (error) throw error;
-    return (data || []).map((es: any) => es.service);
+    return (data || []).map((es) => es.service);
   },
 
   // Appointment operations

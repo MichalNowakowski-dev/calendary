@@ -133,17 +133,14 @@ export interface Database {
         Row: {
           employee_id: string;
           service_id: string;
-          created_at: string;
         };
         Insert: {
           employee_id: string;
           service_id: string;
-          created_at?: string;
         };
         Update: {
           employee_id?: string;
           service_id?: string;
-          created_at?: string;
         };
       };
       schedules: {
@@ -184,6 +181,7 @@ export interface Database {
           company_id: string;
           employee_id: string | null;
           service_id: string;
+          customer_id: string | null;
           customer_name: string;
           customer_email: string;
           customer_phone: string | null;
@@ -191,6 +189,7 @@ export interface Database {
           start_time: string;
           end_time: string;
           status: "booked" | "cancelled" | "completed";
+          notes: string | null;
           created_at: string;
         };
         Insert: {
@@ -198,6 +197,7 @@ export interface Database {
           company_id: string;
           employee_id?: string | null;
           service_id: string;
+          customer_id?: string | null;
           customer_name: string;
           customer_email: string;
           customer_phone?: string | null;
@@ -205,6 +205,7 @@ export interface Database {
           start_time: string;
           end_time: string;
           status?: "booked" | "cancelled" | "completed";
+          notes?: string | null;
           created_at?: string;
         };
         Update: {
@@ -212,6 +213,7 @@ export interface Database {
           company_id?: string;
           employee_id?: string | null;
           service_id?: string;
+          customer_id?: string | null;
           customer_name?: string;
           customer_email?: string;
           customer_phone?: string | null;
@@ -219,30 +221,37 @@ export interface Database {
           start_time?: string;
           end_time?: string;
           status?: "booked" | "cancelled" | "completed";
+          notes?: string | null;
           created_at?: string;
         };
       };
       customers: {
         Row: {
           id: string;
+          company_id: string;
           name: string;
           email: string;
           phone: string | null;
           created_at: string;
+          notes: string | null;
         };
         Insert: {
           id?: string;
+          company_id: string;
           name: string;
           email: string;
           phone?: string | null;
           created_at?: string;
+          notes?: string | null;
         };
         Update: {
           id?: string;
+          company_id?: string;
           name?: string;
           email?: string;
           phone?: string | null;
           created_at?: string;
+          notes?: string | null;
         };
       };
       settings: {
@@ -386,4 +395,33 @@ export interface AppointmentWithDetails extends Appointment {
 export interface EmployeeWithServices extends Employee {
   services: Service[];
   schedules: Schedule[];
+}
+
+// Types for getEmployeesWithDetails function
+export interface EmployeeWithDetailsRaw extends Employee {
+  employee_services: Array<{
+    service: Service;
+  }>;
+  schedules: Schedule[];
+}
+
+export interface EmployeeWithDetailsTransformed extends Employee {
+  services: Service[];
+  schedules: Schedule[];
+}
+
+// Types for employee services queries
+export interface EmployeeServiceWithEmployee {
+  employee: Pick<Employee, "id" | "name" | "visible">;
+}
+
+// Service with employee assignments
+export interface ServiceWithEmployees extends Service {
+  employee_services: {
+    employee: {
+      id: string;
+      name: string;
+      visible: boolean;
+    };
+  }[];
 }

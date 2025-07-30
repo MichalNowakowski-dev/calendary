@@ -4,6 +4,7 @@ import { serverAuth } from "@/lib/auth/server";
 import { serverDb } from "@/lib/db-server";
 import { EmployeeScheduleContent } from "./EmployeeScheduleContent";
 import { Company } from "@/lib/types/database";
+import { getEmployeeAppointments } from "@/lib/actions/appointments";
 import PageHeading from "@/components/PageHeading";
 
 async function EmployeeSchedulePageContent() {
@@ -36,6 +37,9 @@ async function EmployeeSchedulePageContent() {
     (emp) => emp.auth_user_id === user.id || emp.user_id === user.id
   );
   const schedules = currentEmployee?.schedules || [];
+  const appointments = currentEmployee
+    ? await getEmployeeAppointments(currentEmployee.id)
+    : [];
 
   return (
     <div className="space-y-6">
@@ -46,6 +50,7 @@ async function EmployeeSchedulePageContent() {
 
       <EmployeeScheduleContent
         schedules={schedules}
+        appointments={appointments}
         company={userCompany}
         user={user}
       />

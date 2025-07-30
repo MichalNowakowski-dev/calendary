@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Clock, Plus, User } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Service, Employee, Company } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
@@ -76,17 +75,6 @@ const generateTimeSlots = () => {
   return slots;
 };
 
-const getMinDate = () => {
-  const today = new Date();
-  return today.toISOString().split("T")[0];
-};
-
-const getMaxDate = () => {
-  const maxDate = new Date();
-  maxDate.setDate(maxDate.getDate() + 90); // 3 months ahead
-  return maxDate.toISOString().split("T")[0];
-};
-
 export default function AppointmentForm({
   company,
   onAppointmentCreated,
@@ -94,10 +82,10 @@ export default function AppointmentForm({
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const supabase = createClient();
 
@@ -134,14 +122,13 @@ export default function AppointmentForm({
         setServices(servicesData || []);
 
         // Load employees
-        const { data: employeesData, error: employeesError } = await supabase
+        const { error: employeesError } = await supabase
           .from("employees")
           .select("*")
           .eq("company_id", company.id)
           .order("name", { ascending: true });
 
         if (employeesError) throw employeesError;
-        setEmployees(employeesData || []);
       } catch (error) {
         console.error("Error loading data:", error);
       }
@@ -177,8 +164,10 @@ export default function AppointmentForm({
         if (error) throw error;
 
         const availableEmployees = (serviceEmployees || [])
-          .map((se: any) => se.employee)
-          .filter((emp: any) => emp && emp.visible);
+          .flatMap((se) =>
+            Array.isArray(se.employee) ? se.employee : [se.employee]
+          )
+          .filter((emp) => emp && emp.visible) as Employee[];
 
         setFilteredEmployees(availableEmployees);
 
@@ -186,7 +175,7 @@ export default function AppointmentForm({
         const currentEmployeeId = form.getValues("employeeId");
         if (
           currentEmployeeId &&
-          !availableEmployees.find((emp: any) => emp.id === currentEmployeeId)
+          !availableEmployees.find((emp) => emp.id === currentEmployeeId)
         ) {
           form.setValue("employeeId", "");
         }
@@ -301,7 +290,7 @@ export default function AppointmentForm({
       const endTime = endDate.toTimeString().substring(0, 5);
 
       // Create appointment
-      const { data: appointment, error: appointmentError } = await supabase
+      const { error: appointmentError } = await supabase
         .from("appointments")
         .insert({
           company_id: company.id,
@@ -324,9 +313,9 @@ export default function AppointmentForm({
       setIsOpen(false);
       form.reset();
       onAppointmentCreated();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating appointment:", error);
-      showToast.error(error.message || "Błąd podczas tworzenia wizyty");
+      showToast.error("Błąd podczas tworzenia wizyty");
     } finally {
       setIsSubmitting(false);
     }
@@ -491,11 +480,13 @@ export default function AppointmentForm({
                   control={form.control}
                   name="date"
                   render={({ field }) => {
-                    const [open, setOpen] = useState(false);
                     return (
                       <FormItem className="flex flex-col">
                         <FormLabel>Data *</FormLabel>
-                        <Popover open={open} onOpenChange={setOpen}>
+                        <Popover
+                          open={calendarOpen}
+                          onOpenChange={setCalendarOpen}
+                        >
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
@@ -526,7 +517,7 @@ export default function AppointmentForm({
                                 field.onChange(
                                   date ? format(date, "yyyy-MM-dd") : ""
                                 );
-                                setOpen(false);
+                                setCalendarOpen(false);
                               }}
                               disabled={(date) => {
                                 const today = new Date();
@@ -581,12 +572,12 @@ export default function AppointmentForm({
                                 !watchedDate
                                   ? "Najpierw wybierz datę"
                                   : !watchedEmployeeId
-                                  ? "Najpierw wybierz pracownika"
-                                  : isLoadingAvailability
-                                  ? "Sprawdzam dostępność..."
-                                  : availableTimeSlots.length === 0
-                                  ? "Brak dostępnych terminów"
-                                  : "Wybierz godzinę"
+                                    ? "Najpierw wybierz pracownika"
+                                    : isLoadingAvailability
+                                      ? "Sprawdzam dostępność..."
+                                      : availableTimeSlots.length === 0
+                                        ? "Brak dostępnych terminów"
+                                        : "Wybierz godzinę"
                               }
                             />
                           </SelectTrigger>

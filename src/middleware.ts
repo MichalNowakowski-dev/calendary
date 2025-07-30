@@ -1,19 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 
 export async function middleware(request: NextRequest) {
-  const supabase = createClient(cookies());
+  const supabase = createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-
-  // Public routes that don't require authentication
-  const publicRoutes = ["/", "/login", "/register"];
-  const isPublicRoute = publicRoutes.includes(pathname);
 
   // Protected routes that require authentication
   const protectedRoutes = ["/dashboard", "/employee"];

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,24 +11,13 @@ import {
 } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentUser, getUserCompanies } from "@/lib/auth/utils";
-import type {
-  Company,
-  Appointment,
-  Service,
-  Employee,
-} from "@/lib/types/database";
+import type { Company, Service, Employee } from "@/lib/types/database";
 import {
   TrendingUp,
   TrendingDown,
   DollarSign,
   Calendar,
-  Users,
-  Clock,
   CheckCircle,
-  XCircle,
-  BarChart3,
-  PieChart,
-  Activity,
 } from "lucide-react";
 import {
   RevenueChart,
@@ -85,7 +73,7 @@ export default function AnalyticsClient() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
     null
   );
-  const [company, setCompany] = useState<Company | null>(null);
+
   const [timeRange, setTimeRange] = useState("30");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -101,7 +89,6 @@ export default function AnalyticsClient() {
         if (companies.length === 0) return;
 
         const userCompany = companies[0]?.company as unknown as Company;
-        setCompany(userCompany);
 
         // Calculate date range based on timeRange
         const endDate = new Date();

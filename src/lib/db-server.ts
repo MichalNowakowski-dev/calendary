@@ -1,13 +1,12 @@
 import { createClient as createServerClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+
 import type {
   Company,
   Employee,
-  Service,
-  Appointment,
+  EmployeeService,
+  EmployeeWithDetailsRaw,
   Schedule,
-  Customer,
-  CompanyUser,
+  Service,
   Settings,
 } from "@/lib/types/database";
 
@@ -15,8 +14,7 @@ import type {
 export const serverDb = {
   // Company operations
   async getCompanyBySlug(slug: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("companies")
       .select("*")
@@ -28,8 +26,7 @@ export const serverDb = {
   },
 
   async getCompanyById(id: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("companies")
       .select("*")
@@ -42,8 +39,7 @@ export const serverDb = {
 
   // User operations
   async getCurrentUser() {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase.auth.getUser();
 
     if (error || !data.user) return null;
@@ -59,8 +55,7 @@ export const serverDb = {
   },
 
   async getUserCompanies(userId: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("company_users")
       .select(
@@ -90,8 +85,7 @@ export const serverDb = {
 
   // Service operations
   async getServices(companyId: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("services")
       .select("*")
@@ -104,8 +98,7 @@ export const serverDb = {
   },
 
   async getServicesWithEmployees(companyId: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("services")
       .select(
@@ -130,8 +123,7 @@ export const serverDb = {
 
   // Employee operations
   async getEmployees(companyId: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("employees")
       .select("id, name, visible")
@@ -144,8 +136,7 @@ export const serverDb = {
   },
 
   async getEmployeesWithDetails(companyId: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("employees")
       .select(
@@ -163,18 +154,16 @@ export const serverDb = {
     if (error) throw error;
 
     // Transform employees data
-    return (data || []).map((emp) => ({
+    return (data || []).map((emp: EmployeeWithDetailsRaw) => ({
       ...emp,
-      services:
-        (emp as any).employee_services?.map((es: any) => es.service) || [],
-      schedules: (emp as any).schedules || [],
+      services: emp.employee_services?.map((es) => es.service) || [],
+      schedules: emp.schedules || [],
     }));
   },
 
   // Appointment operations
   async getAppointments(companyId: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("appointments")
       .select(
@@ -200,10 +189,82 @@ export const serverDb = {
     return data;
   },
 
+  async getEmployeeAppointments(userId: string) {
+    const supabase = createServerClient();
+
+    // First, get the employee record for this user
+    const { data: employeeData, error: employeeError } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .single();
+
+    if (employeeError || !employeeData) {
+      return [];
+    }
+
+    // Then get appointments for this employee
+    const { data, error } = await supabase
+      .from("appointments")
+      .select(
+        `
+        *,
+        service:services(
+          id,
+          name,
+          duration_minutes,
+          price
+        )
+      `
+      )
+      .eq("employee_id", employeeData.id)
+      .order("date", { ascending: true })
+      .order("start_time", { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async getEmployeeAppointmentsByCompany(companyId: string, userId: string) {
+    const supabase = createServerClient();
+
+    // First, get the employee record for this user in this company
+    const { data: employeeData, error: employeeError } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("company_id", companyId)
+      .eq("auth_user_id", userId)
+      .single();
+
+    if (employeeError || !employeeData) {
+      return [];
+    }
+
+    // Then get appointments for this employee
+    const { data, error } = await supabase
+      .from("appointments")
+      .select(
+        `
+        *,
+        service:services(
+          id,
+          name,
+          duration_minutes,
+          price
+        )
+      `
+      )
+      .eq("employee_id", employeeData.id)
+      .order("date", { ascending: true })
+      .order("start_time", { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
+
   // Settings operations
   async getCompanySettings(companyId: string) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(cookieStore);
+    const supabase = createServerClient();
     const { data, error } = await supabase
       .from("settings")
       .select("*")

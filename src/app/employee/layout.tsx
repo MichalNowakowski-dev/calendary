@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { serverAuth } from "@/lib/auth/server";
 import type { AuthUser } from "@/lib/auth/server";
@@ -10,8 +9,7 @@ export default async function EmployeeDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   // Get the current user on the server
   const {
@@ -46,10 +44,18 @@ export default async function EmployeeDashboardLayout({
     if (authUser.role === "employee") {
       // For employees, we'll allow access even without company_users record
       // They might be in the process of accepting invitation
-      return <EmployeeDashboardClient user={authUser} children={children} />;
+      return (
+        <EmployeeDashboardClient user={authUser}>
+          {children}
+        </EmployeeDashboardClient>
+      );
     }
     redirect("/login");
   }
 
-  return <EmployeeDashboardClient user={authUser} children={children} />;
+  return (
+    <EmployeeDashboardClient user={authUser}>
+      {children}
+    </EmployeeDashboardClient>
+  );
 }

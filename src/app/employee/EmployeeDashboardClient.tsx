@@ -12,6 +12,7 @@ import {
   User,
   Clock,
   Briefcase,
+  Lock,
 } from "lucide-react";
 import { signOut } from "@/lib/auth/utils";
 import type { AuthUser } from "@/lib/auth/utils";
@@ -37,6 +38,11 @@ const employeeSidebarItems = [
     name: "Moje usługi",
     href: "/employee/services",
     icon: Briefcase,
+  },
+  {
+    name: "Zmień hasło",
+    href: "/employee/settings",
+    icon: Lock,
   },
 ];
 

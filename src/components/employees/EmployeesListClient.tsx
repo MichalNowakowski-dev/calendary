@@ -20,7 +20,6 @@ interface EmployeesListClientProps {
 }
 
 export default function EmployeesListClient({
-  employees,
   companyId,
   showAddButton = false,
 }: EmployeesListClientProps) {
@@ -46,12 +45,6 @@ export default function EmployeesListClient({
     } catch (error) {
       console.error("Error fetching services:", error);
     }
-  };
-
-  const handleEdit = (employee: EmployeeWithDetails) => {
-    setEditingEmployee(employee);
-    setShowAddForm(true);
-    fetchServices();
   };
 
   const handleCancel = () => {

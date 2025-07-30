@@ -26,6 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import EnhancedBookingModal from "@/components/public/EnhancedBookingModal";
+import { Employee, Service } from "@/lib/types/database";
 
 // Mock data for demo
 const mockCompany = {
@@ -55,8 +56,28 @@ const mockServices = [
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     employees: [
-      { id: "emp-1", name: "Anna Kowalska", visible: true },
-      { id: "emp-2", name: "Maria Nowak", visible: true },
+      {
+        id: "emp-1",
+        company_id: "demo-company",
+        user_id: null,
+        name: "Anna Kowalska",
+        visible: true,
+        phone_number: "+48 123 456 789",
+        email: "anna.kowalska@salonbella.pl",
+        auth_user_id: null,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: "emp-2",
+        company_id: "demo-company",
+        user_id: null,
+        name: "Maria Nowak",
+        visible: true,
+        phone_number: "+48 987 654 321",
+        email: "maria.nowak@salonbella.pl",
+        auth_user_id: null,
+        created_at: new Date().toISOString(),
+      },
     ],
   },
   {
@@ -69,7 +90,19 @@ const mockServices = [
     company_id: "demo-company",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    employees: [{ id: "emp-1", name: "Anna Kowalska", visible: true }],
+    employees: [
+      {
+        id: "emp-1",
+        company_id: "demo-company",
+        user_id: null,
+        name: "Anna Kowalska",
+        visible: true,
+        phone_number: "+48 123 456 789",
+        email: "anna.kowalska@salonbella.pl",
+        auth_user_id: null,
+        created_at: new Date().toISOString(),
+      },
+    ],
   },
   {
     id: "service-3",
@@ -81,7 +114,19 @@ const mockServices = [
     company_id: "demo-company",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    employees: [{ id: "emp-3", name: "Piotr Wiśniewski", visible: true }],
+    employees: [
+      {
+        id: "emp-3",
+        company_id: "demo-company",
+        user_id: null,
+        name: "Piotr Wiśniewski",
+        visible: true,
+        phone_number: "+48 555 123 456",
+        email: "piotr.wisniewski@salonbella.pl",
+        auth_user_id: null,
+        created_at: new Date().toISOString(),
+      },
+    ],
   },
 ];
 
@@ -119,10 +164,12 @@ const formatDuration = (minutes: number) => {
 };
 
 export default function ReservationDemo() {
-  const [selectedService, setSelectedService] = useState<any>(null);
+  const [selectedService, setSelectedService] = useState<
+    (Service & { employees: Employee[] }) | null
+  >(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  const handleBookService = (service: any) => {
+  const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedService(service);
     setIsBookingModalOpen(true);
   };
@@ -281,15 +328,17 @@ export default function ReservationDemo() {
                       Dostępni specjaliści:
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {service.employees.map((employee: any) => (
-                        <Badge
-                          key={employee.id}
-                          variant="outline"
-                          className="text-xs bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                        >
-                          {employee.name}
-                        </Badge>
-                      ))}
+                      {service.employees &&
+                        Array.isArray(service.employees) &&
+                        service.employees.map((employee) => (
+                          <Badge
+                            key={employee.id}
+                            variant="outline"
+                            className="text-xs bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300"
+                          >
+                            {employee.name}
+                          </Badge>
+                        ))}
                     </div>
                   </div>
 
@@ -414,7 +463,7 @@ export default function ReservationDemo() {
           isOpen={isBookingModalOpen}
           onClose={closeBookingModal}
           company={mockCompany}
-          service={selectedService}
+          service={selectedService as Service & { employees: Employee[] }}
         />
       )}
     </div>

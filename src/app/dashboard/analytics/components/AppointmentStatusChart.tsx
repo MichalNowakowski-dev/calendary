@@ -22,32 +22,6 @@ export default function AppointmentStatusChart({
     return total > 0 ? (value / total) * 100 : 0;
   };
 
-  const getColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-500";
-      case "booked":
-        return "bg-blue-500";
-      case "cancelled":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  const getIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return CheckCircle;
-      case "booked":
-        return Clock;
-      case "cancelled":
-        return XCircle;
-      default:
-        return Clock;
-    }
-  };
-
   const statusItems = [
     {
       key: "completed",

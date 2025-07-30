@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,12 +10,9 @@ import {
   User,
   Search,
   Filter,
-  Plus,
   CheckCircle,
   XCircle,
   Edit,
-  Trash2,
-  LetterTextIcon,
   Phone,
   Mail,
 } from "lucide-react";
@@ -209,7 +206,9 @@ export default function AppointmentsPage() {
       // Update local state
       setAppointments((prev) =>
         prev.map((apt) =>
-          apt.id === appointmentId ? { ...apt, status: newStatus as any } : apt
+          apt.id === appointmentId
+            ? { ...apt, status: newStatus as Appointment["status"] }
+            : apt
         )
       );
       showToast.success("Status wizyty został zaktualizowany");

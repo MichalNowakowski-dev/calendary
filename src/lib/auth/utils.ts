@@ -223,7 +223,7 @@ export const isSlugAvailable = async (slug: string): Promise<boolean> => {
  * Generate a unique slug from company name
  */
 export const generateSlug = async (name: string): Promise<string> => {
-  let baseSlug = name
+  const baseSlug = name
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")

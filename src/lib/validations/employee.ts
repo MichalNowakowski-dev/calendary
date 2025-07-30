@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Employee } from "../types/database";
 
 // Common validations
 const emailValidation = z
@@ -40,5 +41,5 @@ export type EmployeeActionResult = {
   success: boolean;
   message: string;
   errors?: Record<string, string[]>;
-  employee?: any;
+  employee?: Employee;
 };

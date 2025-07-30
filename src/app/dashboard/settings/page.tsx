@@ -48,9 +48,6 @@ export default function CompanySettingsPage() {
     },
   });
 
-  // Watch company name to generate slug
-  const companyName = form.watch("name");
-
   // Generate slug from company name
   const handleCompanyNameChange = (value: string) => {
     form.setValue("name", value);
@@ -140,9 +137,9 @@ export default function CompanySettingsPage() {
       });
 
       showToast.success("Dane firmy zostały zaktualizowane pomyślnie!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Company update error:", error);
-      showToast.error(`Błąd podczas aktualizacji: ${error.message}`);
+      showToast.error(`Błąd podczas aktualizacji: ${error}`);
     } finally {
       setIsSaving(false);
     }

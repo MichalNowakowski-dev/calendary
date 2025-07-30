@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { serverAuth } from "@/lib/auth/server";
 import type { AuthUser } from "@/lib/auth/server";
@@ -10,8 +9,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   // Get the current user on the server
   const {
@@ -39,5 +37,5 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return <DashboardClient user={authUser} children={children} />;
+  return <DashboardClient user={authUser}>{children}</DashboardClient>;
 }

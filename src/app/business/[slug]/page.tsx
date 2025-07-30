@@ -1,8 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { Company, Service, Employee } from "@/lib/types/database";
+import { Service, Employee } from "@/lib/types/database";
 import ClientReservationView from "@/components/client/ClientReservationView";
 import MapLocation from "@/components/public/MapLocation";
 
@@ -12,9 +11,20 @@ interface PageProps {
   }>;
 }
 
+// Define types for the service with employee data
+interface ServiceWithEmployeeData extends Service {
+  employee_services?: Array<{
+    employee: Employee;
+  }>;
+}
+
+interface ServiceWithEmployees extends Service {
+  employees: Employee[];
+}
+
 // Helper function to get company by slug with services and employees
 async function getCompanyBySlug(slug: string) {
-  const supabase = createClient(cookies());
+  const supabase = createClient();
 
   try {
     // Get company by slug
@@ -53,13 +63,15 @@ async function getCompanyBySlug(slug: string) {
     }
 
     // Transform services to include assigned employees
-    const servicesWithEmployees = (services || []).map((service) => ({
-      ...service,
-      employees:
-        (service as any).employee_services
-          ?.map((es: any) => es.employee)
-          ?.filter((emp: any) => emp.visible) || [],
-    }));
+    const servicesWithEmployees: ServiceWithEmployees[] = (services || []).map(
+      (service: ServiceWithEmployeeData) => ({
+        ...service,
+        employees:
+          service.employee_services
+            ?.map((es) => es.employee)
+            ?.filter((emp) => emp.visible) || [],
+      })
+    );
 
     return {
       company,

@@ -106,9 +106,11 @@ export default function LoginPage() {
           router.push("/");
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
-      const translatedError = translateAuthError(error.message || "");
+      const translatedError = translateAuthError(
+        (error as { message?: string })?.message || ""
+      );
       setAuthError(translatedError);
     } finally {
       setIsLoading(false);

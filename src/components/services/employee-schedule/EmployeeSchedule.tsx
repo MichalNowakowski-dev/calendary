@@ -12,9 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { showConfirmToast, showToast } from "@/lib/toast";
-import { format, parseISO } from "date-fns";
 import type { EmployeeScheduleProps } from "./types";
 import { ScheduleStats } from "./ScheduleStats";
 import { ScheduleForm } from "./ScheduleForm";
@@ -29,8 +26,6 @@ export const EmployeeSchedule = ({
   const [isOpen, setIsOpen] = useState(false);
   const [currentSchedules, setCurrentSchedules] = useState(schedules);
 
-  const supabase = createClient();
-
   useEffect(() => {
     setCurrentSchedules(schedules);
   }, [schedules]);
@@ -38,35 +33,6 @@ export const EmployeeSchedule = ({
   const handleScheduleUpdate = (newSchedules: typeof schedules) => {
     setCurrentSchedules(newSchedules);
     onScheduleUpdate(newSchedules);
-  };
-
-  const handleDeleteSchedule = async (schedule: (typeof schedules)[0]) => {
-    showConfirmToast(
-      `Czy na pewno chcesz usunąć grafik ${format(
-        parseISO(schedule.start_date),
-        "dd.MM.yyyy"
-      )} - ${format(parseISO(schedule.end_date), "dd.MM.yyyy")}?`,
-      async () => {
-        try {
-          const { error } = await supabase
-            .from("schedules")
-            .delete()
-            .eq("id", schedule.id);
-
-          if (error) throw error;
-
-          const newSchedules = currentSchedules.filter(
-            (s) => s.id !== schedule.id
-          );
-          handleScheduleUpdate(newSchedules);
-
-          showToast.success("Grafik został usunięty");
-        } catch (error) {
-          console.error("Error deleting schedule:", error);
-          showToast.error("Błąd podczas usuwania grafiku");
-        }
-      }
-    );
   };
 
   return (

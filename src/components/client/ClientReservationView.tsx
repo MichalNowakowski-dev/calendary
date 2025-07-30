@@ -15,7 +15,7 @@ import {
   Award,
   Heart,
 } from "lucide-react";
-import { Company, Service } from "@/lib/types/database";
+import { Company, Employee, Service } from "@/lib/types/database";
 import {
   Card,
   CardContent,
@@ -29,8 +29,8 @@ import EnhancedBookingModal from "@/components/public/EnhancedBookingModal";
 
 interface ClientReservationViewProps {
   company: Company;
-  services: (Service & { employees: any[] })[];
-  selectedService?: (Service & { employees: any[] }) | null;
+  services: (Service & { employees: Employee[] })[];
+  selectedService?: (Service & { employees: Employee[] }) | null;
 }
 
 const industryLabels: Record<string, string> = {
@@ -72,11 +72,11 @@ export default function ClientReservationView({
   selectedService,
 }: ClientReservationViewProps) {
   const [selectedServiceState, setSelectedServiceState] = useState<
-    (Service & { employees: any[] }) | null
+    (Service & { employees: Employee[] }) | null
   >(selectedService || null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  const handleBookService = (service: Service & { employees: any[] }) => {
+  const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedServiceState(service);
     setIsBookingModalOpen(true);
   };
@@ -256,7 +256,7 @@ export default function ClientReservationView({
                         <div className="flex flex-wrap gap-1">
                           {service.employees
                             .slice(0, 3)
-                            .map((employee: any) => (
+                            .map((employee: Employee) => (
                               <Badge
                                 key={employee.id}
                                 variant="outline"

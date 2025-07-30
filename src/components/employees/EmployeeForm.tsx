@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -22,17 +21,12 @@ import {
   employeeFormSchema,
   type EmployeeFormData,
 } from "@/lib/validations/employee";
-import type { Employee, Service } from "@/lib/types/database";
+import type { EmployeeWithServices, Service } from "@/lib/types/database";
 import React, { useTransition } from "react";
-
-interface EmployeeWithDetails extends Employee {
-  services: Service[];
-  schedules: any[];
-}
 
 interface EmployeeFormProps {
   services: Service[];
-  editingEmployee: EmployeeWithDetails | null;
+  editingEmployee: EmployeeWithServices | null;
   companyId: string;
   onCancel: () => void;
   onSuccess?: () => void;
@@ -47,7 +41,7 @@ export default function EmployeeForm({
 }: EmployeeFormProps) {
   const [_, startTransition] = useTransition();
   const [state, formAction, isPending] = useActionState(
-    async (prevState: any, formData: FormData) => {
+    async (prevState: unknown, formData: FormData) => {
       const rawData = {
         first_name: formData.get("first_name") as string,
         last_name: formData.get("last_name") as string,
@@ -279,8 +273,8 @@ export default function EmployeeForm({
                 {isPending
                   ? "Przetwarzanie..."
                   : editingEmployee
-                  ? "Zapisz zmiany"
-                  : "Dodaj pracownika"}
+                    ? "Zapisz zmiany"
+                    : "Dodaj pracownika"}
               </Button>
               <Button type="button" variant="outline" onClick={onCancel}>
                 Anuluj

@@ -3,19 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, AlertCircle } from "lucide-react";
-import type { Schedule, Company } from "@/lib/types/database";
+import type { Schedule, Company, Appointment } from "@/lib/types/database";
 import type { AuthUser } from "@/lib/auth/server";
+import CalendarView from "./CalendarView";
 
 interface EmployeeScheduleContentProps {
   schedules: Schedule[];
+  appointments: Appointment[];
   company: Company;
   user: AuthUser;
 }
 
 export function EmployeeScheduleContent({
   schedules,
-  company,
-  user,
+  appointments,
 }: EmployeeScheduleContentProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -136,11 +137,7 @@ export function EmployeeScheduleContent({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Widok kalendarza</p>
-            <p className="text-sm">Funkcja w trakcie rozwoju</p>
-          </div>
+          <CalendarView appointments={appointments} />
         </CardContent>
       </Card>
 

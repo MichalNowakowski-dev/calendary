@@ -2,7 +2,7 @@
 // Please use the centralized database operations from that file instead.
 
 import { db } from "@/lib/db";
-import type { Employee, Service, Schedule } from "@/lib/types/database";
+import type { Service, Schedule } from "@/lib/types/database";
 
 // Re-export the interface for backward compatibility
 export interface EmployeeWithDetails {
