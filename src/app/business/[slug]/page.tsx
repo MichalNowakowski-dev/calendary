@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Service, Employee, BusinessHours } from "@/lib/types/database";
+import { Service, Employee } from "@/lib/types/database";
 import ClientReservationView from "@/components/client/ClientReservationView";
 import MapLocation from "@/components/public/MapLocation";
 import BusinessHoursDisplay from "@/components/public/BusinessHoursDisplay";

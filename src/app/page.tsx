@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Building2, Calendar, Clock, Star, Users, Zap } from "lucide-react";
 import FeatureCard from "@/components/FeatureCard";
 import Image from "next/image";
+import { redirect } from "next/navigation";
+import { serverAuth } from "@/lib/auth/server";
 
-export default function Home() {
+export default async function Home() {
   const features = [
     {
       title: "Inteligentny kalendarz",
@@ -65,6 +67,16 @@ export default function Home() {
     "Konsulting",
     "I wiele innych...",
   ];
+
+  // Should check if user is logged in and redirect to specific dashboard based on user role
+  const user = await serverAuth.getCurrentUser();
+  if (user?.role === "owner") {
+    redirect("/dashboard");
+  } else if (user?.role === "employee") {
+    redirect("/employee");
+  } else if (user?.role === "customer") {
+    redirect("/customer");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
@@ -137,6 +149,7 @@ export default function Home() {
           <div className="relative flex justify-center lg:justify-end">
             <Image
               src="/hero-image.png"
+              priority
               width={500}
               height={500}
               alt="Calendary.pl Dashboard Preview"

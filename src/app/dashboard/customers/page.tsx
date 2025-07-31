@@ -12,6 +12,7 @@ import { getCustomers, type CustomerWithStats } from "@/lib/actions/customers";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerWithStats[]>([]);
+  const [userCompany, setUserCompany] = useState<Company | null>(null);
   const [filteredCustomers, setFilteredCustomers] = useState<
     CustomerWithStats[]
   >([]);
@@ -33,6 +34,7 @@ export default function CustomersPage() {
       if (companies.length === 0) return;
 
       const userCompany = companies[0]?.company as unknown as Company;
+      setUserCompany(userCompany);
 
       // Get customers with statistics using server action
       const customersWithStats = await getCustomers(userCompany.id);
@@ -134,6 +136,7 @@ export default function CustomersPage() {
         customers={filteredCustomers}
         onRefresh={loadCustomers}
         isLoading={isLoading}
+        companyId={userCompany?.id || ""}
       />
     </div>
   );

@@ -1,23 +1,9 @@
-# Calendary.pl – Struktura aplikacji
-
-## ✅ Nazwa: Calendary.pl
-
-System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści, spa itd.)
-
----
-
-## ⚙️ Stack technologiczny
-
-- **Frontend:** Next.js
-- **Styling:** Tailwind CSS
-- **Baza/Auth:** Supabase (PostgreSQL, Auth, RLS, Storage)
-
----
+# Calendary.pl – Struktura bazy danych
 
 ## 🎯 Główne role w systemie
 
-- `admin` – zarządzanie systemem (Ty jako właściciel)
-- `company_owner` – właściciel firmy
+- `owner` – właściciel firmy
+- `admin` – zarządzanie systemem
 - `employee` – pracownik (z kontem lub tylko widoczny)
 - `customer` – klient (może mieć konto lub być gościem)
 
@@ -25,23 +11,24 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 
 ## 📦 Główne tabele (modele Supabase / PostgreSQL)
 
+### Supabase Auth / Users
+
+- Supabase `auth.users` (wbudowane)
+- UUID = `user_id` w innych tabelach
+
+---
+
 ### `companies`
 
 - `id` (UUID)
 - `name`
 - `slug`
 - `description`
-- `address`
+- `address_street`
+- `address_city`
 - `phone`
 - `industry`
 - `created_at`
-
----
-
-### `users`
-
-- Supabase `auth.users` (wbudowane)
-- UUID = `user_id` w innych tabelach
 
 ---
 
@@ -54,6 +41,7 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 - `user_id`
 - `role` (`owner`, `employee`, `admin`)
 - `status` (`active`, `invited`, `suspended`)
+- `created_at`
 
 ---
 
@@ -76,6 +64,8 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 - `user_id` (opcjonalnie)
 - `name`
 - `visible` (czy widoczny publicznie)
+- `phone_number`
+- `email`
 
 ---
 
@@ -90,9 +80,12 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 
 - `id`
 - `employee_id`
-- `weekday` (0–6)
+- `start_date`
+- `end_date`
 - `start_time` (`08:00`)
 - `end_time` (`16:00`)
+- `created_at`
+- `updated_at`
 
 ---
 
@@ -110,6 +103,8 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 - `end_time`
 - `status` (`booked`, `cancelled`, `completed`)
 - `created_at`
+- `notes`
+- `customer_id`
 
 ---
 
@@ -121,11 +116,14 @@ System rezerwacji usług dla różnych branż (warsztaty, fryzjerzy, masażyści
 - `name`
 - `email`
 - `phone`
+- `created_at`
+- `company_id`
 
 ---
 
 ### `settings` (per firma)
 
+- `id`
 - `company_id`
 - `booking_buffer`
 - `max_bookings_per_day`

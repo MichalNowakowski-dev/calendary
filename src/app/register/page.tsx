@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Building2, User } from "lucide-react";
 import CompanyOwnerRegistration from "@/components/registration/CompanyOwnerRegistration";
 import CustomerRegistration from "@/components/registration/CustomerRegistration";

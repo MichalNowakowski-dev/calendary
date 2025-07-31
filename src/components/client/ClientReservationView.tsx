@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import EnhancedBookingModal from "@/components/public/EnhancedBookingModal";
+import EnhancedBookingModal from "@/components/booking/EnhancedBookingModal";
 
 interface ClientReservationViewProps {
   company: Company;
@@ -79,11 +79,13 @@ export default function ClientReservationView({
   const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedServiceState(service);
     setIsBookingModalOpen(true);
+    document.body.style.overflow = "hidden";
   };
 
   const closeBookingModal = () => {
     setIsBookingModalOpen(false);
     setSelectedServiceState(null);
+    document.body.style.overflow = "auto";
   };
 
   return (

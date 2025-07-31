@@ -52,14 +52,21 @@
 - [x] Automatyczne tworzenie klienta przy rezerwacji
 - [x] Lista klientów w firmie
 - [x] Dane kontaktowe klienta (imię, email, tel)
-- [ ] Historia wizyt klienta
+- [x] Historia wizyt klienta
+- [x] Panel klienta (historia rezerwacji)
 
-## ⚙️ Ustawienia firmy
+## ⚙️ Ustawienia firmy / pracowników
 
 - [x] Ustawianie godzin otwarcia
 - [ ] Przerwy / dni wolne / urlopy
 - [ ] Limity dzienne dla pracownika
 - [ ] Limity czasu między rezerwacjami
+
+## ⚙️ Admin
+
+- [ ] Nadawanie roli admina pracownikowi
+- [ ] Ustawienie co może robić admin, czego nie może
+- [ ] Ograniczony dashboard ownera jako dashboard admina
 
 ## 🧪 Bezpieczeństwo i dostęp (RLS)
 
@@ -75,8 +82,13 @@
 - [ ] Powiadomienia e-mail
 - [ ] Powiadomienia SMS
 - [ ] Subskrypcje SaaS (Stripe)
-- [ ] Panel klienta (historia rezerwacji)
+
+## 🧪 Kod
+
+- [ ] Refaktor dużych stron / komponentów na mniejsze
+- [ ] Wszystkie typy w jednym miejscu @lib/types
+- [ ] Refaktor client komponentów na server komponenty - w miarę możliwości - np pages
 
 ---
 
-**Postęp:** Ukończone podstawowe funkcje: auth, dashboard, zarządzanie firmą, pracownicy z grafikami i kompletny system rezerwacji. Teraz pora na zarządzanie klientami.
+**Postęp:** Ukończone podstawowe funkcje: auth, dashboard, zarządzanie firmą, pracownicy z grafikami, kompletny system rezerwacji i zarządzanie klientami z historią wizyt i panelem klienta.

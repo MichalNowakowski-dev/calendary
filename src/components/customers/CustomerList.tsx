@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,9 @@ import {
 } from "lucide-react";
 import type { Customer } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
+import CustomerDetailModal from "./CustomerDetailModal";
+import CustomerEditModal from "./CustomerEditModal";
+import { deleteCustomer } from "@/lib/actions/customers";
 
 interface CustomerWithStats extends Customer {
   appointment_count: number;
@@ -38,20 +42,28 @@ interface CustomerListProps {
   customers: CustomerWithStats[];
   onRefresh: () => void;
   isLoading: boolean;
+  companyId: string;
 }
 
 export default function CustomerList({
   customers,
   onRefresh,
+  companyId,
 }: CustomerListProps) {
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const handleViewCustomer = (customer: CustomerWithStats) => {
-    // TODO: Open customer detail modal
-    showToast.info("Funkcja w trakcie rozwoju");
+    setSelectedCustomer(customer);
+    setIsDetailModalOpen(true);
   };
 
   const handleEditCustomer = (customer: CustomerWithStats) => {
-    // TODO: Open customer edit modal
-    showToast.info("Funkcja w trakcie rozwoju");
+    setSelectedCustomer(customer);
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteCustomer = async (customer: CustomerWithStats) => {
@@ -60,12 +72,17 @@ export default function CustomerList({
     }
 
     try {
-      // TODO: Implement customer deletion
+      await deleteCustomer(customer.id);
       showToast.success("Klient został usunięty");
       onRefresh();
     } catch (error) {
+      console.error("Error deleting customer:", error);
       showToast.error("Błąd podczas usuwania klienta");
     }
+  };
+
+  const handleEditSuccess = () => {
+    onRefresh();
   };
 
   const formatDate = (dateString: string | null) => {
@@ -97,6 +114,26 @@ export default function CustomerList({
       </Card>
     );
   }
+
+  {
+    /* Customer Detail Modal */
+  }
+  <CustomerDetailModal
+    customer={selectedCustomer}
+    isOpen={isDetailModalOpen}
+    onClose={() => setIsDetailModalOpen(false)}
+    onEdit={(customer) => handleEditCustomer(customer as CustomerWithStats)}
+    companyId={companyId}
+  />;
+  {
+    /* Customer Edit Modal */
+  }
+  <CustomerEditModal
+    customer={selectedCustomer}
+    isOpen={isEditModalOpen}
+    onClose={() => setIsEditModalOpen(false)}
+    onSuccess={handleEditSuccess}
+  />;
 
   return (
     <Card>
