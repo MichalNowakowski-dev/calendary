@@ -1,37 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, Phone, Clock, Euro } from "lucide-react";
-import { Company, Employee, Service } from "@/lib/types/database";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import EnhancedBookingModal from "../booking/EnhancedBookingModal";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Clock, Euro, MapPin, Phone } from "lucide-react";
+import { Company, Employee, Service } from "@/lib/types/database";
+import { getCurrentUser } from "@/lib/auth/utils";
 import MapLocation from "./MapLocation";
+import EnhancedBookingModal from "../booking/EnhancedBookingModal";
 
 interface PublicCompanyViewProps {
   company: Company;
   services: (Service & { employees: Employee[] })[];
 }
-
-const industryLabels: Record<string, string> = {
-  automotive: "Motoryzacja",
-  beauty: "Uroda",
-  barbershop: "Fryzjerstwo",
-  massage: "Masaż",
-  spa: "SPA",
-  medical: "Medycyna",
-  fitness: "Fitness",
-  education: "Edukacja",
-  veterinary: "Weterynaria",
-  other: "Inne",
-};
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("pl-PL", {
@@ -42,14 +25,14 @@ const formatPrice = (price: number) => {
 
 const formatDuration = (minutes: number) => {
   const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
+  const remainingMinutes = minutes % 60;
 
-  if (hours > 0 && mins > 0) {
-    return `${hours}h ${mins}min`;
-  } else if (hours > 0) {
-    return `${hours}h`;
+  if (hours === 0) {
+    return `${remainingMinutes} min`;
+  } else if (remainingMinutes === 0) {
+    return `${hours} h`;
   } else {
-    return `${mins}min`;
+    return `${hours}h ${remainingMinutes}min`;
   }
 };
 
@@ -61,6 +44,24 @@ export default function PublicCompanyView({
     (Service & { employees: Employee[] }) | null
   >(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  useEffect(() => {
+    checkUserLoginStatus();
+  }, []);
+
+  const checkUserLoginStatus = async () => {
+    try {
+      const user = await getCurrentUser();
+      setIsUserLoggedIn(!!user);
+    } catch (error) {
+      console.error("Error checking user login status:", error);
+      setIsUserLoggedIn(false);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
 
   const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedService(service);
@@ -72,95 +73,47 @@ export default function PublicCompanyView({
     setSelectedService(null);
   };
 
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="text-gray-500">Ładowanie...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto p-6">
       {/* Company Header */}
-      <div className="bg-white rounded-lg shadow-sm border p-8 mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {company.name}
-              </h1>
-              <Badge variant="secondary" className="text-sm">
-                {industryLabels[company.industry] || company.industry}
-              </Badge>
-            </div>
-
-            {company.description && (
-              <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-                {company.description}
-              </p>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              {(company.address_street || company.address_city) && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="h-5 w-5" />
-                  <span>
-                    {[company.address_street, company.address_city]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </span>
-                </div>
-              )}
-
-              {company.phone && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Phone className="h-5 w-5" />
-                  <span>{company.phone}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          {company.name}
+        </h1>
+        {company.description && (
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
+            {company.description}
+          </p>
+        )}
       </div>
 
       {/* Services Section */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Nasze usługi</h2>
-          <span className="text-gray-500">
-            {services.length}{" "}
-            {services.length === 1
-              ? "usługa"
-              : services.length < 5
-                ? "usługi"
-                : "usług"}
-          </span>
-        </div>
-
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold mb-6">Dostępne usługi</h2>
         {services.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-gray-500 text-lg">
-                Brak dostępnych usług w tej chwili.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-8 text-gray-500">
+            Brak dostępnych usług
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => (
               <Card
                 key={service.id}
-                className="hover:shadow-md transition-shadow"
+                className="hover:shadow-lg transition-shadow"
               >
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{service.name}</CardTitle>
-                      {service.description && (
-                        <CardDescription className="mt-2">
-                          {service.description}
-                        </CardDescription>
-                      )}
-                    </div>
-                  </div>
+                  <CardTitle className="text-lg">{service.name}</CardTitle>
                 </CardHeader>
-
                 <CardContent>
-                  <div className="space-y-3">
-                    {/* Price and Duration */}
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-gray-600">
                         <Clock className="h-4 w-4" />
@@ -260,6 +213,7 @@ export default function PublicCompanyView({
           onClose={closeBookingModal}
           company={company}
           service={selectedService}
+          isUserLoggedIn={isUserLoggedIn}
         />
       )}
     </div>

@@ -21,7 +21,7 @@ export default function RevenueChart({ data }: RevenueChartProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5" />
-          Revenue Trend
+          Trend przychodów
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -43,7 +43,7 @@ export default function RevenueChart({ data }: RevenueChartProps) {
                 />
               </div>
               <div className="text-xs text-muted-foreground">
-                {item.appointments} appointments
+                {item.appointments} wizyt
               </div>
             </div>
           ))}

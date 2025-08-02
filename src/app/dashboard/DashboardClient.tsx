@@ -19,52 +19,84 @@ import { signOut } from "@/lib/auth/utils";
 import type { AuthUser } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-const sidebarItems = [
-  {
-    name: "Przegląd",
-    href: "/dashboard",
-    icon: Home,
-  },
-  {
-    name: "Kalendarz",
-    href: "/dashboard/appointments",
-    icon: Calendar,
-  },
-  {
-    name: "Usługi",
-    href: "/dashboard/services",
-    icon: Briefcase,
-  },
-  {
-    name: "Pracownicy",
-    href: "/dashboard/employees",
-    icon: Users,
-  },
-  {
-    name: "Klienci",
-    href: "/dashboard/customers",
-    icon: Users,
-  },
-  {
-    name: "Statystyki",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
-  },
-  {
-    name: "Ustawienia",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
-];
+const getSidebarItems = (role: "owner" | "admin" | "employee") => {
+  const baseItems = [
+    {
+      name: "Przegląd",
+      href: "/dashboard",
+      icon: Home,
+    },
+    {
+      name: "Kalendarz",
+      href: "/dashboard/appointments",
+      icon: Calendar,
+    },
+  ];
+
+  if (role === "owner") {
+    return [
+      ...baseItems,
+      {
+        name: "Usługi",
+        href: "/dashboard/services",
+        icon: Briefcase,
+      },
+      {
+        name: "Pracownicy",
+        href: "/dashboard/employees",
+        icon: Users,
+      },
+      {
+        name: "Klienci",
+        href: "/dashboard/customers",
+        icon: Users,
+      },
+      {
+        name: "Statystyki",
+        href: "/dashboard/analytics",
+        icon: BarChart3,
+      },
+      {
+        name: "Ustawienia",
+        href: "/dashboard/settings",
+        icon: Settings,
+      },
+    ];
+  } else if (role === "admin") {
+    return [
+      ...baseItems,
+      {
+        name: "Pracownicy",
+        href: "/dashboard/employees",
+        icon: Users,
+      },
+      {
+        name: "Klienci",
+        href: "/dashboard/customers",
+        icon: Users,
+      },
+      {
+        name: "Statystyki",
+        href: "/dashboard/analytics",
+        icon: BarChart3,
+      },
+    ];
+  } else {
+    // Employee role - limited access
+    return baseItems;
+  }
+};
 
 interface DashboardClientProps {
   user: AuthUser;
   children: React.ReactNode;
+  userRole?: "owner" | "admin" | "employee";
 }
 
 export default function DashboardClient({
   user,
   children,
+  userRole = "owner",
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
@@ -125,7 +157,11 @@ export default function DashboardClient({
                   {user.first_name} {user.last_name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Właściciel firmy
+                  {userRole === "owner"
+                    ? "Właściciel firmy"
+                    : userRole === "admin"
+                      ? "Administrator"
+                      : "Pracownik"}
                 </p>
               </div>
             </div>
@@ -133,7 +169,7 @@ export default function DashboardClient({
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
-            {sidebarItems.map((item) => (
+            {getSidebarItems(userRole).map((item) => (
               <Link
                 key={item.name}
                 href={item.href}

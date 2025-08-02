@@ -8,3 +8,5 @@ export * from "./settings";
 export * from "./customers";
 export * from "./users";
 export * from "./types";
+export * from "./analytics";
+export * from "./dashboard";

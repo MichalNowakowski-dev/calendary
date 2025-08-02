@@ -20,7 +20,7 @@ export default function TopServicesTable({ services }: TopServicesTableProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Top Performing Services
+          Najlepsze usługi
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -42,7 +42,7 @@ export default function TopServicesTable({ services }: TopServicesTableProps) {
                       {serviceStats.service.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {serviceStats.appointments} appointments
+                      {serviceStats.appointments} wizyt
                     </p>
                   </div>
                 </div>
@@ -59,7 +59,7 @@ export default function TopServicesTable({ services }: TopServicesTableProps) {
           <div className="text-center py-8">
             <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 dark:text-gray-400">
-              No service data available
+              Brak dostępnych danych o usługach
             </p>
           </div>
         )}

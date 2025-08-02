@@ -4,7 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Edit, Trash2, UserCheck, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Eye,
+  EyeOff,
+  Edit,
+  Trash2,
+  UserCheck,
+  Clock,
+  Shield,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import { deleteEmployee as deleteEmployeeAction } from "@/lib/actions/employees";
@@ -168,6 +177,17 @@ export default function EmployeeCard({
               >
                 {currentEmployee.visible ? "Widoczny" : "Ukryty"}
               </span>
+              {currentEmployee.role && (
+                <Badge
+                  variant={
+                    currentEmployee.role === "admin" ? "default" : "secondary"
+                  }
+                  className="ml-2"
+                >
+                  <Shield className="h-3 w-3 mr-1" />
+                  {currentEmployee.role === "admin" ? "Admin" : "Pracownik"}
+                </Badge>
+              )}
             </div>
           </div>
           <div className="flex space-x-1">

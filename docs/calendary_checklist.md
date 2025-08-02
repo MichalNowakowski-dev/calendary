@@ -55,18 +55,18 @@
 - [x] Historia wizyt klienta
 - [x] Panel klienta (historia rezerwacji)
 
+## ⚙️ Admin
+
+- [x] Nadawanie roli admina pracownikowi
+- [x] Ustawienie co może robić admin, czego nie może
+- [x] Ograniczony dashboard ownera jako dashboard admina
+
 ## ⚙️ Ustawienia firmy / pracowników
 
 - [x] Ustawianie godzin otwarcia
 - [ ] Przerwy / dni wolne / urlopy
 - [ ] Limity dzienne dla pracownika
 - [ ] Limity czasu między rezerwacjami
-
-## ⚙️ Admin
-
-- [ ] Nadawanie roli admina pracownikowi
-- [ ] Ustawienie co może robić admin, czego nie może
-- [ ] Ograniczony dashboard ownera jako dashboard admina
 
 ## 🧪 Bezpieczeństwo i dostęp (RLS)
 

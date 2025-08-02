@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Phone,
@@ -26,6 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import EnhancedBookingModal from "@/components/booking/EnhancedBookingModal";
+import { getCurrentUser } from "@/lib/auth/utils";
 
 interface ClientReservationViewProps {
   company: Company;
@@ -75,6 +76,24 @@ export default function ClientReservationView({
     (Service & { employees: Employee[] }) | null
   >(selectedService || null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  useEffect(() => {
+    checkUserLoginStatus();
+  }, []);
+
+  const checkUserLoginStatus = async () => {
+    try {
+      const user = await getCurrentUser();
+      setIsUserLoggedIn(!!user);
+    } catch (error) {
+      console.error("Error checking user login status:", error);
+      setIsUserLoggedIn(false);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
 
   const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedServiceState(service);
@@ -87,6 +106,14 @@ export default function ClientReservationView({
     setSelectedServiceState(null);
     document.body.style.overflow = "auto";
   };
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="text-gray-500">Ładowanie...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -408,6 +435,7 @@ export default function ClientReservationView({
           onClose={closeBookingModal}
           company={company}
           service={selectedServiceState}
+          isUserLoggedIn={isUserLoggedIn}
         />
       )}
     </div>

@@ -63,9 +63,6 @@ export default function BookingStepContact({ form }: BookingStepContactProps) {
                   className="focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                 />
               </FormControl>
-              <FormDescription className="text-gray-600 dark:text-gray-400">
-                Opcjonalne - dla potwierdzenia wizyty
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

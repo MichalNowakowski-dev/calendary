@@ -15,6 +15,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { showToast } from "@/lib/toast";
 import { createEmployee, updateEmployee } from "@/lib/actions/employees";
 import {
@@ -48,6 +55,7 @@ export default function EmployeeForm({
         email: formData.get("email") as string,
         phone_number: formData.get("phone_number") as string,
         visible: formData.get("visible") === "true",
+        role: formData.get("role") as "employee" | "admin",
         selectedServices: formData.getAll("selectedServices") as string[],
       };
 
@@ -71,6 +79,7 @@ export default function EmployeeForm({
       email: editingEmployee?.email || "",
       phone_number: editingEmployee?.phone_number || "",
       visible: editingEmployee?.visible ?? true,
+      role: editingEmployee?.role === "admin" ? "admin" : "employee",
       selectedServices: editingEmployee?.services.map((s) => s.id) || [],
     },
   });
@@ -103,6 +112,7 @@ export default function EmployeeForm({
     formData.append("email", data.email);
     formData.append("phone_number", data.phone_number || "");
     formData.append("visible", data.visible.toString());
+    formData.append("role", data.role);
     data.selectedServices.forEach((serviceId) => {
       formData.append("selectedServices", serviceId);
     });
@@ -190,6 +200,35 @@ export default function EmployeeForm({
                   </FormControl>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Opcjonalny numer telefonu pracownika
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rola w firmie</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wybierz rolę" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="employee">Pracownik</SelectItem>
+                      <SelectItem value="admin">Administrator</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Administrator ma dostęp do zarządzania firmą, pracownikami i
+                    usługami
                   </p>
                   <FormMessage />
                 </FormItem>

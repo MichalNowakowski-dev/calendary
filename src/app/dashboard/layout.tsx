@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { serverAuth } from "@/lib/auth/server";
+import { getUserRoleInCompany } from "@/lib/auth/server";
 import type { AuthUser } from "@/lib/auth/server";
 import DashboardClient from "./DashboardClient";
 
@@ -37,5 +38,12 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return <DashboardClient user={authUser}>{children}</DashboardClient>;
+  // Get user role in the company
+  const userRole = await getUserRoleInCompany(user.id, companies[0].company_id);
+
+  return (
+    <DashboardClient user={authUser} userRole={userRole || "employee"}>
+      {children}
+    </DashboardClient>
+  );
 }

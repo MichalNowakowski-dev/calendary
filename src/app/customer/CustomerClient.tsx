@@ -223,319 +223,382 @@ export default function CustomerPanelPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          <div className="space-y-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              </div>
+              <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+            </div>
           </div>
-          <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <PageHeading
-          text="Panel klienta"
-          description="Zarządzaj swoimi rezerwacjami i wizytami"
-        />
-        <Button variant="outline" onClick={handleLogout}>
-          <LogOut className="h-4 w-4 mr-2" />
-          Wyloguj się
-        </Button>
-      </div>
-
-      {/* Upcoming Appointments */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Nadchodzące wizyty</h2>
-        {upcomingAppointments.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingAppointments.map((appointment) => (
-              <Card key={appointment.id} className="flex flex-col">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{appointment.service.name}</span>
-                    <Dialog>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem
-                              onSelect={() =>
-                                setSelectedAppointment(appointment)
-                              }
-                            >
-                              Zobacz szczegóły
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleCancelAppointment(appointment.id)
-                            }
-                            className="text-red-500"
-                          >
-                            Anuluj wizytę
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </Dialog>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <div className="space-y-3 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span>{formatDate(appointment.date)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        {formatTime(appointment.start_time)} -{" "}
-                        {formatTime(appointment.end_time)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>
-                        {appointment.company.name || "Brak nazwy firmy"},{" "}
-                        {appointment.company.address_city || "Brak miasta"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      <span>{formatCurrency(appointment.service.price)}</span>
-                    </div>
-                    {appointment.employee?.name && (
-                      <div className="flex items-center gap-2">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <span>{appointment.employee.name}</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 border-2 border-dashed rounded-lg">
-            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Brak nadchodzących wizyt.</p>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <PageHeading
+              text="Panel klienta"
+              description="Zarządzaj swoimi rezerwacjami i wizytami"
+            />
             <Button
-              className="mt-4"
-              onClick={() => (window.location.href = "/customer/booking")}
+              variant="outline"
+              onClick={handleLogout}
+              className="w-full sm:w-auto"
             >
-              Zarezerwuj nową wizytę
+              <LogOut className="h-4 w-4 mr-2" />
+              Wyloguj się
             </Button>
           </div>
-        )}
-      </section>
 
-      {/* Appointments History */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Historia wizyt</h2>
-        <Card>
-          <CardContent className="pt-6">
-            {pastAppointments.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Brak historii wizyt.</p>
+          {/* Upcoming Appointments */}
+          <section>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-6">
+              Nadchodzące wizyty
+            </h2>
+            {upcomingAppointments.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {upcomingAppointments.map((appointment) => (
+                  <Card key={appointment.id} className="flex flex-col h-full">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                        <span className="truncate">
+                          {appointment.service.name}
+                        </span>
+                        <Dialog>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DialogTrigger asChild>
+                                <DropdownMenuItem
+                                  onSelect={() =>
+                                    setSelectedAppointment(appointment)
+                                  }
+                                >
+                                  Zobacz szczegóły
+                                </DropdownMenuItem>
+                              </DialogTrigger>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleCancelAppointment(appointment.id)
+                                }
+                                className="text-red-500"
+                              >
+                                Anuluj wizytę
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </Dialog>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow pt-0">
+                      <div className="space-y-3 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">
+                            {formatDate(appointment.date)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 flex-shrink-0" />
+                          <span>
+                            {formatTime(appointment.start_time)} -{" "}
+                            {formatTime(appointment.end_time)}
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                          <span className="text-xs sm:text-sm line-clamp-2">
+                            {appointment.company.name || "Brak nazwy firmy"},{" "}
+                            {appointment.company.address_city || "Brak miasta"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 flex-shrink-0" />
+                          <span>
+                            {formatCurrency(appointment.service.price)}
+                          </span>
+                        </div>
+                        {appointment.employee?.name && (
+                          <div className="flex items-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 flex-shrink-0"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <span className="truncate">
+                              {appointment.employee.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Firma</TableHead>
-                      <TableHead>Usługa</TableHead>
-                      <TableHead>Cena</TableHead>
-                      <TableHead>Pracownik</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pastAppointments.map((appointment) => (
-                      <TableRow key={appointment.id}>
-                        <TableCell>
-                          <div className="font-medium">
-                            {formatDate(appointment.date)}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {formatTime(appointment.start_time)}
-                          </div>
-                        </TableCell>
-                        <TableCell>{appointment.company.name}</TableCell>
-                        <TableCell>{appointment.service.name}</TableCell>
-                        <TableCell>
-                          {formatCurrency(appointment.service.price)}
-                        </TableCell>
-                        <TableCell>
-                          {appointment.employee?.name || "-"}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(appointment.status)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-4">
+                    Brak nadchodzących wizyt.
+                  </p>
+                  <Button
+                    onClick={() => (window.location.href = "/customer/booking")}
+                    className="w-full sm:w-auto"
+                  >
+                    Zarezerwuj nową wizytę
+                  </Button>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
-      </section>
+          </section>
 
-      {/* Appointment Details Modal */}
-      {selectedAppointment && (
-        <Dialog
-          open={!!selectedAppointment}
-          onOpenChange={(isOpen) => !isOpen && setSelectedAppointment(null)}
-        >
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Szczegóły wizyty</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-1">
-                <h3 className="font-semibold">
-                  {selectedAppointment.service.name}
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  w {selectedAppointment.company.name}
-                </p>
-              </div>
+          {/* Appointments History */}
+          <section>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-6">
+              Historia wizyt
+            </h2>
+            <Card>
+              <CardContent className="pt-6">
+                {pastAppointments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      Brak historii wizyt.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="min-w-[120px]">
+                              Data
+                            </TableHead>
+                            <TableHead className="min-w-[150px]">
+                              Firma
+                            </TableHead>
+                            <TableHead className="min-w-[150px]">
+                              Usługa
+                            </TableHead>
+                            <TableHead className="min-w-[100px]">
+                              Cena
+                            </TableHead>
+                            <TableHead className="min-w-[120px]">
+                              Pracownik
+                            </TableHead>
+                            <TableHead className="min-w-[100px]">
+                              Status
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pastAppointments.map((appointment) => (
+                            <TableRow key={appointment.id}>
+                              <TableCell>
+                                <div className="font-medium text-sm">
+                                  {formatDate(appointment.date)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {formatTime(appointment.start_time)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[150px]">
+                                <div className="truncate">
+                                  {appointment.company.name}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[150px]">
+                                <div className="truncate">
+                                  {appointment.service.name}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {formatCurrency(appointment.service.price)}
+                              </TableCell>
+                              <TableCell className="max-w-[120px]">
+                                <div className="truncate">
+                                  {appointment.employee?.name || "-"}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {getStatusBadge(appointment.status)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </section>
 
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{formatDate(selectedAppointment.date)}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  {formatTime(selectedAppointment.start_time)} -{" "}
-                  {formatTime(selectedAppointment.end_time)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span>{formatCurrency(selectedAppointment.service.price)}</span>
-              </div>
-              {selectedAppointment.employee?.name && (
-                <div className="flex items-center gap-2 text-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-muted-foreground"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>{selectedAppointment.employee.name}</span>
-                </div>
-              )}
-              <div className="flex items-start gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <span>
-                  {selectedAppointment.company.address_street},{" "}
-                  {selectedAppointment.company.address_city}
-                </span>
-              </div>
-              {selectedAppointment.customer_phone && (
-                <div className="flex items-center gap-2 text-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-muted-foreground"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                  </svg>
-                  <span>{selectedAppointment.customer_phone}</span>
-                </div>
-              )}
-              {selectedAppointment.notes && (
-                <div className="flex items-start gap-2 text-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-muted-foreground mt-0.5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-muted-foreground">
-                    <strong>Notatki:</strong> {selectedAppointment.notes}
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>
-                  Rezerwacja utworzona:{" "}
-                  {new Date(selectedAppointment.created_at).toLocaleDateString(
-                    "pl-PL"
+          {/* Appointment Details Modal */}
+          {selectedAppointment && (
+            <Dialog
+              open={!!selectedAppointment}
+              onOpenChange={(isOpen) => !isOpen && setSelectedAppointment(null)}
+            >
+              <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Szczegóły wizyty</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold">
+                      {selectedAppointment.service.name}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      w {selectedAppointment.company.name}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span>{formatDate(selectedAppointment.date)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span>
+                      {formatTime(selectedAppointment.start_time)} -{" "}
+                      {formatTime(selectedAppointment.end_time)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span>
+                      {formatCurrency(selectedAppointment.service.price)}
+                    </span>
+                  </div>
+                  {selectedAppointment.employee?.name && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-muted-foreground"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>{selectedAppointment.employee.name}</span>
+                    </div>
                   )}
-                </span>
-              </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <span>
+                      {selectedAppointment.company.address_street},{" "}
+                      {selectedAppointment.company.address_city}
+                    </span>
+                  </div>
+                  {selectedAppointment.customer_phone && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-muted-foreground"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                      <span>{selectedAppointment.customer_phone}</span>
+                    </div>
+                  )}
+                  {selectedAppointment.notes && (
+                    <div className="flex items-start gap-2 text-sm">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-muted-foreground mt-0.5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-muted-foreground">
+                        <strong>Notatki:</strong> {selectedAppointment.notes}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>
+                      Rezerwacja utworzona:{" "}
+                      {new Date(
+                        selectedAppointment.created_at
+                      ).toLocaleDateString("pl-PL")}
+                    </span>
+                  </div>
 
-              <div className="pt-4 flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedAppointment(null)}
-                >
-                  Zamknij
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() =>
-                    handleCancelAppointment(selectedAppointment.id)
-                  }
-                >
-                  Anuluj wizytę
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+                  <div className="pt-4 flex flex-col sm:flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedAppointment(null)}
+                      className="w-full sm:w-auto"
+                    >
+                      Zamknij
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() =>
+                        handleCancelAppointment(selectedAppointment.id)
+                      }
+                      className="w-full sm:w-auto"
+                    >
+                      Anuluj wizytę
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

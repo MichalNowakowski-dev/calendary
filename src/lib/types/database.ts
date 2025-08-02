@@ -421,6 +421,10 @@ export interface CompanyWithOwner extends Company {
   };
 }
 
+export interface CompanyWithServices extends Company {
+  services: (Service & { employees: Employee[] })[];
+}
+
 export interface ServiceWithCompany extends Service {
   company: Company;
 }
@@ -428,6 +432,7 @@ export interface ServiceWithCompany extends Service {
 export interface EmployeeWithDetails extends Employee {
   services: Service[];
   schedules: Schedule[];
+  role?: "owner" | "employee" | "admin";
 }
 
 export interface AppointmentWithDetails extends Appointment {

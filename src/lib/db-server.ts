@@ -2,10 +2,9 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 
 import type {
   Company,
+  CompanyWithServices,
   Employee,
-  EmployeeService,
   EmployeeWithDetailsRaw,
-  Schedule,
   Service,
   Settings,
 } from "@/lib/types/database";
@@ -54,6 +53,72 @@ export const serverDb = {
     };
   },
 
+  async getSearchResults(searchTerm: string): Promise<CompanyWithServices[]> {
+    if (!searchTerm.trim()) return [];
+
+    const supabase = createServerClient();
+
+    try {
+      // Search for services by name
+      const { data: servicesData, error: servicesError } = await supabase
+        .from("services")
+        .select(
+          `
+          *,
+          company:companies(
+            id,
+            name,
+            slug,
+            description,
+            address_street,
+            address_city,
+            phone,
+            industry
+          ),
+          employees:employee_services(
+            employee:employees(
+              id,
+              name,
+              email,
+              phone_number,
+              visible
+            )
+          )
+        `
+        )
+        .ilike("name", `%${searchTerm}%`)
+        .eq("active", true);
+
+      if (servicesError) throw servicesError;
+
+      // Group services by company
+      const companiesMap = new Map<string, CompanyWithServices>();
+
+      servicesData?.forEach((service) => {
+        const company = service.company as Company;
+        if (!companiesMap.has(company.id)) {
+          companiesMap.set(company.id, {
+            ...company,
+            services: [],
+          });
+        }
+
+        // Transform the service data to include employees array
+        const serviceWithEmployees = {
+          ...service,
+          employees: service.employees?.map((se: any) => se.employee) || [],
+        };
+
+        companiesMap.get(company.id)!.services.push(serviceWithEmployees);
+      });
+
+      return Array.from(companiesMap.values());
+    } catch (error) {
+      console.error("Search error:", error);
+      return [];
+    }
+  },
+
   async getUserCompanies(userId: string) {
     const supabase = createServerClient();
     const { data, error } = await supabase
@@ -61,6 +126,8 @@ export const serverDb = {
       .select(
         `
         id,
+        user_id,
+        company_id,
         role,
         status,
         company:companies (
@@ -153,11 +220,36 @@ export const serverDb = {
 
     if (error) throw error;
 
+    // Get roles separately since there's no direct relationship
+    const employeeIds = (data || [])
+      .map((emp) => emp.auth_user_id)
+      .filter(Boolean);
+    let roleMap: Record<string, string> = {};
+
+    if (employeeIds.length > 0) {
+      const { data: roleData } = await supabase
+        .from("company_users")
+        .select("user_id, role")
+        .eq("company_id", companyId)
+        .in("user_id", employeeIds);
+
+      roleMap = (roleData || []).reduce(
+        (acc, item) => {
+          acc[item.user_id] = item.role;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
+    }
+
     // Transform employees data
     return (data || []).map((emp: EmployeeWithDetailsRaw) => ({
       ...emp,
       services: emp.employee_services?.map((es) => es.service) || [],
       schedules: emp.schedules || [],
+      role: emp.auth_user_id
+        ? roleMap[emp.auth_user_id] || "employee"
+        : "employee",
     }));
   },
 

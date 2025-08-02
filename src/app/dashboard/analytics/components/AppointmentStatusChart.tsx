@@ -25,21 +25,21 @@ export default function AppointmentStatusChart({
   const statusItems = [
     {
       key: "completed",
-      label: "Completed",
+      label: "Ukończone",
       value: data.completed,
       color: "bg-green-500",
       icon: CheckCircle,
     },
     {
       key: "booked",
-      label: "Booked",
+      label: "Zarezerwowane",
       value: data.booked,
       color: "bg-blue-500",
       icon: Clock,
     },
     {
       key: "cancelled",
-      label: "Cancelled",
+      label: "Anulowane",
       value: data.cancelled,
       color: "bg-red-500",
       icon: XCircle,
@@ -51,7 +51,7 @@ export default function AppointmentStatusChart({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <PieChart className="h-5 w-5" />
-          Appointment Status
+          Status wizyt
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -79,7 +79,7 @@ export default function AppointmentStatusChart({
 
           <div className="pt-4 border-t">
             <div className="flex justify-between text-sm">
-              <span className="font-medium">Total</span>
+              <span className="font-medium">Razem</span>
               <span className="font-medium">{total}</span>
             </div>
           </div>

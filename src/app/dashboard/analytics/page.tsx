@@ -1,19 +1,36 @@
 import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import PageHeading from "@/components/PageHeading";
 import AnalyticsClient from "./AnalyticsClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAnalyticsData } from "@/lib/actions/analytics";
 
-export default function AnalyticsPage() {
+interface AnalyticsPageProps {
+  searchParams: Promise<{ range?: string }>;
+}
+
+export default async function AnalyticsPage({
+  searchParams,
+}: AnalyticsPageProps) {
+  const { range } = await searchParams;
+  const timeRange = range || "30";
+
+  const analyticsData = await getAnalyticsData(timeRange);
+
+  if (!analyticsData) {
+    notFound();
+  }
+
   return (
     <div className="space-y-6">
       <PageHeading
-        text="Analytics"
+        text="Statystyki"
         description="Szczegółowe analizy i statystyki Twojej firmy"
       />
 
       <Suspense fallback={<AnalyticsSkeleton />}>
-        <AnalyticsClient />
+        <AnalyticsClient analyticsData={analyticsData} timeRange={timeRange} />
       </Suspense>
     </div>
   );

@@ -191,7 +191,9 @@ export default function CompanySettingsPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="name">Nazwa firmy *</Label>
+                <Label className="pb-2" htmlFor="name">
+                  Nazwa firmy *
+                </Label>
                 <Input
                   id="name"
                   {...form.register("name")}
@@ -206,7 +208,9 @@ export default function CompanySettingsPage() {
               </div>
 
               <div>
-                <Label htmlFor="slug">Adres strony</Label>
+                <Label className="pb-2" htmlFor="slug">
+                  Adres strony
+                </Label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
                     calendary.pl/business/

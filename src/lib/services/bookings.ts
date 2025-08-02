@@ -201,7 +201,7 @@ export async function submitBooking(
   const endTime = endDate.toTimeString().substring(0, 5);
 
   // 1. Wyznacz pracownika
-  let employeeId: string | undefined =
+  const employeeId: string | undefined =
     formData.employeeId && formData.employeeId !== "no-preference"
       ? formData.employeeId
       : ((await findAvailableEmployee(

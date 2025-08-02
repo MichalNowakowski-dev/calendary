@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protected routes that require authentication
-  const protectedRoutes = ["/dashboard", "/employee"];
+  const protectedRoutes = ["/dashboard", "/employee", "/customer"];
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
@@ -37,6 +37,8 @@ export async function middleware(request: NextRequest) {
       url.pathname = "/dashboard";
     } else if (userRole === "employee") {
       url.pathname = "/employee";
+    } else if (userRole === "customer") {
+      url.pathname = "/customer";
     } else {
       url.pathname = "/";
     }
@@ -62,6 +64,18 @@ export async function middleware(request: NextRequest) {
 
     // Only allow employees to access employee routes
     if (userRole !== "employee") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // For customer routes, ensure user has the right role
+  if (user && pathname.startsWith("/customer")) {
+    const userRole = user.user_metadata?.role;
+
+    // Only allow customers to access customer routes
+    if (userRole !== "customer") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);

@@ -78,3 +78,10 @@ export const companyOwnerRegistrationSchema = z
 export type CompanyOwnerRegistrationFormData = z.infer<
   typeof companyOwnerRegistrationSchema
 >;
+
+// Forgot password schema
+export const forgotPasswordSchema = z.object({
+  email: emailValidation,
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;

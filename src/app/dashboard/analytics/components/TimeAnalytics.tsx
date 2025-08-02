@@ -21,14 +21,14 @@ export default function TimeAnalytics({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Time Analytics
+          Analiza czasowa
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           {/* Peak Hours */}
           <div>
-            <h4 className="text-sm font-medium mb-3">Peak Hours</h4>
+            <h4 className="text-sm font-medium mb-3">Szczytowe godziny</h4>
             <div className="space-y-2">
               {peakHours.map((hour, index) => (
                 <div key={index} className="flex items-center justify-between">
@@ -61,7 +61,7 @@ export default function TimeAnalytics({
 
           {/* Busy Days */}
           <div>
-            <h4 className="text-sm font-medium mb-3">Busy Days</h4>
+            <h4 className="text-sm font-medium mb-3">Zajęte dni</h4>
             <div className="space-y-2">
               {busyDays.map((day, index) => (
                 <div key={index} className="flex items-center justify-between">
@@ -98,13 +98,15 @@ export default function TimeAnalytics({
               <div className="text-2xl font-bold text-blue-600">
                 {averageDuration} min
               </div>
-              <div className="text-xs text-muted-foreground">Avg. Duration</div>
+              <div className="text-xs text-muted-foreground">Średni czas</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
                 {totalHours} h
               </div>
-              <div className="text-xs text-muted-foreground">Total Hours</div>
+              <div className="text-xs text-muted-foreground">
+                Łączne godziny
+              </div>
             </div>
           </div>
         </div>

@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createClient } from "@/lib/supabase/client";
 import { bookingSchema, BookingFormData } from "@/lib/validations/booking";
 import { Company, Employee, Service } from "@/lib/types/database";
+import { getCurrentUser, AuthUser } from "@/lib/auth/utils";
 import BookingProgress from "./BookingProgress";
 import BookingNavigation from "./BookingNavigation";
 import BookingSuccessModal from "./BookingSuccessModal";
@@ -24,6 +24,7 @@ interface EnhancedBookingModalProps {
   onClose: () => void;
   company: Company;
   service: Service & { employees: Employee[] };
+  isUserLoggedIn: boolean;
 }
 
 export default function EnhancedBookingModal({
@@ -31,8 +32,11 @@ export default function EnhancedBookingModal({
   onClose,
   company,
   service,
+  isUserLoggedIn,
 }: EnhancedBookingModalProps) {
-  const supabase = createClient();
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
+
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -61,9 +65,44 @@ export default function EnhancedBookingModal({
     null
   );
 
+  // Calculate total steps based on user login status
+  const totalSteps = isUserLoggedIn ? 2 : 3;
+  const contactStepNumber = isUserLoggedIn ? 0 : 1; // 0 means no contact step
+
   // --- Efekty ---
   const watchedDate = form.watch("date");
   const watchedEmployeeId = form.watch("employeeId");
+
+  // Load user data for logged-in users
+  useEffect(() => {
+    if (isUserLoggedIn && !currentUser) {
+      loadCurrentUser();
+    }
+  }, [isUserLoggedIn]);
+
+  // Populate form with user data when available
+  useEffect(() => {
+    if (currentUser && isUserLoggedIn) {
+      form.setValue(
+        "customerName",
+        `${currentUser.first_name} ${currentUser.last_name}`
+      );
+      form.setValue("customerEmail", currentUser.email);
+      form.setValue("customerPhone", currentUser.phone || "");
+    }
+  }, [currentUser, isUserLoggedIn, form]);
+
+  const loadCurrentUser = async () => {
+    setIsLoadingUser(true);
+    try {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    } catch (error) {
+      console.error("Error loading user:", error);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
 
   useEffect(() => {
     if (watchedDate) {
@@ -86,6 +125,8 @@ export default function EnhancedBookingModal({
         selectedEmployeeId && selectedEmployeeId !== "no-preference"
           ? [selectedEmployeeId]
           : service.employees.map((emp) => emp.id);
+
+      console.log("employeeIds", employeeIds);
 
       const available = await fetchAvailableTimeSlots(
         selectedDate,
@@ -127,7 +168,8 @@ export default function EnhancedBookingModal({
     }
   };
 
-  const handleNextStep = () => setCurrentStep((s) => Math.min(s + 1, 3));
+  const handleNextStep = () =>
+    setCurrentStep((s) => Math.min(s + 1, totalSteps));
   const handlePrevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
   const handleCloseSuccessModal = () => {
     onClose();
@@ -152,13 +194,20 @@ export default function EnhancedBookingModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <BookingProgress currentStep={currentStep} />
+        <BookingProgress
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isUserLoggedIn={isUserLoggedIn}
+        />
 
         <div className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {currentStep === 1 && <BookingStepContact form={form} />}
-              {currentStep === 2 && (
+              {!isUserLoggedIn && currentStep === 1 && (
+                <BookingStepContact form={form} />
+              )}
+              {((isUserLoggedIn && currentStep === 1) ||
+                (!isUserLoggedIn && currentStep === 2)) && (
                 <BookingStepDate
                   form={form}
                   availableTimeSlots={availableTimeSlots}
@@ -166,13 +215,15 @@ export default function EnhancedBookingModal({
                   service={service}
                 />
               )}
-              {currentStep === 3 && (
+              {((isUserLoggedIn && currentStep === 2) ||
+                (!isUserLoggedIn && currentStep === 3)) && (
                 <BookingStepConfirm form={form} service={service} />
               )}
 
               <BookingNavigation
                 onClose={onClose}
                 currentStep={currentStep}
+                totalSteps={totalSteps}
                 isSubmitting={isSubmitting}
                 handlePrevStep={handlePrevStep}
                 handleNextStep={handleNextStep}

@@ -22,7 +22,7 @@ export default function TopEmployeesTable({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          Top Performing Employees
+          Najlepsi pracownicy
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -48,7 +48,7 @@ export default function TopEmployeesTable({
                       {employeeStats.employee.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {employeeStats.appointments} appointments
+                      {employeeStats.appointments} wizyt
                     </p>
                   </div>
                 </div>
@@ -64,7 +64,7 @@ export default function TopEmployeesTable({
           <div className="text-center py-8">
             <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 dark:text-gray-400">
-              No employee data available
+              Brak dostępnych danych o pracownikach
             </p>
           </div>
         )}
