@@ -28,6 +28,8 @@ import { showToast } from "@/lib/toast";
 import AppointmentForm from "@/components/services/AppointmentForm";
 import AppointmentEditForm from "@/components/services/AppointmentEditForm";
 import PageHeading from "@/components/PageHeading";
+import PaymentStatusBadge from "@/components/services/PaymentStatusBadge";
+import PaymentStatusButton from "@/components/services/PaymentStatusButton";
 
 interface AppointmentWithDetails extends Appointment {
   service: Service;
@@ -416,6 +418,13 @@ export default function AppointmentsPage() {
                               </span>
                             </div>
                           )}
+                          {/* Payment Status */}
+                          <div className="flex items-center gap-2 text-sm">
+                            <PaymentStatusBadge
+                              status={appointment.payment_status}
+                              className="text-xs"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -461,6 +470,13 @@ export default function AppointmentsPage() {
                           </Button>
                         </>
                       )}
+
+                      {/* Payment Status Button */}
+                      <PaymentStatusButton
+                        appointmentId={appointment.id}
+                        currentStatus={appointment.payment_status}
+                        onStatusUpdate={loadAppointments}
+                      />
 
                       <Button
                         size="sm"

@@ -324,3 +324,55 @@ export const getPublicBusinessHours = async (companyId: string) => {
 
   return businessHours;
 };
+
+// Client-side functions for business hours operations
+export const getBusinessHoursClient = async (companyId: string) => {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+
+    const { data: businessHours, error } = await supabase
+      .from("business_hours")
+      .select("*")
+      .eq("company_id", companyId)
+      .order("day_of_week");
+
+    if (error) throw error;
+
+    return businessHours;
+  } catch (error) {
+    console.error("Error in getBusinessHoursClient:", error);
+    throw error;
+  }
+};
+
+export const upsertBusinessHoursClient = async (
+  companyId: string,
+  businessHours: BusinessHoursInsert[]
+) => {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+
+    // Delete existing business hours for this company
+    const { error: deleteError } = await supabase
+      .from("business_hours")
+      .delete()
+      .eq("company_id", companyId);
+
+    if (deleteError) throw deleteError;
+
+    // Insert new business hours
+    const { data: newBusinessHours, error } = await supabase
+      .from("business_hours")
+      .insert(businessHours)
+      .select();
+
+    if (error) throw error;
+
+    return newBusinessHours;
+  } catch (error) {
+    console.error("Error in upsertBusinessHoursClient:", error);
+    throw error;
+  }
+};

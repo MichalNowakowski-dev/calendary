@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
-import { deleteEmployee as deleteEmployeeAction } from "@/lib/actions/employees";
+import { deleteEmployeeClient } from "@/lib/actions/employees";
 import EmployeeForm from "./EmployeeForm";
 import EmployeeSchedule from "@/components/services/EmployeeSchedule";
 import ScheduleViewModal from "./ScheduleViewModal";
@@ -100,7 +100,8 @@ export default function EmployeeCard({
         .eq("user_id", currentEmployee.auth_user_id!);
 
       if (currentEmployee.auth_user_id) {
-        const { success, message } = await deleteEmployeeAction(
+        const { success, message } = await deleteEmployeeClient(
+          currentEmployee.id,
           currentEmployee.auth_user_id
         );
 

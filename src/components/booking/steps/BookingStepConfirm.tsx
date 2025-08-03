@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { BookingFormData } from "@/lib/validations/booking";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, CreditCard } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   FormField,
@@ -81,6 +81,26 @@ export default function BookingStepConfirm({
               </div>
             </div>
           </div>
+
+          {/* Payment Information */}
+          <div className="border-t pt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <CreditCard className="h-4 w-4 text-green-600" />
+              <h4 className="font-semibold text-gray-900 dark:text-white">
+                Informacje o płatności
+              </h4>
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                <strong>Płatność na miejscu</strong> - opłata przy wizycie
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Płatność zostanie pobrana w dniu wizyty w siedzibie firmy
+              </p>
+            </div>
+          </div>
+
           {form.getValues("notes") && (
             <div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">

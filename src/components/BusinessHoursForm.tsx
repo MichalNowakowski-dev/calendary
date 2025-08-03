@@ -11,7 +11,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Clock, Save, Loader2 } from "lucide-react";
 import { showToast } from "@/lib/toast";
-import { getBusinessHours, upsertBusinessHours } from "@/lib/actions/companies";
+import {
+  getBusinessHoursClient,
+  upsertBusinessHoursClient,
+} from "@/lib/actions/companies";
 import {
   businessHoursFormSchema,
   type BusinessHoursFormData,
@@ -49,7 +52,7 @@ export default function BusinessHoursForm({
   useEffect(() => {
     const loadBusinessHours = async () => {
       try {
-        const businessHours = await getBusinessHours(companyId);
+        const businessHours = await getBusinessHoursClient(companyId);
         console.log("businessHours", businessHours);
 
         if (businessHours && businessHours.length > 0) {
@@ -91,7 +94,7 @@ export default function BusinessHoursForm({
         is_open: hour.is_open,
       }));
 
-      await upsertBusinessHours(companyId, businessHoursData);
+      await upsertBusinessHoursClient(companyId, businessHoursData);
       showToast.success("Godziny otwarcia zostały zaktualizowane pomyślnie!");
     } catch (error) {
       console.error("Business hours update error:", error);

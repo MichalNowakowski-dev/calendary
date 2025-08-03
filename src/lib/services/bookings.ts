@@ -179,6 +179,8 @@ async function createAppointment(data: {
     start_time: data.startTime,
     end_time: data.endTime,
     status: "booked",
+    payment_status: "pending",
+    payment_method: "on_site",
     notes: data.notes || null,
   });
 

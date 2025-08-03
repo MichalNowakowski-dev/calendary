@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Separator } from "../ui/separator";
 import { Badge } from "../ui/badge";
-import { CheckCircle, FileText } from "lucide-react";
+import { CheckCircle, FileText, CreditCard } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 interface BookingSuccessModalProps {
@@ -83,6 +83,19 @@ export default function BookingSuccessModal({
                 className="text-base bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
               >
                 {formatPrice(service.price)}
+              </Badge>
+            </div>
+            <Separator />
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Płatność
+              </span>
+              <Badge
+                variant="outline"
+                className="text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+              >
+                Na miejscu
               </Badge>
             </div>
             <Separator />

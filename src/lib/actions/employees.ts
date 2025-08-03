@@ -321,3 +321,51 @@ export async function deleteEmployee(employeeId: string) {
 
   return { success: true, message: "Pracownik został usunięty" };
 }
+
+// Client-side function for deleting employee database records
+export async function deleteEmployeeClient(
+  employeeId: string,
+  authUserId?: string
+) {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+
+    // Delete employee record
+    const { error: employeeError } = await supabase
+      .from("employees")
+      .delete()
+      .eq("id", employeeId);
+
+    if (employeeError) {
+      return {
+        success: false,
+        message: `Błąd podczas usuwania pracownika: ${employeeError.message}`,
+      };
+    }
+
+    // Delete company_user record if auth_user_id exists
+    if (authUserId) {
+      const { error: companyUserError } = await supabase
+        .from("company_users")
+        .delete()
+        .eq("user_id", authUserId);
+
+      if (companyUserError) {
+        console.error("Error deleting company_user record:", companyUserError);
+        // Don't fail the operation if this fails, as the main employee record is deleted
+      }
+    }
+
+    return {
+      success: true,
+      message: "Pracownik został usunięty",
+    };
+  } catch (error) {
+    console.error("Error in deleteEmployeeClient:", error);
+    return {
+      success: false,
+      message: "Wystąpił nieoczekiwany błąd",
+    };
+  }
+}

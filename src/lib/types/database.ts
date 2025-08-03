@@ -189,6 +189,8 @@ export interface Database {
           start_time: string;
           end_time: string;
           status: "booked" | "cancelled" | "completed";
+          payment_status: "pending" | "paid" | "refunded" | "cancelled";
+          payment_method: "on_site" | "online" | "deposit";
           notes: string | null;
           created_at: string;
         };
@@ -205,6 +207,8 @@ export interface Database {
           start_time: string;
           end_time: string;
           status?: "booked" | "cancelled" | "completed";
+          payment_status?: "pending" | "paid" | "refunded" | "cancelled";
+          payment_method?: "on_site" | "online" | "deposit";
           notes?: string | null;
           created_at?: string;
         };
@@ -221,6 +225,8 @@ export interface Database {
           start_time?: string;
           end_time?: string;
           status?: "booked" | "cancelled" | "completed";
+          payment_status?: "pending" | "paid" | "refunded" | "cancelled";
+          payment_method?: "on_site" | "online" | "deposit";
           notes?: string | null;
           created_at?: string;
         };

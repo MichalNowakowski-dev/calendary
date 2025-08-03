@@ -102,6 +102,8 @@
 - `start_time`
 - `end_time`
 - `status` (`booked`, `cancelled`, `completed`)
+- `payments_status` (`pending`, `paid`, `refunded`, `cancelled`)
+- `payments_method` (`on_site`, `online`, `deposit`)
 - `created_at`
 - `notes`
 - `customer_id`
