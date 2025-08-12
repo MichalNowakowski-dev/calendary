@@ -14,7 +14,10 @@ import PageHeading from "@/components/PageHeading";
 import { AppointmentStatus } from "./components";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { serverAuth } from "@/lib/auth/server";
-import { getUserRoleInCompany } from "@/lib/auth/utils";
+import { getUserRoleInCompany } from "@/lib/auth/server";
+
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const { stats, company } = await getDashboardData();
@@ -29,7 +32,7 @@ export default async function DashboardPage() {
     ? await getUserRoleInCompany(user.id, company.id)
     : null;
   const isAdmin = userRole === "admin";
-  const isOwner = userRole === "owner";
+  const isOwner = userRole === "company_owner";
 
   return (
     <div className="space-y-6">

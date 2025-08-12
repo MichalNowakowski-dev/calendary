@@ -386,7 +386,6 @@ export default function CustomerBookingFlow({
 
           {selectedCompany && selectedService && (
             <EnhancedBookingModal
-              isUserLoggedIn={true}
               company={selectedCompany}
               service={selectedService}
               onClose={() => setIsBookingModalOpen(false)}

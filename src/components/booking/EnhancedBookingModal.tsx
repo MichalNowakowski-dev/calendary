@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { bookingSchema, BookingFormData } from "@/lib/validations/booking";
 import { Company, Employee, Service } from "@/lib/types/database";
-import { getCurrentUser, AuthUser } from "@/lib/auth/utils";
+import type { AuthUser } from "@/lib/auth/utils";
+import { useAuth } from "@/lib/context/AuthProvider";
 import BookingProgress from "./BookingProgress";
 import BookingNavigation from "./BookingNavigation";
 import BookingSuccessModal from "./BookingSuccessModal";
@@ -24,7 +25,6 @@ interface EnhancedBookingModalProps {
   onClose: () => void;
   company: Company;
   service: Service & { employees: Employee[] };
-  isUserLoggedIn: boolean;
 }
 
 export default function EnhancedBookingModal({
@@ -32,8 +32,8 @@ export default function EnhancedBookingModal({
   onClose,
   company,
   service,
-  isUserLoggedIn,
 }: EnhancedBookingModalProps) {
+  const { user } = useAuth();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(false);
 
@@ -66,6 +66,7 @@ export default function EnhancedBookingModal({
   );
 
   // Calculate total steps based on user login status
+  const isUserLoggedIn = !!user;
   const totalSteps = isUserLoggedIn ? 2 : 3;
   const contactStepNumber = isUserLoggedIn ? 0 : 1; // 0 means no contact step
 
@@ -76,9 +77,21 @@ export default function EnhancedBookingModal({
   // Load user data for logged-in users
   useEffect(() => {
     if (isUserLoggedIn && !currentUser) {
-      loadCurrentUser();
+      setIsLoadingUser(true);
+      try {
+        setCurrentUser({
+          id: user!.id,
+          email: user!.email,
+          first_name: user!.first_name,
+          last_name: user!.last_name,
+          role: user!.role,
+          phone: user!.phone,
+        });
+      } finally {
+        setIsLoadingUser(false);
+      }
     }
-  }, [isUserLoggedIn]);
+  }, [isUserLoggedIn, user, currentUser]);
 
   // Populate form with user data when available
   useEffect(() => {
@@ -91,18 +104,6 @@ export default function EnhancedBookingModal({
       form.setValue("customerPhone", currentUser.phone || "");
     }
   }, [currentUser, isUserLoggedIn, form]);
-
-  const loadCurrentUser = async () => {
-    setIsLoadingUser(true);
-    try {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
-    } catch (error) {
-      console.error("Error loading user:", error);
-    } finally {
-      setIsLoadingUser(false);
-    }
-  };
 
   useEffect(() => {
     if (watchedDate) {

@@ -43,7 +43,7 @@ export async function isUserAdminOrOwner(
   companyId: string
 ): Promise<boolean> {
   const role = await getUserRoleInCompany(userId, companyId);
-  return role === "owner" || role === "admin";
+  return role === "company_owner" || role === "admin";
 }
 
 export async function isUserOwner(
@@ -51,5 +51,5 @@ export async function isUserOwner(
   companyId: string
 ): Promise<boolean> {
   const role = await getUserRoleInCompany(userId, companyId);
-  return role === "owner";
+  return role === "company_owner";
 }

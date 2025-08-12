@@ -4,6 +4,9 @@ import { serverAuth } from "@/lib/auth/server";
 import type { AuthUser } from "@/lib/auth/server";
 import EmployeeDashboardClient from "./EmployeeDashboardClient";
 
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
+
 export default async function EmployeeDashboardLayout({
   children,
 }: {

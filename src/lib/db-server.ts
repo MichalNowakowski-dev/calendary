@@ -6,6 +6,8 @@ import type {
   Employee,
   EmployeeWithDetailsRaw,
   Service,
+  ServiceWithEmployees,
+  ServiceWithEmployeesArray,
   Settings,
 } from "@/lib/types/database";
 
@@ -104,9 +106,12 @@ export const serverDb = {
         }
 
         // Transform the service data to include employees array
-        const serviceWithEmployees = {
+        const serviceWithEmployees: ServiceWithEmployeesArray = {
           ...service,
-          employees: service.employees?.map((se: any) => se.employee) || [],
+          employees:
+            service.employees?.map(
+              (se: { employee: Employee }) => se.employee
+            ) || [],
         };
 
         companiesMap.get(company.id)!.services.push(serviceWithEmployees);

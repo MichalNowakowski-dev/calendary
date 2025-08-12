@@ -83,7 +83,7 @@ export default function CompanyOwnerRegistration() {
       );
 
       // Redirect to dashboard
-      router.push("/dashboard");
+      router.push("/company_owner");
     } catch (error) {
       console.error("Registration error:", error);
       showToast.error(

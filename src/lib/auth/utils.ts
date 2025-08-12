@@ -72,11 +72,11 @@ export const registerUser = async (data: RegistrationData) => {
 
       if (companyError) throw companyError;
 
-      // Link user to company as owner
+      // Link user to company as company_owner
       const { error: linkError } = await supabase.from("company_users").insert({
         company_id: companyData.id,
         user_id: authData.user.id,
-        role: "owner",
+        role: "company_owner",
         status: "active",
       });
 
@@ -244,7 +244,7 @@ export const generateSlug = async (name: string): Promise<string> => {
 export async function getUserRoleInCompany(
   userId: string,
   companyId: string
-): Promise<"owner" | "admin" | "employee" | null> {
+): Promise<"company_owner" | "admin" | "employee" | null> {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -266,7 +266,7 @@ export async function isUserAdminOrOwner(
   companyId: string
 ): Promise<boolean> {
   const role = await getUserRoleInCompany(userId, companyId);
-  return role === "owner" || role === "admin";
+  return role === "company_owner" || role === "admin";
 }
 
 export async function isUserOwner(
@@ -274,5 +274,5 @@ export async function isUserOwner(
   companyId: string
 ): Promise<boolean> {
   const role = await getUserRoleInCompany(userId, companyId);
-  return role === "owner";
+  return role === "company_owner";
 }

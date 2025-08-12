@@ -4,10 +4,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Clock, Euro, MapPin, Phone } from "lucide-react";
 import { Company, Employee, Service } from "@/lib/types/database";
-import { getCurrentUser } from "@/lib/auth/utils";
+import { useAuth } from "@/lib/context/AuthProvider";
 import MapLocation from "./MapLocation";
 import EnhancedBookingModal from "../booking/EnhancedBookingModal";
 
@@ -40,28 +39,12 @@ export default function PublicCompanyView({
   company,
   services,
 }: PublicCompanyViewProps) {
+  const { user, status } = useAuth();
   const [selectedService, setSelectedService] = useState<
     (Service & { employees: Employee[] }) | null
   >(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
-
-  useEffect(() => {
-    checkUserLoginStatus();
-  }, []);
-
-  const checkUserLoginStatus = async () => {
-    try {
-      const user = await getCurrentUser();
-      setIsUserLoggedIn(!!user);
-    } catch (error) {
-      console.error("Error checking user login status:", error);
-      setIsUserLoggedIn(false);
-    } finally {
-      setIsLoadingUser(false);
-    }
-  };
+  const isUserLoggedIn = !!user;
 
   const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedService(service);
@@ -73,7 +56,7 @@ export default function PublicCompanyView({
     setSelectedService(null);
   };
 
-  if (isLoadingUser) {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <div className="text-gray-500">Ładowanie...</div>
@@ -213,7 +196,6 @@ export default function PublicCompanyView({
           onClose={closeBookingModal}
           company={company}
           service={selectedService}
-          isUserLoggedIn={isUserLoggedIn}
         />
       )}
     </div>

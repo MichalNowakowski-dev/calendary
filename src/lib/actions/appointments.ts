@@ -362,6 +362,38 @@ export async function updatePaymentStatusAction(
   }
 }
 
+export async function updateAppointmentStatusAction(
+  appointmentId: string,
+  newStatus: "booked" | "cancelled" | "completed"
+) {
+  try {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("appointments")
+      .update({ status: newStatus })
+      .eq("id", appointmentId);
+
+    if (error) {
+      return {
+        success: false,
+        message: `Błąd podczas aktualizacji statusu wizyty: ${error.message}`,
+      };
+    }
+
+    revalidatePath("/dashboard/appointments");
+    return {
+      success: true,
+      message: "Status wizyty został zaktualizowany",
+    };
+  } catch (error) {
+    console.error("Error in updateAppointmentStatusAction:", error);
+    return {
+      success: false,
+      message: "Wystąpił nieoczekiwany błąd",
+    };
+  }
+}
+
 // Client-side functions for operations that need to be called from client components
 export async function updatePaymentStatusClient(
   appointmentId: string,

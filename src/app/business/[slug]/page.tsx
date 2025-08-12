@@ -6,6 +6,9 @@ import ClientReservationView from "@/components/client/ClientReservationView";
 import MapLocation from "@/components/public/MapLocation";
 import BusinessHoursDisplay from "@/components/public/BusinessHoursDisplay";
 
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{
     slug: string;

@@ -6,6 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAnalyticsData } from "@/lib/actions/analytics";
 
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
+
 interface AnalyticsPageProps {
   searchParams: Promise<{ range?: string }>;
 }

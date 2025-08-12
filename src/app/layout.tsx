@@ -4,6 +4,8 @@ import { ToastContainer } from "react-toastify";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@/lib/context/ThemeProvider";
+import { AuthProvider } from "@/lib/context/AuthProvider";
+import { serverDb } from "@/lib/db-server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,30 +25,33 @@ export const metadata: Metadata = {
     "rezerwacja online, system rezerwacji, umów wizytę, kalendarz rezerwacji, booking online, warsztat, salon piękności, fryzjer, masaż",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await serverDb.getCurrentUser();
   return (
     <html lang="pl">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          {children}
-          <ToastContainer
-            position="bottom-center"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
+          <AuthProvider initialUser={user}>
+            {children}
+            <ToastContainer
+              position="bottom-center"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

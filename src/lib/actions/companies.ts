@@ -54,11 +54,11 @@ export async function createCompanyAction(
       };
     }
 
-    // Link user to company as owner
+    // Link user to company as company_owner
     const { error: linkError } = await supabase.from("company_users").insert({
       company_id: company.id,
       user_id: user.id,
-      role: "owner",
+      role: "company_owner",
       status: "active",
     });
 
@@ -158,7 +158,7 @@ export const createCompany = async (data: CompanyInsert) => {
   const { error: userError } = await supabase.from("company_users").insert({
     company_id: company.id,
     user_id: user.id,
-    role: "owner",
+    role: "company_owner",
     status: "active",
   });
 

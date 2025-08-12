@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +17,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { getCurrentUser, getUserCompanies } from "@/lib/auth/utils";
+
 import type {
   Appointment,
   Service,
@@ -25,128 +25,52 @@ import type {
   Company,
 } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
-import AppointmentForm from "@/components/services/AppointmentForm";
 import AppointmentEditForm from "@/components/services/AppointmentEditForm";
-import PageHeading from "@/components/PageHeading";
 import PaymentStatusBadge from "@/components/services/PaymentStatusBadge";
 import PaymentStatusButton from "@/components/services/PaymentStatusButton";
+import { updateAppointmentStatusAction } from "@/lib/actions/appointments";
 
 interface AppointmentWithDetails extends Appointment {
   service: Service;
   employee?: Employee;
 }
 
-export default function AppointmentsPage() {
-  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
-    []
-  );
-  const [filteredAppointments, setFilteredAppointments] = useState<
-    AppointmentWithDetails[]
-  >([]);
-  const [company, setCompany] = useState<Company | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [dateFilter, setDateFilter] = useState<string>("all");
+interface AppointmentsClientProps {
+  appointments: AppointmentWithDetails[];
+  company: Company;
+  searchParams: {
+    search?: string;
+    status?: string;
+    date?: string;
+  };
+}
+
+export default function AppointmentsClient({
+  appointments,
+  company,
+  searchParams,
+}: AppointmentsClientProps) {
+  const router = useRouter();
+  const searchParamsHook = useSearchParams();
   const [editingAppointment, setEditingAppointment] =
     useState<AppointmentWithDetails | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const supabase = createClient();
 
-  const loadAppointments = async () => {
-    try {
-      const user = await getCurrentUser();
-      if (!user) return;
 
-      // Get user's company
-      const companies = await getUserCompanies(user.id);
-      if (companies.length === 0) return;
+  const updateSearchParams = (updates: Record<string, string | undefined>) => {
+    const params = new URLSearchParams(searchParamsHook.toString());
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === undefined || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
 
-      const userCompany = companies[0]?.company as unknown as Company;
-      setCompany(userCompany);
-
-      // Get appointments with service and employee details
-      const { data: appointmentsData, error } = await supabase
-        .from("appointments")
-        .select(
-          `
-          *,
-          service:services(
-            id,
-            name,
-            duration_minutes,
-            price
-          ),
-          employee:employees(
-            id,
-            name
-          )
-        `
-        )
-        .eq("company_id", userCompany.id)
-        .order("date", { ascending: true })
-        .order("start_time", { ascending: true });
-
-      if (error) throw error;
-
-      setAppointments((appointmentsData as AppointmentWithDetails[]) || []);
-      setFilteredAppointments(
-        (appointmentsData as AppointmentWithDetails[]) || []
-      );
-    } catch (error) {
-      console.error("Error loading appointments:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    router.push(`/dashboard/appointments?${params.toString()}`);
   };
-
-  useEffect(() => {
-    loadAppointments();
-  }, []);
-
-  // Filter appointments based on search and filters
-  useEffect(() => {
-    let filtered = [...appointments];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (apt) =>
-          apt.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          apt.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          apt.service.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((apt) => apt.status === statusFilter);
-    }
-
-    // Date filter
-    const today = new Date().toISOString().split("T")[0];
-    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
-    const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
-
-    if (dateFilter === "today") {
-      filtered = filtered.filter((apt) => apt.date === today);
-    } else if (dateFilter === "tomorrow") {
-      filtered = filtered.filter((apt) => apt.date === tomorrow);
-    } else if (dateFilter === "week") {
-      filtered = filtered.filter(
-        (apt) => apt.date >= today && apt.date <= weekFromNow
-      );
-    } else if (dateFilter === "upcoming") {
-      filtered = filtered.filter((apt) => apt.date >= today);
-    }
-
-    setFilteredAppointments(filtered);
-  }, [appointments, searchTerm, statusFilter, dateFilter]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -195,25 +119,17 @@ export default function AppointmentsPage() {
 
   const handleStatusChange = async (
     appointmentId: string,
-    newStatus: string
+    newStatus: "booked" | "cancelled" | "completed"
   ) => {
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ status: newStatus })
-        .eq("id", appointmentId);
-
-      if (error) throw error;
-
-      // Update local state
-      setAppointments((prev) =>
-        prev.map((apt) =>
-          apt.id === appointmentId
-            ? { ...apt, status: newStatus as Appointment["status"] }
-            : apt
-        )
-      );
-      showToast.success("Status wizyty został zaktualizowany");
+      const result = await updateAppointmentStatusAction(appointmentId, newStatus);
+      
+      if (result.success) {
+        showToast.success(result.message);
+        router.refresh(); // Refresh the page to get updated data
+      } else {
+        showToast.error(result.message);
+      }
     } catch (error) {
       console.error("Error updating appointment status:", error);
       showToast.error("Błąd podczas aktualizacji statusu wizyty");
@@ -230,40 +146,8 @@ export default function AppointmentsPage() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"
-              ></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <PageHeading
-          text="Kalendarz wizyt"
-          description={`Zarządzaj wizytami w firmie ${company?.name}`}
-        />
-        {company && (
-          <AppointmentForm
-            company={company}
-            onAppointmentCreated={loadAppointments}
-          />
-        )}
-      </div>
-
+    <>
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
@@ -273,16 +157,16 @@ export default function AppointmentsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
               <Input
                 placeholder="Szukaj klienta lub usługi..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchParams.search || ""}
+                onChange={(e) => updateSearchParams({ search: e.target.value })}
                 className="pl-10"
               />
             </div>
 
             {/* Status filter */}
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              value={searchParams.status || "all"}
+              onChange={(e) => updateSearchParams({ status: e.target.value })}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Wszystkie statusy</option>
@@ -293,8 +177,8 @@ export default function AppointmentsPage() {
 
             {/* Date filter */}
             <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
+              value={searchParams.date || "all"}
+              onChange={(e) => updateSearchParams({ date: e.target.value })}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Wszystkie daty</option>
@@ -307,7 +191,7 @@ export default function AppointmentsPage() {
             {/* Results count */}
             <div className="flex items-center text-gray-600 dark:text-gray-300">
               <Filter className="h-4 w-4 mr-2" />
-              {filteredAppointments.length} wizyt
+              {appointments.length} wizyt
             </div>
           </div>
         </CardContent>
@@ -315,7 +199,7 @@ export default function AppointmentsPage() {
 
       {/* Appointments list */}
       <div className="space-y-4">
-        {filteredAppointments.length === 0 ? (
+        {appointments.length === 0 ? (
           <Card>
             <CardContent className="py-12">
               <div className="text-center">
@@ -324,21 +208,15 @@ export default function AppointmentsPage() {
                   Brak wizyt
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  {searchTerm || statusFilter !== "all" || dateFilter !== "all"
+                  {searchParams.search || searchParams.status !== "all" || searchParams.date !== "all"
                     ? "Nie znaleziono wizyt odpowiadających filtrom."
                     : "Nie masz jeszcze żadnych wizyt w systemie."}
                 </p>
-                {company && (
-                  <AppointmentForm
-                    company={company}
-                    onAppointmentCreated={loadAppointments}
-                  />
-                )}
               </div>
             </CardContent>
           </Card>
         ) : (
-          filteredAppointments.map((appointment) => (
+          appointments.map((appointment) => (
             <Card
               key={appointment.id}
               className="group hover:shadow-lg transition-all duration-200 border-l-4 border-l-transparent hover:border-l-blue-500 dark:hover:border-l-blue-400"
@@ -475,7 +353,7 @@ export default function AppointmentsPage() {
                       <PaymentStatusButton
                         appointmentId={appointment.id}
                         currentStatus={appointment.payment_status}
-                        onStatusUpdate={loadAppointments}
+                        onStatusUpdate={() => router.refresh()}
                       />
 
                       <Button
@@ -496,15 +374,15 @@ export default function AppointmentsPage() {
       </div>
 
       {/* Edit Appointment Modal */}
-      {editingAppointment && company && (
+      {editingAppointment && (
         <AppointmentEditForm
           appointment={editingAppointment}
           company={company}
           isOpen={isEditModalOpen}
           onClose={handleCloseEditModal}
-          onAppointmentUpdated={loadAppointments}
+          onAppointmentUpdated={() => router.refresh()}
         />
       )}
-    </div>
+    </>
   );
-}
+} 

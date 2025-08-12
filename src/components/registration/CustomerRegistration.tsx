@@ -57,7 +57,7 @@ export default function CustomerRegistration() {
       );
 
       // Redirect to dashboard
-      router.push("/dashboard");
+      router.push("/customer");
     } catch (error) {
       console.error("Registration error:", error);
       showToast.error(
@@ -238,15 +238,6 @@ export default function CustomerRegistration() {
           "Załóż konto klienta"
         )}
       </Button>
-
-      <div className="text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          Nie chcesz zakładać konta?{" "}
-          <span className="text-blue-600 dark:text-blue-400 font-medium">
-            Możesz rezerwować także bez rejestracji
-          </span>
-        </p>
-      </div>
     </form>
   );
 }

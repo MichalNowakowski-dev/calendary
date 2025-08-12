@@ -6,6 +6,9 @@ import EmployeesListClient from "@/components/employees/EmployeesListClient";
 import { Company } from "@/lib/types/database";
 import PageHeading from "@/components/PageHeading";
 
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
+
 async function EmployeesPageContent() {
   const user = await serverAuth.getCurrentUser();
   if (!user) {

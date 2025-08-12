@@ -4,6 +4,9 @@ import { getCustomerAppointments } from "@/lib/actions/appointments";
 import { CustomerPanelContent } from "./CustomerPanelContent";
 import type { CustomerAppointment } from "@/lib/types/customer";
 
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
+
 export default async function CustomerPage() {
   const user = await serverAuth.getCurrentUser();
 

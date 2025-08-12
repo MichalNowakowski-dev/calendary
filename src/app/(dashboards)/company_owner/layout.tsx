@@ -5,6 +5,9 @@ import { getUserRoleInCompany } from "@/lib/auth/server";
 import type { AuthUser } from "@/lib/auth/server";
 import DashboardClient from "./DashboardClient";
 
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {

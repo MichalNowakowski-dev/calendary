@@ -39,7 +39,7 @@
 - `id`
 - `company_id`
 - `user_id`
-- `role` (`owner`, `employee`, `admin`)
+- `role` (`company_owner`, `employee`, `admin`)
 - `status` (`active`, `invited`, `suspended`)
 - `created_at`
 

@@ -29,7 +29,7 @@ import {
   X,
 } from "lucide-react";
 import type { Customer } from "@/lib/types/database";
-import { getCustomerAppointments } from "@/lib/actions/customers";
+import { getCustomerAppointments } from "@/lib/actions/appointments";
 import { showToast } from "@/lib/toast";
 
 interface CustomerDetailModalProps {
@@ -77,8 +77,7 @@ export default function CustomerDetailModal({
     setIsLoading(true);
     try {
       const customerAppointments = await getCustomerAppointments(
-        customer.id,
-        companyId
+        customer.email
       );
       setAppointments(customerAppointments);
     } catch (error) {

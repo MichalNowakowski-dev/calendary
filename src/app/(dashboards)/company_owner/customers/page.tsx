@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCurrentUser, getUserCompanies } from "@/lib/auth/utils";
+import { getUserCompanies } from "@/lib/auth/utils";
+import { useAuth } from "@/lib/context/AuthProvider";
 import type { Company } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
 import PageHeading from "@/components/PageHeading";
@@ -11,6 +12,7 @@ import CustomerStats from "@/components/customers/CustomerStats";
 import { getCustomers, type CustomerWithStats } from "@/lib/actions/customers";
 
 export default function CustomersPage() {
+  const { user, status } = useAuth();
   const [customers, setCustomers] = useState<CustomerWithStats[]>([]);
   const [userCompany, setUserCompany] = useState<Company | null>(null);
   const [filteredCustomers, setFilteredCustomers] = useState<
@@ -23,11 +25,10 @@ export default function CustomersPage() {
 
   useEffect(() => {
     loadCustomers();
-  }, []);
+  }, [user]);
 
   const loadCustomers = async () => {
     try {
-      const user = await getCurrentUser();
       if (!user) return;
 
       const companies = await getUserCompanies(user.id);

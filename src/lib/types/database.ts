@@ -41,7 +41,7 @@ export interface Database {
           id: string;
           company_id: string;
           user_id: string;
-          role: "owner" | "employee" | "admin";
+          role: "company_owner" | "employee" | "admin";
           status: "active" | "invited" | "suspended";
           created_at: string;
         };
@@ -49,7 +49,7 @@ export interface Database {
           id?: string;
           company_id: string;
           user_id: string;
-          role: "owner" | "employee" | "admin";
+          role: "company_owner" | "employee" | "admin";
           status?: "active" | "invited" | "suspended";
           created_at?: string;
         };
@@ -57,7 +57,7 @@ export interface Database {
           id?: string;
           company_id?: string;
           user_id?: string;
-          role?: "owner" | "employee" | "admin";
+          role?: "company_owner" | "employee" | "admin";
           status?: "active" | "invited" | "suspended";
           created_at?: string;
         };
@@ -330,7 +330,7 @@ export interface Database {
     };
     Enums: {
       user_role: "admin" | "company_owner" | "employee" | "customer";
-      company_user_role: "owner" | "employee" | "admin";
+      company_user_role: "company_owner" | "employee" | "admin";
       company_user_status: "active" | "invited" | "suspended";
       appointment_status: "booked" | "cancelled" | "completed";
       industry_type:
@@ -428,7 +428,7 @@ export interface CompanyWithOwner extends Company {
 }
 
 export interface CompanyWithServices extends Company {
-  services: (Service & { employees: Employee[] })[];
+  services: ServiceWithEmployeesArray[];
 }
 
 export interface ServiceWithCompany extends Service {
@@ -438,7 +438,7 @@ export interface ServiceWithCompany extends Service {
 export interface EmployeeWithDetails extends Employee {
   services: Service[];
   schedules: Schedule[];
-  role?: "owner" | "employee" | "admin";
+  role?: "company_owner" | "employee" | "admin";
 }
 
 export interface AppointmentWithDetails extends Appointment {
@@ -469,4 +469,10 @@ export interface ServiceWithEmployees extends Service {
       visible: boolean;
     };
   }[];
+}
+
+// Service with employees array (for search results)
+export interface ServiceWithEmployeesArray extends Service {
+  company: Company;
+  employees: Employee[];
 }

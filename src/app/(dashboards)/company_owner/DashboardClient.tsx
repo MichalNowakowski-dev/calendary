@@ -19,7 +19,7 @@ import { signOut } from "@/lib/auth/utils";
 import type { AuthUser } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-const getSidebarItems = (role: "owner" | "admin" | "employee") => {
+const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
   const baseItems = [
     {
       name: "Przegląd",
@@ -33,7 +33,7 @@ const getSidebarItems = (role: "owner" | "admin" | "employee") => {
     },
   ];
 
-  if (role === "owner") {
+  if (role === "company_owner") {
     return [
       ...baseItems,
       {
@@ -90,13 +90,13 @@ const getSidebarItems = (role: "owner" | "admin" | "employee") => {
 interface DashboardClientProps {
   user: AuthUser;
   children: React.ReactNode;
-  userRole?: "owner" | "admin" | "employee";
+  userRole?: "company_owner" | "admin" | "employee";
 }
 
 export default function DashboardClient({
   user,
   children,
-  userRole = "owner",
+  userRole = "company_owner",
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
@@ -157,7 +157,7 @@ export default function DashboardClient({
                   {user.first_name} {user.last_name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {userRole === "owner"
+                  {userRole === "company_owner"
                     ? "Właściciel firmy"
                     : userRole === "admin"
                       ? "Administrator"

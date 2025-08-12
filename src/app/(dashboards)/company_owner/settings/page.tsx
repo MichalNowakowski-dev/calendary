@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/select";
 import { Building2, Save, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentUser, getUserCompanies } from "@/lib/auth/utils";
+import { getUserCompanies } from "@/lib/auth/utils";
+import { useAuth } from "@/lib/context/AuthProvider";
 import {
   companyEditSchema,
   type CompanyEditFormData,
@@ -29,6 +30,7 @@ import PageHeading from "@/components/PageHeading";
 import BusinessHoursForm from "@/components/BusinessHoursForm";
 
 export default function CompanySettingsPage() {
+  const { user, status } = useAuth();
   const [company, setCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -65,7 +67,6 @@ export default function CompanySettingsPage() {
   useEffect(() => {
     const loadCompanyData = async () => {
       try {
-        const user = await getCurrentUser();
         if (!user) {
           router.push("/login");
           return;
@@ -102,7 +103,7 @@ export default function CompanySettingsPage() {
     };
 
     loadCompanyData();
-  }, [router, form]);
+  }, [router, form, user]);
 
   const onSubmit = async (data: CompanyEditFormData) => {
     if (!company) return;
