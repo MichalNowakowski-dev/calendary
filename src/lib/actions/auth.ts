@@ -1,8 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
-import { revalidatePath } from "next/cache";
+import { forgotPasswordSchema, loginSchema } from "@/lib/validations/auth";
+import { redirect } from "next/navigation";
 
 const translateAuthError = (errorMessage: string): string => {
   const errorTranslations: Record<string, string> = {
@@ -81,10 +81,6 @@ export async function loginAction(
     if (authData.user) {
       const userRole = authData.user.user_metadata?.role;
 
-      // Revalidate relevant paths
-      revalidatePath("/");
-      revalidatePath(`/${userRole}`);
-
       // Return success with redirect information
       return {
         message: "",
@@ -106,4 +102,44 @@ export async function loginAction(
       errors: {},
     };
   }
+}
+
+export async function forgotPassword(
+  prevState: {
+    message: string;
+    errors: {
+      email: string;
+    };
+  },
+  formData: FormData
+) {
+  const email = formData.get("email") as string;
+  const isValidate = forgotPasswordSchema.safeParse({ email });
+
+  if (!isValidate.success) {
+    return {
+      message: "Nieprawidłowy adres email",
+      errors: {
+        email: isValidate.error.flatten().fieldErrors.email?.[0] || "",
+      },
+    };
+  }
+
+  try {
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return {
+      message: translateAuthError(
+        (error as { message?: string })?.message || "Nieznany błąd"
+      ),
+      errors: {
+        email: "",
+      },
+    };
+  }
+  redirect(`${process.env.NEXT_PUBLIC_APP_URL}/forgot-password?success=true`);
 }

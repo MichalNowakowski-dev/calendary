@@ -1,6 +1,6 @@
 import Header from "./Header";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { AuthProvider } from "@/lib/context/AuthProvider";
+import { type UserRole } from "@/lib/types/database";
 import { AuthUser } from "@/lib/auth/utils";
 import { navigationLinks } from "@/data/homepage";
 
@@ -9,15 +9,14 @@ const loggedInUser = {
   email: "test@test.com",
   first_name: "Jan",
   last_name: "Kowalski",
-  role: "customer" as const,
+  role: "customer" as UserRole,
 };
 
-const renderWithAuth = (
-  ui: React.ReactNode,
-  user: AuthUser | null = loggedInUser
-) => {
-  return render(<AuthProvider initialUser={user}>{ui}</AuthProvider>);
-};
+jest.mock("@/lib/context/AuthProvider", () => ({
+  useAuth: jest.fn(),
+}));
+
+import { useAuth } from "@/lib/context/AuthProvider";
 
 describe("Header", () => {
   afterEach(() => {
@@ -25,14 +24,18 @@ describe("Header", () => {
   });
 
   it("renders the logo name", () => {
-    renderWithAuth(<Header />);
+    (useAuth as jest.Mock).mockReturnValue({
+      user: loggedInUser,
+      status: "authenticated",
+    });
+    render(<Header />);
     expect(
       screen.getByRole("heading", { name: "Calendary.pl" })
     ).toBeInTheDocument();
   });
 
   it("renders a logo link to home with correct aria-label", () => {
-    renderWithAuth(<Header />);
+    render(<Header />);
     const homeLink = screen.getByRole("link", {
       name: /Calendary\.pl - Strona główna/i,
     });
@@ -41,7 +44,11 @@ describe("Header", () => {
   });
 
   it("should show login and register buttons when user is not logged in", () => {
-    renderWithAuth(<Header />, null);
+    (useAuth as jest.Mock).mockReturnValue({
+      user: null,
+      status: "unauthenticated",
+    });
+    render(<Header />);
 
     const loginButton = screen.queryByRole("button", { name: "Zaloguj się" });
     const registerButton = screen.queryByRole("button", {
@@ -52,7 +59,7 @@ describe("Header", () => {
   });
 
   it("login and register buttons are wrapped with correct links", () => {
-    renderWithAuth(<Header />, null);
+    render(<Header />);
     const loginButton = screen.getByRole("button", { name: "Zaloguj się" });
     const registerButton = screen.getByRole("button", {
       name: "Zarejestruj się",
@@ -66,7 +73,11 @@ describe("Header", () => {
   });
 
   it("should show only dashboard button when user is logged in", () => {
-    renderWithAuth(<Header />, loggedInUser);
+    (useAuth as jest.Mock).mockReturnValue({
+      user: loggedInUser,
+      status: "authenticated",
+    });
+    render(<Header />);
 
     const dashboardButton = screen.queryByRole("button", {
       name: "Panel użytkownika",
@@ -82,14 +93,19 @@ describe("Header", () => {
   });
 
   it("dashboard button links to role-specific dashboard for various roles", () => {
-    (["customer", "employee", "company_owner", "admin"] as const).forEach(
+    (["customer", "employee", "company_owner", "admin"] as UserRole[]).forEach(
       (role) => {
         const userForRole: AuthUser = {
           ...loggedInUser,
           role,
         } as AuthUser;
 
-        renderWithAuth(<Header />, userForRole);
+        (useAuth as jest.Mock).mockReturnValue({
+          user: userForRole,
+          status: "authenticated",
+        });
+
+        render(<Header />);
 
         const dashboardButton = screen.getByRole("button", {
           name: "Panel użytkownika",
@@ -105,7 +121,7 @@ describe("Header", () => {
   });
 
   it("should show navigation links", () => {
-    renderWithAuth(<Header />);
+    render(<Header />);
     navigationLinks.forEach((link) => {
       expect(
         screen.getByRole("button", { name: `Przejdź do sekcji ${link.label}` })
@@ -114,7 +130,7 @@ describe("Header", () => {
   });
 
   it("clicking navigation buttons scrolls to the target section with smooth behavior", () => {
-    renderWithAuth(<Header />);
+    render(<Header />);
 
     const targetElement = document.createElement("div");
     const scrollIntoViewMock = jest.fn();
@@ -136,7 +152,7 @@ describe("Header", () => {
   });
 
   it("does not throw or call scroll when target section is missing", () => {
-    renderWithAuth(<Header />);
+    render(<Header />);
 
     const querySelectorSpy = jest
       .spyOn(document, "querySelector")
@@ -152,7 +168,7 @@ describe("Header", () => {
   });
 
   it("renders a navigation landmark", () => {
-    renderWithAuth(<Header />);
+    render(<Header />);
     expect(screen.getByRole("navigation")).toBeInTheDocument();
   });
 });

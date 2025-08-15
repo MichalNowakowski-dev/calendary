@@ -12,7 +12,7 @@ import CustomerStats from "@/components/customers/CustomerStats";
 import { getCustomers, type CustomerWithStats } from "@/lib/actions/customers";
 
 export default function CustomersPage() {
-  const { user, status } = useAuth();
+  const { user } = useAuth();
   const [customers, setCustomers] = useState<CustomerWithStats[]>([]);
   const [userCompany, setUserCompany] = useState<Company | null>(null);
   const [filteredCustomers, setFilteredCustomers] = useState<

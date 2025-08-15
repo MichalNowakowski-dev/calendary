@@ -354,7 +354,7 @@ export default function ScheduleCalendar({
                 </div>
                 <div className="text-center">
                   <div className="text-gray-600 dark:text-gray-400">
-                    Łącznie okresów
+                    Łącznie tygodni
                   </div>
                   <div className="font-semibold text-gray-900 dark:text-gray-100">
                     {schedules.length}

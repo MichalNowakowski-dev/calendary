@@ -3,6 +3,7 @@ import {
   HeroSection,
   FeaturesSection,
   IndustriesSection,
+  Pricing,
   CTASection,
   Footer,
 } from "@/components/homepage";
@@ -18,6 +19,9 @@ export default function Home() {
       <div className="h-0.5 w-full max-w-6xl mx-auto bg-gray-200 dark:bg-gray-800"></div>
 
       <IndustriesSection />
+      <div className="h-0.5 w-full bg-gray-200 dark:bg-gray-800"></div>
+      <Pricing />
+      <div className="h-0.5 w-full bg-gray-200 dark:bg-gray-800"></div>
       <CTASection />
       <Footer />
     </div>

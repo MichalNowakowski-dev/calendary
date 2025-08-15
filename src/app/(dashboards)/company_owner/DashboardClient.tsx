@@ -38,27 +38,27 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
       ...baseItems,
       {
         name: "Usługi",
-        href: "/dashboard/services",
+        href: "/company_owner/services",
         icon: Briefcase,
       },
       {
         name: "Pracownicy",
-        href: "/dashboard/employees",
+        href: "/company_owner/employees",
         icon: Users,
       },
       {
         name: "Klienci",
-        href: "/dashboard/customers",
+        href: "/company_owner/customers",
         icon: Users,
       },
       {
         name: "Statystyki",
-        href: "/dashboard/analytics",
+        href: "/company_owner/analytics",
         icon: BarChart3,
       },
       {
         name: "Ustawienia",
-        href: "/dashboard/settings",
+        href: "/company_owner/settings",
         icon: Settings,
       },
     ];
@@ -67,17 +67,17 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
       ...baseItems,
       {
         name: "Pracownicy",
-        href: "/dashboard/employees",
+        href: "/admin/employees",
         icon: Users,
       },
       {
         name: "Klienci",
-        href: "/dashboard/customers",
+        href: "/admin/customers",
         icon: Users,
       },
       {
         name: "Statystyki",
-        href: "/dashboard/analytics",
+        href: "/admin/analytics",
         icon: BarChart3,
       },
     ];

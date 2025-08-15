@@ -177,7 +177,7 @@ export const ScheduleForm = ({
 
       showToast.success(
         `Dodano ${scheduleEntries.length} ${
-          scheduleEntries.length === 1 ? "grafik" : "grafików"
+          scheduleEntries.length === 1 ? "tydzień" : "tygodni"
         } dla ${selectedDates.length} dni`
       );
     } catch (error) {
