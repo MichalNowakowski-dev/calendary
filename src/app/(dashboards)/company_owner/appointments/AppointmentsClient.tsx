@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { debounce } from "lodash";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,21 +56,31 @@ export default function AppointmentsClient({
   const [editingAppointment, setEditingAppointment] =
     useState<AppointmentWithDetails | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const pathname = usePathname();
 
-
-
-  const updateSearchParams = (updates: Record<string, string | undefined>) => {
+  const updateSearchParams = (
+    searchParam: string,
+    value: string | undefined
+  ) => {
     const params = new URLSearchParams(searchParamsHook.toString());
-    
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === undefined || value === "") {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-    });
 
-    router.push(`/dashboard/appointments?${params.toString()}`);
+    if (value === undefined || value === "") {
+      params.delete(searchParam);
+    } else {
+      params.set(searchParam, value);
+    }
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const debouncedUpdateSearchParams = debounce(
+    (searchParam: string, value: string | undefined) =>
+      updateSearchParams(searchParam, value),
+    300
+  );
+
+  const handleSearchChange = (value: string) => {
+    debouncedUpdateSearchParams("search", value);
   };
 
   const getStatusIcon = (status: string) => {
@@ -122,8 +133,11 @@ export default function AppointmentsClient({
     newStatus: "booked" | "cancelled" | "completed"
   ) => {
     try {
-      const result = await updateAppointmentStatusAction(appointmentId, newStatus);
-      
+      const result = await updateAppointmentStatusAction(
+        appointmentId,
+        newStatus
+      );
+
       if (result.success) {
         showToast.success(result.message);
         router.refresh(); // Refresh the page to get updated data
@@ -157,8 +171,8 @@ export default function AppointmentsClient({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
               <Input
                 placeholder="Szukaj klienta lub usługi..."
-                value={searchParams.search || ""}
-                onChange={(e) => updateSearchParams({ search: e.target.value })}
+                defaultValue={searchParams.search || ""}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -166,7 +180,7 @@ export default function AppointmentsClient({
             {/* Status filter */}
             <select
               value={searchParams.status || "all"}
-              onChange={(e) => updateSearchParams({ status: e.target.value })}
+              onChange={(e) => updateSearchParams("status", e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Wszystkie statusy</option>
@@ -178,7 +192,7 @@ export default function AppointmentsClient({
             {/* Date filter */}
             <select
               value={searchParams.date || "all"}
-              onChange={(e) => updateSearchParams({ date: e.target.value })}
+              onChange={(e) => updateSearchParams("date", e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Wszystkie daty</option>
@@ -208,7 +222,9 @@ export default function AppointmentsClient({
                   Brak wizyt
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  {searchParams.search || searchParams.status !== "all" || searchParams.date !== "all"
+                  {searchParams.search ||
+                  searchParams.status !== "all" ||
+                  searchParams.date !== "all"
                     ? "Nie znaleziono wizyt odpowiadających filtrom."
                     : "Nie masz jeszcze żadnych wizyt w systemie."}
                 </p>
@@ -222,9 +238,9 @@ export default function AppointmentsClient({
               className="group hover:shadow-lg transition-all duration-200 border-l-4 border-l-transparent hover:border-l-blue-500 dark:hover:border-l-blue-400"
             >
               <CardContent className="p-6">
-                <div className="flex items-start justify-between gap-6">
+                <div className="flex flex-col md:flex-row items-start justify-between gap-6">
                   {/* Main appointment info */}
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className="flex flex-col md:flex-row items-center md:items-start gap-4 flex-1 min-w-0 w-full">
                     {/* Status indicator */}
                     <div className="flex-shrink-0 mt-1 flex items-center gap-2">
                       <div className="relative">
@@ -309,7 +325,7 @@ export default function AppointmentsClient({
                   </div>
 
                   {/* Price and actions */}
-                  <div className="flex flex-col items-end gap-4">
+                  <div className="flex flex-wrap md:flex-col md:items-end gap-4">
                     {/* Price */}
                     <div className="text-right">
                       <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -385,4 +401,4 @@ export default function AppointmentsClient({
       )}
     </>
   );
-} 
+}

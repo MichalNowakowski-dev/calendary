@@ -47,6 +47,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
+    // if pathname is non existing page redirect to /404
+    if (routeType === "other") {
+      return createRedirect(request, "/404");
+    }
+
     // Fetch user
     const supabase = createClient();
     const {

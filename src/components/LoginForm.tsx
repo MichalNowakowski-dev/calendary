@@ -20,6 +20,7 @@ const LoginForm = () => {
   const [state, formAction, isPending] = useActionState(loginAction, {
     message: "",
     errors: {},
+    redirectTo: undefined,
   });
 
   // Handle redirect after successful login

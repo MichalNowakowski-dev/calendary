@@ -16,19 +16,19 @@ import {
   Home,
 } from "lucide-react";
 import { signOut } from "@/lib/auth/utils";
-import type { AuthUser } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuth } from "@/lib/context/AuthProvider";
 
 const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
   const baseItems = [
     {
       name: "Przegląd",
-      href: "/dashboard",
+      href: `/${role}`,
       icon: Home,
     },
     {
       name: "Kalendarz",
-      href: "/dashboard/appointments",
+      href: `/${role}/appointments`,
       icon: Calendar,
     },
   ];
@@ -38,27 +38,27 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
       ...baseItems,
       {
         name: "Usługi",
-        href: "/company_owner/services",
+        href: `/${role}/services`,
         icon: Briefcase,
       },
       {
         name: "Pracownicy",
-        href: "/company_owner/employees",
+        href: `/${role}/employees`,
         icon: Users,
       },
       {
         name: "Klienci",
-        href: "/company_owner/customers",
+        href: `/${role}/customers`,
         icon: Users,
       },
       {
         name: "Statystyki",
-        href: "/company_owner/analytics",
+        href: `/${role}/analytics`,
         icon: BarChart3,
       },
       {
         name: "Ustawienia",
-        href: "/company_owner/settings",
+        href: `/${role}/settings`,
         icon: Settings,
       },
     ];
@@ -67,17 +67,17 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
       ...baseItems,
       {
         name: "Pracownicy",
-        href: "/admin/employees",
+        href: `/${role}/employees`,
         icon: Users,
       },
       {
         name: "Klienci",
-        href: "/admin/customers",
+        href: `/${role}/customers`,
         icon: Users,
       },
       {
         name: "Statystyki",
-        href: "/admin/analytics",
+        href: `/${role}/analytics`,
         icon: BarChart3,
       },
     ];
@@ -88,18 +88,15 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
 };
 
 interface DashboardClientProps {
-  user: AuthUser;
   children: React.ReactNode;
-  userRole?: "company_owner" | "admin" | "employee";
 }
 
-export default function DashboardClient({
-  user,
-  children,
-  userRole = "company_owner",
-}: DashboardClientProps) {
+export default function DashboardClient({ children }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
+
+  const userRole = user?.role as "company_owner" | "admin" | "employee";
 
   const handleSignOut = async () => {
     try {
@@ -149,12 +146,12 @@ export default function DashboardClient({
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                {user.first_name.charAt(0)}
-                {user.last_name.charAt(0)}
+                {user?.first_name.charAt(0)}
+                {user?.last_name.charAt(0)}
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-gray-100">
-                  {user.first_name} {user.last_name}
+                  {user?.first_name} {user?.last_name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {userRole === "company_owner"
@@ -213,7 +210,7 @@ export default function DashboardClient({
             <div className="flex-1" />
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block  ">
-                {user.email}
+                {user?.email}
               </span>
             </div>
           </div>

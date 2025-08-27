@@ -71,6 +71,7 @@ const Pricing = () => {
     <section
       className="px-4 sm:px-6 lg:px-8 py-20 bg-white dark:bg-gray-900"
       aria-labelledby="pricing-heading"
+      id="pricing"
     >
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">

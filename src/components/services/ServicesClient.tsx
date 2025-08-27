@@ -228,12 +228,12 @@ function ServiceCard({
         !service.active ? "opacity-50" : ""
       }`}
     >
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 flex flex-col h-full">
         <div className="flex flex-col items-center gap-3 mb-4 ">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">
             {service.name}
           </h3>
-          <div className="flex gap-2 w-full">
+          <div className="flex lg:flex-wrap gap-2 w-full">
             <Button
               size="sm"
               variant="outline"
@@ -270,7 +270,7 @@ function ServiceCard({
         </div>
 
         {/* Assigned Employees */}
-        <div className="mb-4">
+        <div className="flex-grow">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center">
               <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 dark:text-gray-400" />
@@ -327,12 +327,12 @@ function ServiceCard({
         </div>
 
         {/* Bottom action buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-6 pt-4 border-t dark:border-gray-700 flex-wrap">
+        <div className="flex flex-row gap-4  pt-4 border-t dark:border-gray-700 flex-wrap">
           <Button
             size="sm"
             variant="outline"
             onClick={() => onEdit?.(service)}
-            className="flex-1 text-xs sm:text-sm"
+            className="flex-1 sm:text-sm min-h-2"
           >
             <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
             <span className="hidden sm:inline">Edytuj usługę</span>
@@ -342,7 +342,7 @@ function ServiceCard({
             size="sm"
             variant="destructive"
             onClick={deleteService}
-            className="flex-1 text-xs sm:text-sm"
+            className="flex-1 sm:text-sm min-h-2"
           >
             <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
             <span className="hidden sm:inline">Usuń usługę</span>

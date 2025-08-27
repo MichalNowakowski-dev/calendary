@@ -22,7 +22,7 @@ export const serverAuth = {
 export async function getUserRoleInCompany(
   userId: string,
   companyId: string
-): Promise<"owner" | "admin" | "employee" | null> {
+): Promise<"company_owner" | "admin" | "employee" | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("company_users")

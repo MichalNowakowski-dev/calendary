@@ -87,8 +87,10 @@
 
 - [ ] Refaktor dużych stron / komponentów na mniejsze
 - [ ] Wszystkie typy w jednym miejscu @lib/types
-- [ ] Refaktor client komponentów na server komponenty - w miarę możliwości - np pages
+- [x] Refaktor client komponentów na server komponenty - w miarę możliwości - np pages
 
 ---
 
-**Postęp:** Ukończone podstawowe funkcje: auth, dashboard, zarządzanie firmą, pracownicy z grafikami, kompletny system rezerwacji i zarządzanie klientami z historią wizyt i panelem klienta.
+## TODO
+
+1. improve appointments cards RWD

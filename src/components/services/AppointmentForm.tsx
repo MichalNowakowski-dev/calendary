@@ -59,7 +59,6 @@ type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 interface AppointmentFormProps {
   company: Company;
-  onAppointmentCreated: () => void;
 }
 
 const generateTimeSlots = () => {
@@ -75,10 +74,7 @@ const generateTimeSlots = () => {
   return slots;
 };
 
-export default function AppointmentForm({
-  company,
-  onAppointmentCreated,
-}: AppointmentFormProps) {
+export default function AppointmentForm({ company }: AppointmentFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
@@ -312,7 +308,6 @@ export default function AppointmentForm({
       showToast.success("Wizyta została pomyślnie utworzona");
       setIsOpen(false);
       form.reset();
-      onAppointmentCreated();
     } catch (error) {
       console.error("Error creating appointment:", error);
       showToast.error("Błąd podczas tworzenia wizyty");

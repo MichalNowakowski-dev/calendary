@@ -62,7 +62,10 @@ export async function loginAction(
   }
 
   const { email, password } = validatedFields.data;
+  let userRole: string | null = null;
   const redirectTo = formData.get("redirectTo") as string | null;
+
+  console.log("redirectTo", redirectTo);
 
   try {
     const supabase = createClient();
@@ -79,13 +82,13 @@ export async function loginAction(
     }
 
     if (authData.user) {
-      const userRole = authData.user.user_metadata?.role;
+      userRole = authData.user.user_metadata?.role;
 
       // Return success with redirect information
       return {
         message: "",
         errors: {},
-        redirectTo: redirectTo || `/${userRole}`,
+        redirectTo: redirectTo || `/${userRole}` || "dashboard",
       };
     }
 

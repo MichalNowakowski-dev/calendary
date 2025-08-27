@@ -113,12 +113,7 @@ export default async function AppointmentsPage({
           text="Kalendarz wizyt"
           description={`Zarządzaj wizytami w firmie ${company.name}`}
         />
-        <AppointmentForm
-          company={company}
-          onAppointmentCreated={() => {
-            // This will trigger a revalidation
-          }}
-        />
+        <AppointmentForm company={company} />
       </div>
 
       {/* Client component for interactive features */}
