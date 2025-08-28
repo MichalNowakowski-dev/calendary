@@ -123,6 +123,7 @@ Companies can be accessed via `/business/[slug]` routes for public booking inter
 - Include issue references in commit messages to link changes to requirements
 - Use breaking change footer (!: or BREAKING CHANGE:) to clearly mark incompatible changes
 - Configure commitlint to automatically enforce conventional commit format
+- Do not include text about generating commit by claude ai
 
 ## FRONTEND
 

@@ -98,9 +98,6 @@ export default function CustomerEditModal({
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Edytuj klienta</DialogTitle>
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         </DialogHeader>
 

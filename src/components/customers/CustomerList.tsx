@@ -30,6 +30,7 @@ import type { Customer } from "@/lib/types/database";
 import { showToast } from "@/lib/toast";
 import CustomerDetailModal from "./CustomerDetailModal";
 import CustomerEditModal from "./CustomerEditModal";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { deleteCustomer } from "@/lib/actions/customers";
 
 interface CustomerWithStats extends Customer {
@@ -55,6 +56,8 @@ export default function CustomerList({
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<CustomerWithStats | null>(null);
 
   const handleViewCustomer = (customer: CustomerWithStats) => {
     setSelectedCustomer(customer);
@@ -66,13 +69,16 @@ export default function CustomerList({
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteCustomer = async (customer: CustomerWithStats) => {
-    if (!confirm(`Czy na pewno chcesz usunąć klienta "${customer.name}"?`)) {
-      return;
-    }
+  const handleDeleteCustomer = (customer: CustomerWithStats) => {
+    setCustomerToDelete(customer);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteCustomer = async () => {
+    if (!customerToDelete) return;
 
     try {
-      await deleteCustomer(customer.id);
+      await deleteCustomer(customerToDelete.id);
       showToast.success("Klient został usunięty");
       onRefresh();
     } catch (error) {
@@ -115,27 +121,34 @@ export default function CustomerList({
     );
   }
 
-  {
-    /* Customer Detail Modal */
-  }
-  <CustomerDetailModal
-    customer={selectedCustomer}
-    isOpen={isDetailModalOpen}
-    onClose={() => setIsDetailModalOpen(false)}
-    onEdit={(customer) => handleEditCustomer(customer as CustomerWithStats)}
-    companyId={companyId}
-  />;
-  {
-    /* Customer Edit Modal */
-  }
-  <CustomerEditModal
-    customer={selectedCustomer}
-    isOpen={isEditModalOpen}
-    onClose={() => setIsEditModalOpen(false)}
-    onSuccess={handleEditSuccess}
-  />;
-
   return (
+    <>
+      {/* Customer Detail Modal */}
+      <CustomerDetailModal
+        customer={selectedCustomer}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        onEdit={(customer) => handleEditCustomer(customer as CustomerWithStats)}
+        companyId={companyId}
+      />
+      {/* Customer Edit Modal */}
+      <CustomerEditModal
+        customer={selectedCustomer}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
+      />
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDeleteCustomer}
+        title="Usuń klienta"
+        description={`Czy na pewno chcesz usunąć klienta "${customerToDelete?.name}"? Tej operacji nie można cofnąć.`}
+        confirmText="Usuń"
+        cancelText="Anuluj"
+        variant="destructive"
+      />
     <Card>
       <CardHeader>
         <CardTitle>Lista klientów ({customers.length})</CardTitle>
@@ -235,5 +248,6 @@ export default function CustomerList({
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }
