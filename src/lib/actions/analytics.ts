@@ -12,6 +12,8 @@ export interface AnalyticsData {
   averageAppointmentValue: number;
   revenueChange: number;
   appointmentChange: number;
+  completionRateChange: number;
+  averageAppointmentValueChange: number;
   topServices: Array<{
     service: Service;
     revenue: number;
@@ -74,10 +76,33 @@ export async function getAnalyticsData(
       `
       )
       .eq("company_id", userCompany.id)
-      .gte("created_at", startDate.toISOString())
-      .lte("created_at", endDate.toISOString());
+      .gte("date", startDate.toISOString().split('T')[0])
+      .lte("date", endDate.toISOString().split('T')[0]);
+
+    // Fetch previous period appointments for comparison
+    const previousStartDate = new Date(startDate);
+    previousStartDate.setDate(previousStartDate.getDate() - parseInt(timeRange));
+    const { data: previousAppointments } = await supabase
+      .from("appointments")
+      .select(
+        `
+        *,
+        service:services(name, price)
+      `
+      )
+      .eq("company_id", userCompany.id)
+      .gte("date", previousStartDate.toISOString().split('T')[0])
+      .lt("date", startDate.toISOString().split('T')[0]);
+
+    // Fetch customers for retention analysis
+    const { data: customers } = await supabase
+      .from("customers")
+      .select("*")
+      .eq("company_id", userCompany.id);
 
     if (!appointments) return null;
+    const prevAppointments = previousAppointments || [];
+    const allCustomers = customers || [];
 
     // Calculate analytics
     const totalRevenue = appointments.reduce((sum, apt) => {
@@ -133,24 +158,27 @@ export async function getAnalyticsData(
       .sort((a, b) => b.appointments - a.appointments)
       .slice(0, 5);
 
-    // Calculate monthly revenue (simplified)
-    const monthlyRevenue = [
-      {
-        month: "Sty",
-        revenue: totalRevenue * 0.3,
-        appointments: totalAppointments * 0.3,
-      },
-      {
-        month: "Lut",
-        revenue: totalRevenue * 0.25,
-        appointments: totalAppointments * 0.25,
-      },
-      {
-        month: "Mar",
-        revenue: totalRevenue * 0.45,
-        appointments: totalAppointments * 0.45,
-      },
-    ];
+    // Calculate real monthly revenue based on actual appointment dates
+    const monthlyData = new Map<string, { revenue: number; appointments: number }>();
+    appointments.forEach((apt) => {
+      const date = new Date(apt.date);
+      const monthKey = date.toLocaleDateString('pl-PL', { month: 'short' });
+      
+      if (!monthlyData.has(monthKey)) {
+        monthlyData.set(monthKey, { revenue: 0, appointments: 0 });
+      }
+      
+      const month = monthlyData.get(monthKey)!;
+      month.revenue += apt.service?.price || 0;
+      month.appointments += 1;
+    });
+
+    const monthlyRevenue = Array.from(monthlyData.entries())
+      .map(([month, data]) => ({ month, ...data }))
+      .sort((a, b) => {
+        const months = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
+        return months.indexOf(a.month) - months.indexOf(b.month);
+      });
 
     const appointmentStatusDistribution = {
       booked: appointments.filter((apt) => apt.status === "booked").length,
@@ -158,43 +186,71 @@ export async function getAnalyticsData(
       cancelled: cancelledAppointments,
     };
 
-    // Calculate customer analytics (mock data for now)
-    const totalCustomers =
-      appointments.length > 0 ? Math.ceil(appointments.length * 0.8) : 0;
-    const newCustomers = Math.ceil(totalCustomers * 0.3);
+    // Calculate real customer analytics
+    const uniqueCustomerEmails = new Set(appointments.map(apt => apt.customer_email));
+    const totalCustomers = uniqueCustomerEmails.size;
+    
+    // Calculate new customers (customers who made their first appointment in current period)
+    const customerFirstAppointments = new Map<string, string>();
+    allCustomers.forEach(customer => {
+      const customerAppointments = appointments.filter(apt => apt.customer_email === customer.email);
+      if (customerAppointments.length > 0) {
+        const firstAppointment = customerAppointments.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+        customerFirstAppointments.set(customer.email, firstAppointment.date);
+      }
+    });
+    
+    const newCustomers = Array.from(customerFirstAppointments.values())
+      .filter(firstDate => {
+        const first = new Date(firstDate);
+        return first >= startDate && first <= endDate;
+      }).length;
+    
     const returningCustomers = totalCustomers - newCustomers;
-    const averageCustomerValue =
-      totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
-    const customerRetentionRate = 75.5; // Mock data
+    const averageCustomerValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+    
+    // Calculate retention rate: customers who had appointments in both periods
+    const prevCustomerEmails = new Set(prevAppointments.map(apt => apt.customer_email));
+    const currentCustomerEmails = new Set(appointments.map(apt => apt.customer_email));
+    const returningFromPrevPeriod = Array.from(prevCustomerEmails).filter(email => currentCustomerEmails.has(email));
+    const customerRetentionRate = prevCustomerEmails.size > 0 ? (returningFromPrevPeriod.length / prevCustomerEmails.size) * 100 : 0;
 
-    // Calculate time analytics (mock data for now)
-    const peakHours = [
-      { hour: "09:00", appointments: Math.ceil(totalAppointments * 0.15) },
-      { hour: "10:00", appointments: Math.ceil(totalAppointments * 0.2) },
-      { hour: "11:00", appointments: Math.ceil(totalAppointments * 0.18) },
-      { hour: "14:00", appointments: Math.ceil(totalAppointments * 0.12) },
-      { hour: "15:00", appointments: Math.ceil(totalAppointments * 0.1) },
-    ];
-
-    const busyDays = [
-      {
-        day: "Poniedziałek",
-        appointments: Math.ceil(totalAppointments * 0.18),
-      },
-      { day: "Wtorek", appointments: Math.ceil(totalAppointments * 0.2) },
-      {
-        day: "Środa",
-        appointments: Math.ceil(totalAppointments * 0.22),
-      },
-      {
-        day: "Czwartek",
-        appointments: Math.ceil(totalAppointments * 0.19),
-      },
-      { day: "Piątek", appointments: Math.ceil(totalAppointments * 0.15) },
-    ];
-
-    const averageDuration = 45; // Mock data
-    const totalHours = Math.ceil((totalAppointments * averageDuration) / 60);
+    // Calculate real time analytics from appointment data
+    const hourlyData = new Map<string, number>();
+    const dailyData = new Map<string, number>();
+    let totalDurationMinutes = 0;
+    
+    appointments.forEach((apt) => {
+      // Peak hours analysis
+      const hour = apt.start_time.substring(0, 5); // Extract HH:MM
+      hourlyData.set(hour, (hourlyData.get(hour) || 0) + 1);
+      
+      // Busy days analysis
+      const date = new Date(apt.date);
+      const dayName = date.toLocaleDateString('pl-PL', { weekday: 'long' });
+      const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+      dailyData.set(capitalizedDay, (dailyData.get(capitalizedDay) || 0) + 1);
+      
+      // Duration calculation
+      if (apt.start_time && apt.end_time) {
+        const startTime = new Date(`2000-01-01T${apt.start_time}`);
+        const endTime = new Date(`2000-01-01T${apt.end_time}`);
+        const durationMs = endTime.getTime() - startTime.getTime();
+        totalDurationMinutes += durationMs / (1000 * 60);
+      }
+    });
+    
+    const peakHours = Array.from(hourlyData.entries())
+      .map(([hour, appointments]) => ({ hour, appointments }))
+      .sort((a, b) => b.appointments - a.appointments)
+      .slice(0, 5);
+    
+    const busyDays = Array.from(dailyData.entries())
+      .map(([day, appointments]) => ({ day, appointments }))
+      .sort((a, b) => b.appointments - a.appointments);
+    
+    const averageDuration = totalAppointments > 0 ? Math.round(totalDurationMinutes / totalAppointments) : 45;
+    const totalHours = Math.ceil(totalDurationMinutes / 60);
 
     return {
       totalRevenue,
@@ -203,8 +259,26 @@ export async function getAnalyticsData(
       cancelledAppointments,
       averageAppointmentValue:
         totalAppointments > 0 ? totalRevenue / totalAppointments : 0,
-      revenueChange: 12.5, // Mock data
-      appointmentChange: 8.3, // Mock data
+      revenueChange: (() => {
+        const prevRevenue = prevAppointments.reduce((sum, apt) => sum + (apt.service?.price || 0), 0);
+        return prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+      })(),
+      appointmentChange: (() => {
+        const prevTotal = prevAppointments.length;
+        return prevTotal > 0 ? ((totalAppointments - prevTotal) / prevTotal) * 100 : 0;
+      })(),
+      completionRateChange: (() => {
+        const currentCompletionRate = totalAppointments > 0 ? (completedAppointments / totalAppointments) * 100 : 0;
+        const prevCompletedAppointments = prevAppointments.filter(apt => apt.status === "completed").length;
+        const prevCompletionRate = prevAppointments.length > 0 ? (prevCompletedAppointments / prevAppointments.length) * 100 : 0;
+        return prevCompletionRate > 0 ? currentCompletionRate - prevCompletionRate : 0;
+      })(),
+      averageAppointmentValueChange: (() => {
+        const currentAvgValue = totalAppointments > 0 ? totalRevenue / totalAppointments : 0;
+        const prevRevenue = prevAppointments.reduce((sum, apt) => sum + (apt.service?.price || 0), 0);
+        const prevAvgValue = prevAppointments.length > 0 ? prevRevenue / prevAppointments.length : 0;
+        return prevAvgValue > 0 ? ((currentAvgValue - prevAvgValue) / prevAvgValue) * 100 : 0;
+      })(),
       topServices,
       topEmployees,
       monthlyRevenue,

@@ -51,14 +51,14 @@ export default function AnalyticsClient({
               analyticsData.totalAppointments) *
             100
           ).toFixed(1)}%`}
-          change={5.2}
+          change={analyticsData.completionRateChange || 0}
           icon={CheckCircle}
           description="Wskaźnik ukończenia"
         />
         <MetricCard
           title="Średnia wartość wizyty"
           value={`${analyticsData.averageAppointmentValue.toFixed(2)} zł`}
-          change={-2.1}
+          change={analyticsData.averageAppointmentValueChange || 0}
           icon={TrendingUp}
           description="Średnia wartość wizyty"
         />
