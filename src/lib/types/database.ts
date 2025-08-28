@@ -669,3 +669,9 @@ export interface CompanyPermissions {
     expiresAt: string;
   };
 }
+
+export interface CompanyWithFullSubscription extends Company {
+  company_subscriptions: Array<CompanySubscription & {
+    subscription_plan: SubscriptionPlan;
+  }>;
+}

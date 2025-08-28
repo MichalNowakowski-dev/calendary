@@ -2,10 +2,11 @@ import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, CreditCard, Activity } from "lucide-react";
 import { getAllCompaniesWithSubscriptions } from "@/lib/actions/subscriptions";
+import type { CompanyWithFullSubscription } from "@/lib/types/database";
 
 async function AdminStats() {
   try {
-    const companies = await getAllCompaniesWithSubscriptions();
+    const companies: CompanyWithFullSubscription[] = await getAllCompaniesWithSubscriptions();
 
     const stats = {
       totalCompanies: companies.length,
@@ -91,7 +92,7 @@ async function AdminStats() {
               {Object.entries(stats.planDistribution).map(([plan, count]) => (
                 <div key={plan} className="flex justify-between text-sm">
                   <span className="capitalize">{plan}</span>
-                  <span>5</span>
+                  <span>{count}</span>
                 </div>
               ))}
             </div>
