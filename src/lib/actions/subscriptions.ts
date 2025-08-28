@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { serverAuth } from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
-import type { 
+import type {
   SubscriptionPlan,
   CompanySubscription,
   CompanySubscriptionInsert,
@@ -17,15 +17,19 @@ import type {
 import type { ActionState } from "./types";
 
 // Get all subscription plans with their modules
-export const getSubscriptionPlans = async (): Promise<SubscriptionPlanWithModules[]> => {
+export const getSubscriptionPlans = async (): Promise<
+  SubscriptionPlanWithModules[]
+> => {
   const supabase = createClient();
 
   const { data: plans, error } = await supabase
     .from("subscription_plans")
-    .select(`
+    .select(
+      `
       *,
       plan_modules (*)
-    `)
+    `
+    )
     .eq("is_active", true)
     .order("price_monthly", { ascending: true });
 
@@ -37,7 +41,9 @@ export const getSubscriptionPlans = async (): Promise<SubscriptionPlanWithModule
 // Get company's current subscription
 export const getCompanySubscription = async (companyId: string) => {
   const supabase = createClient();
-  const user = await serverAuth.getCurrentUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -52,20 +58,22 @@ export const getCompanySubscription = async (companyId: string) => {
     .single();
 
   // Allow if user is admin (global admin) or has company access
-  const isAdmin = user.user_metadata?.role === 'admin';
+  const isAdmin = user.user_metadata?.role === "admin";
   if (!companyUser && !isAdmin) {
     throw new Error("Access denied");
   }
 
   const { data: subscription, error } = await supabase
     .from("company_subscriptions")
-    .select(`
+    .select(
+      `
       *,
       subscription_plan:subscription_plans (
         *,
         plan_modules (*)
       )
-    `)
+    `
+    )
     .eq("company_id", companyId)
     .single();
 
@@ -81,9 +89,11 @@ export const updateCompanySubscription = async (
 ): Promise<ActionState> => {
   try {
     const supabase = createClient();
-    const user = await serverAuth.getCurrentUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!user || user.user_metadata?.role !== 'admin') {
+    if (!user || user.user_metadata?.role !== "admin") {
       return {
         success: false,
         message: "Access denied. Admin privileges required.",
@@ -107,7 +117,9 @@ export const updateCompanySubscription = async (
           subscription_plan_id: planId,
           status: "active",
           current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+          current_period_end: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ).toISOString(), // 30 days from now
         })
         .eq("company_id", companyId)
         .select()
@@ -125,7 +137,9 @@ export const updateCompanySubscription = async (
           status: "active",
           billing_cycle: "monthly",
           current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          current_period_end: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ).toISOString(),
         })
         .select()
         .single();
@@ -160,9 +174,11 @@ export const toggleCompanyModule = async (
 ): Promise<ActionState> => {
   try {
     const supabase = createClient();
-    const user = await serverAuth.getCurrentUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!user || user.user_metadata?.role !== 'admin') {
+    if (!user || user.user_metadata?.role !== "admin") {
       return {
         success: false,
         message: "Access denied. Admin privileges required.",
@@ -216,7 +232,7 @@ export const toggleCompanyModule = async (
 
     return {
       success: true,
-      message: `Module ${moduleName} ${enabled ? 'enabled' : 'disabled'} for company`,
+      message: `Module ${moduleName} ${enabled ? "enabled" : "disabled"} for company`,
       data: result,
     };
   } catch (error) {
@@ -231,21 +247,25 @@ export const toggleCompanyModule = async (
 // Admin-only: Get all companies with their subscriptions for admin dashboard
 export const getAllCompaniesWithSubscriptions = async () => {
   const supabase = createClient();
-  const user = await serverAuth.getCurrentUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user || user.user_metadata?.role !== "admin") {
     throw new Error("Access denied. Admin privileges required.");
   }
 
   const { data: companies, error } = await supabase
     .from("companies")
-    .select(`
+    .select(
+      `
       *,
       company_subscriptions!inner (
         *,
         subscription_plan:subscription_plans (*)
       )
-    `)
+    `
+    )
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -256,7 +276,9 @@ export const getAllCompaniesWithSubscriptions = async () => {
 // Get company modules (overrides)
 export const getCompanyModules = async (companyId: string) => {
   const supabase = createClient();
-  const user = await serverAuth.getCurrentUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -270,7 +292,7 @@ export const getCompanyModules = async (companyId: string) => {
     .eq("user_id", user.id)
     .single();
 
-  const isAdmin = user.user_metadata?.role === 'admin';
+  const isAdmin = user.user_metadata?.role === "admin";
   if (!companyUser && !isAdmin) {
     throw new Error("Access denied");
   }
@@ -293,9 +315,11 @@ export const removeCompanyModuleOverride = async (
 ): Promise<ActionState> => {
   try {
     const supabase = createClient();
-    const user = await serverAuth.getCurrentUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!user || user.user_metadata?.role !== 'admin') {
+    if (!user || user.user_metadata?.role !== "admin") {
       return {
         success: false,
         message: "Access denied. Admin privileges required.",
