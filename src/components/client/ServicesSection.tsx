@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import ServiceCard from "./ServiceCard";
 import ServiceSearch from "./ServiceSearch";
 import Pagination from "@/components/ui/pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 interface ServicesSectionProps {
   services: (Service & { employees: Employee[] })[];
@@ -17,7 +18,6 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [durationRange, setDurationRange] = useState<[number, number]>([0, 0]);
-  const [currentPage, setCurrentPage] = useState(1);
   
   const ITEMS_PER_PAGE = 6;
 
@@ -83,12 +83,11 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
     return filtered;
   }, [services, searchTerm, priceRange, durationRange, sortBy, sortOrder]);
 
-  // Paginate services
-  const totalPages = Math.ceil(filteredAndSortedServices.length / ITEMS_PER_PAGE);
-  const paginatedServices = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredAndSortedServices.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredAndSortedServices, currentPage]);
+  // Use pagination hook
+  const pagination = usePagination({
+    data: filteredAndSortedServices,
+    itemsPerPage: ITEMS_PER_PAGE,
+  });
 
   const handleSort = (field: string) => {
     if (field === sortBy) {
@@ -97,6 +96,7 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
       setSortBy(field);
       setSortOrder("asc");
     }
+    pagination.goToFirstPage();
   };
 
   const handleClearFilters = () => {
@@ -105,11 +105,11 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
     setDurationRange([0, maxDuration]);
     setSortBy("name");
     setSortOrder("asc");
-    setCurrentPage(1);
+    pagination.goToFirstPage();
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    pagination.setCurrentPage(page);
     // Scroll to top of services section
     const servicesSection = document.getElementById('services-section');
     if (servicesSection) {
@@ -139,7 +139,7 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
           searchTerm={searchTerm}
           onSearch={(term) => {
             setSearchTerm(term);
-            setCurrentPage(1);
+            pagination.goToFirstPage();
           }}
           sortBy={sortBy}
           sortOrder={sortOrder}
@@ -147,12 +147,12 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
           priceRange={priceRange}
           onPriceRangeChange={(range) => {
             setPriceRange(range);
-            setCurrentPage(1);
+            pagination.goToFirstPage();
           }}
           durationRange={durationRange}
           onDurationRangeChange={(range) => {
             setDurationRange(range);
-            setCurrentPage(1);
+            pagination.goToFirstPage();
           }}
           onClearFilters={handleClearFilters}
           totalResults={filteredAndSortedServices.length}
@@ -202,7 +202,7 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {paginatedServices.map((service) => (
+            {pagination.paginatedData.map((service) => (
               <ServiceCard
                 key={service.id}
                 service={service}
@@ -212,10 +212,10 @@ export default function ServicesSection({ services, onBookService }: ServicesSec
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {pagination.totalPages > 1 && (
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
               onPageChange={handlePageChange}
               className="mt-8"
             />

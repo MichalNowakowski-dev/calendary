@@ -32,6 +32,7 @@ import CustomerDetailModal from "./CustomerDetailModal";
 import CustomerEditModal from "./CustomerEditModal";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { deleteCustomer } from "@/lib/actions/customers";
+import Pagination from "@/components/ui/pagination";
 
 interface CustomerWithStats extends Customer {
   appointment_count: number;
@@ -39,8 +40,18 @@ interface CustomerWithStats extends Customer {
   total_spent: number;
 }
 
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  startIndex: number;
+  endIndex: number;
+}
+
 interface CustomerListProps {
   customers: CustomerWithStats[];
+  totalCustomers: number;
+  pagination: PaginationProps;
   onRefresh: () => void;
   isLoading: boolean;
   companyId: string;
@@ -48,6 +59,8 @@ interface CustomerListProps {
 
 export default function CustomerList({
   customers,
+  totalCustomers,
+  pagination,
   onRefresh,
   companyId,
 }: CustomerListProps) {
@@ -151,7 +164,14 @@ export default function CustomerList({
       />
     <Card>
       <CardHeader>
-        <CardTitle>Lista klientów ({customers.length})</CardTitle>
+        <CardTitle>
+          Lista klientów
+          {totalCustomers > 0 && (
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              (wyświetlono {pagination.startIndex}-{pagination.endIndex} z {totalCustomers})
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -246,6 +266,16 @@ export default function CustomerList({
             </TableBody>
           </Table>
         </div>
+        
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={pagination.onPageChange}
+            className="mt-6"
+          />
+        )}
       </CardContent>
     </Card>
     </>

@@ -10,6 +10,7 @@ import CustomerList from "@/components/customers/CustomerList";
 import CustomerSearch from "@/components/customers/CustomerSearch";
 import CustomerStats from "@/components/customers/CustomerStats";
 import { getCustomers, type CustomerWithStats } from "@/lib/actions/customers";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 export default function CustomersPage() {
   const { user } = useAuth();
@@ -22,6 +23,12 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  const ITEMS_PER_PAGE = 10;
+  const pagination = usePagination({
+    data: filteredCustomers,
+    itemsPerPage: ITEMS_PER_PAGE,
+  });
 
   useEffect(() => {
     loadCustomers();
@@ -52,6 +59,7 @@ export default function CustomersPage() {
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     filterCustomers(term, sortBy, sortOrder);
+    pagination.goToFirstPage();
   };
 
   const handleSort = (field: string) => {
@@ -59,6 +67,7 @@ export default function CustomersPage() {
     setSortBy(field);
     setSortOrder(newOrder);
     filterCustomers(searchTerm, field, newOrder);
+    pagination.goToFirstPage();
   };
 
   const filterCustomers = (
@@ -134,7 +143,15 @@ export default function CustomersPage() {
 
       {/* Customer List */}
       <CustomerList
-        customers={filteredCustomers}
+        customers={pagination.paginatedData}
+        totalCustomers={pagination.totalItems}
+        pagination={{
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          onPageChange: pagination.setCurrentPage,
+          startIndex: pagination.startIndex,
+          endIndex: pagination.endIndex,
+        }}
         onRefresh={loadCustomers}
         isLoading={isLoading}
         companyId={userCompany?.id || ""}
