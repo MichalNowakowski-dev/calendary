@@ -3,10 +3,10 @@ import { getCompanyPermissions } from '@/lib/permissions';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { companyId: string } }
+  { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
-    const { companyId } = params;
+    const { companyId } = await params;
 
     if (!companyId) {
       return NextResponse.json(

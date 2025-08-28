@@ -6,7 +6,9 @@ import type { CompanyWithFullSubscription } from "@/lib/types/database";
 
 async function AdminStats() {
   try {
-    const companies: CompanyWithFullSubscription[] = await getAllCompaniesWithSubscriptions();
+    const companies: CompanyWithFullSubscription[] =
+      await getAllCompaniesWithSubscriptions();
+    console.log(companies);
 
     const stats = {
       totalCompanies: companies.length,

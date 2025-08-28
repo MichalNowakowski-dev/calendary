@@ -26,7 +26,8 @@ import type {
   Company,
   ModuleName,
   CompanyModule,
-  CompanySubscriptionWithPlan
+  CompanySubscriptionWithPlan,
+  PlanModule
 } from "@/lib/types/database";
 import { useToast } from "@/hooks/use-toast";
 import { MODULES } from "@/lib/permissions/constants";
@@ -79,7 +80,7 @@ export function PermissionsDialog({ open, onOpenChange, company }: PermissionsDi
       ];
 
       const modulePermissions: ModulePermission[] = moduleDefinitions.map(def => {
-        const planModule = subscription.plan_modules?.find(pm => pm.module_name === def.name);
+        const planModule = subscription.plan_modules?.find((pm: PlanModule) => pm.module_name === def.name);
         const companyOverride = companyModules?.find(cm => cm.module_name === def.name);
         
         const planDefault = planModule?.is_enabled || false;

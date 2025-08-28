@@ -330,7 +330,7 @@ export interface Database {
           price_monthly: number;
           price_yearly: number;
           is_active: boolean;
-          features: Record<string, any>;
+          features: Record<string, string>;
           max_employees: number | null;
           max_locations: number | null;
           created_at: string;
@@ -344,7 +344,7 @@ export interface Database {
           price_monthly?: number;
           price_yearly?: number;
           is_active?: boolean;
-          features?: Record<string, any>;
+          features?: Record<string, string>;
           max_employees?: number | null;
           max_locations?: number | null;
           created_at?: string;
@@ -358,7 +358,7 @@ export interface Database {
           price_monthly?: number;
           price_yearly?: number;
           is_active?: boolean;
-          features?: Record<string, any>;
+          features?: Record<string, string>;
           max_employees?: number | null;
           max_locations?: number | null;
           created_at?: string;
@@ -466,12 +466,12 @@ export interface Database {
       appointment_status: "booked" | "cancelled" | "completed";
       subscription_status: "active" | "inactive" | "cancelled" | "past_due";
       billing_cycle: "monthly" | "yearly";
-      module_name: 
-        | "employee_management" 
-        | "employee_schedules" 
-        | "online_payments" 
-        | "analytics" 
-        | "multi_location" 
+      module_name:
+        | "employee_management"
+        | "employee_schedules"
+        | "online_payments"
+        | "analytics"
+        | "multi_location"
         | "api_access";
       industry_type:
         | "automotive"
@@ -548,21 +548,32 @@ export type BusinessHoursInsert =
 export type BusinessHoursUpdate =
   Database["public"]["Tables"]["business_hours"]["Update"];
 
-export type SubscriptionPlan = Database["public"]["Tables"]["subscription_plans"]["Row"];
-export type SubscriptionPlanInsert = Database["public"]["Tables"]["subscription_plans"]["Insert"];
-export type SubscriptionPlanUpdate = Database["public"]["Tables"]["subscription_plans"]["Update"];
+export type SubscriptionPlan =
+  Database["public"]["Tables"]["subscription_plans"]["Row"];
+export type SubscriptionPlanInsert =
+  Database["public"]["Tables"]["subscription_plans"]["Insert"];
+export type SubscriptionPlanUpdate =
+  Database["public"]["Tables"]["subscription_plans"]["Update"];
 
-export type CompanySubscription = Database["public"]["Tables"]["company_subscriptions"]["Row"];
-export type CompanySubscriptionInsert = Database["public"]["Tables"]["company_subscriptions"]["Insert"];
-export type CompanySubscriptionUpdate = Database["public"]["Tables"]["company_subscriptions"]["Update"];
+export type CompanySubscription =
+  Database["public"]["Tables"]["company_subscriptions"]["Row"];
+export type CompanySubscriptionInsert =
+  Database["public"]["Tables"]["company_subscriptions"]["Insert"];
+export type CompanySubscriptionUpdate =
+  Database["public"]["Tables"]["company_subscriptions"]["Update"];
 
 export type PlanModule = Database["public"]["Tables"]["plan_modules"]["Row"];
-export type PlanModuleInsert = Database["public"]["Tables"]["plan_modules"]["Insert"];
-export type PlanModuleUpdate = Database["public"]["Tables"]["plan_modules"]["Update"];
+export type PlanModuleInsert =
+  Database["public"]["Tables"]["plan_modules"]["Insert"];
+export type PlanModuleUpdate =
+  Database["public"]["Tables"]["plan_modules"]["Update"];
 
-export type CompanyModule = Database["public"]["Tables"]["company_modules"]["Row"];
-export type CompanyModuleInsert = Database["public"]["Tables"]["company_modules"]["Insert"];
-export type CompanyModuleUpdate = Database["public"]["Tables"]["company_modules"]["Update"];
+export type CompanyModule =
+  Database["public"]["Tables"]["company_modules"]["Row"];
+export type CompanyModuleInsert =
+  Database["public"]["Tables"]["company_modules"]["Insert"];
+export type CompanyModuleUpdate =
+  Database["public"]["Tables"]["company_modules"]["Update"];
 
 // Enum types
 export type UserRole = Database["public"]["Enums"]["user_role"];
@@ -571,7 +582,8 @@ export type CompanyUserStatus =
   Database["public"]["Enums"]["company_user_status"];
 export type AppointmentStatus =
   Database["public"]["Enums"]["appointment_status"];
-export type SubscriptionStatus = Database["public"]["Enums"]["subscription_status"];
+export type SubscriptionStatus =
+  Database["public"]["Enums"]["subscription_status"];
 export type BillingCycle = Database["public"]["Enums"]["billing_cycle"];
 export type ModuleName = Database["public"]["Enums"]["module_name"];
 export type IndustryType = Database["public"]["Enums"]["industry_type"];
@@ -671,7 +683,11 @@ export interface CompanyPermissions {
 }
 
 export interface CompanyWithFullSubscription extends Company {
-  company_subscriptions: Array<CompanySubscription & {
-    subscription_plan: SubscriptionPlan;
-  }>;
+  company_subscriptions: Array<
+    CompanySubscription & {
+      subscription_plan: SubscriptionPlan & {
+        plan_modules: PlanModule[];
+      };
+    }
+  >;
 }

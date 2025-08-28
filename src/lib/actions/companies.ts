@@ -3,20 +3,29 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { serverAuth } from "@/lib/auth/server";
-import type { 
-  CompanyInsert, 
+import type {
+  Company,
+  CompanyInsert,
   CompanyUpdate,
+  BusinessHours,
   BusinessHoursInsert,
   BusinessHoursUpdate,
   CompanyWithSubscription,
 } from "@/lib/types/database";
 
-import type { ActionState } from "./types";
+import type {
+  ActionState,
+  CompanyActionState,
+  BusinessHoursActionState,
+  CompanyFormData,
+  BusinessHoursFormData,
+} from "./types";
+import { validateFormData, companyFormDataSchema } from "./types";
 
 export async function createCompanyAction(
   prevState: ActionState,
   formData: FormData
-): Promise<ActionState> {
+): Promise<CompanyActionState> {
   try {
     const supabase = createClient();
 
@@ -32,15 +41,31 @@ export async function createCompanyAction(
       };
     }
 
-    const companyData = {
-      name: formData.get("name") as string,
-      slug: formData.get("slug") as string,
-      description: formData.get("description") as string,
-      address_street: formData.get("address_street") as string,
-      address_city: formData.get("address_city") as string,
-      phone: formData.get("phone") as string,
-      industry: formData.get("industry") as string,
+    // Validate form data
+    const fieldMapping: Record<keyof CompanyFormData, string> = {
+      name: "name",
+      slug: "slug",
+      description: "description",
+      address_street: "address_street",
+      address_city: "address_city",
+      phone: "phone",
+      industry: "industry",
     };
+
+    const validation = validateFormData(
+      companyFormDataSchema,
+      formData,
+      fieldMapping
+    );
+    if (!validation.success) {
+      return {
+        success: false,
+        message: "Dane formularza są nieprawidłowe",
+        errors: validation.errors,
+      };
+    }
+
+    const companyData: CompanyInsert = validation.data;
 
     // Create company
     const { data: company, error: companyError } = await supabase
@@ -89,27 +114,43 @@ export async function createCompanyAction(
 export async function updateCompanyAction(
   prevState: ActionState,
   formData: FormData
-): Promise<ActionState> {
+): Promise<CompanyActionState> {
   try {
     const supabase = createClient();
 
-    const companyId = formData.get("companyId") as string;
-    if (!companyId) {
+    const companyId = formData.get("companyId");
+    if (!companyId || typeof companyId !== "string") {
       return {
         success: false,
         message: "Brak ID firmy",
       };
     }
 
-    const updates = {
-      name: formData.get("name") as string,
-      slug: formData.get("slug") as string,
-      description: formData.get("description") as string,
-      address_street: formData.get("address_street") as string,
-      address_city: formData.get("address_city") as string,
-      phone: formData.get("phone") as string,
-      industry: formData.get("industry") as string,
+    // Validate form data
+    const fieldMapping: Record<keyof CompanyFormData, string> = {
+      name: "name",
+      slug: "slug",
+      description: "description",
+      address_street: "address_street",
+      address_city: "address_city",
+      phone: "phone",
+      industry: "industry",
     };
+
+    const validation = validateFormData(
+      companyFormDataSchema,
+      formData,
+      fieldMapping
+    );
+    if (!validation.success) {
+      return {
+        success: false,
+        message: "Dane formularza są nieprawidłowe",
+        errors: validation.errors,
+      };
+    }
+
+    const updates: CompanyUpdate = validation.data;
 
     const { data, error } = await supabase
       .from("companies")
@@ -140,7 +181,7 @@ export async function updateCompanyAction(
   }
 }
 
-export const createCompany = async (data: CompanyInsert) => {
+export const createCompany = async (data: CompanyInsert): Promise<Company> => {
   const supabase = createClient();
   const user = await serverAuth.getCurrentUser();
 
@@ -169,7 +210,10 @@ export const createCompany = async (data: CompanyInsert) => {
   return company;
 };
 
-export const updateCompany = async (id: string, data: CompanyUpdate) => {
+export const updateCompany = async (
+  id: string,
+  data: CompanyUpdate
+): Promise<Company> => {
   const supabase = createClient();
   const user = await serverAuth.getCurrentUser();
 
@@ -201,7 +245,7 @@ export const updateCompany = async (id: string, data: CompanyUpdate) => {
   return company;
 };
 
-export const getCompanyBySlug = async (slug: string) => {
+export const getCompanyBySlug = async (slug: string): Promise<Company> => {
   const supabase = createClient();
 
   const { data: company, error } = await supabase
@@ -215,7 +259,7 @@ export const getCompanyBySlug = async (slug: string) => {
   return company;
 };
 
-export const getUserCompany = async () => {
+export const getUserCompany = async (): Promise<Company | null> => {
   const supabase = createClient();
   const user = await serverAuth.getCurrentUser();
 
@@ -236,66 +280,84 @@ export const getUserCompany = async () => {
 
   if (error) throw error;
 
-  return companyUser?.company;
+  // Type the companyUser correctly - company is an array in Supabase joins
+  const typedCompanyUser = companyUser as {
+    company: Company[];
+  } | null;
+
+  return typedCompanyUser?.company?.[0] || null;
 };
 
-export const getUserCompanyWithSubscription = async () => {
-  const supabase = createClient();
-  const user = await serverAuth.getCurrentUser();
+export const getUserCompanyWithSubscription =
+  async (): Promise<CompanyWithSubscription | null> => {
+    const supabase = createClient();
+    const user = await serverAuth.getCurrentUser();
 
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
 
-  const { data: companyUser, error } = await supabase
-    .from("company_users")
-    .select(
-      `
+    const { data: companyUser, error } = await supabase
+      .from("company_users")
+      .select(
+        `
       company:companies(*),
       role
     `
-    )
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .single();
+      )
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .single();
 
-  if (error) throw error;
+    if (error) throw error;
 
-  if (!companyUser?.company) {
-    return null;
-  }
+    // Type the companyUser correctly - company is an array in Supabase joins
+    const typedCompanyUser = companyUser as {
+      company: Company[];
+      role: string;
+    } | null;
 
-  // Get subscription information
-  const { data: subscription, error: subscriptionError } = await supabase
-    .from("company_subscriptions")
-    .select(
-      `
+    if (!typedCompanyUser?.company?.[0]) {
+      return null;
+    }
+
+    const company = typedCompanyUser.company[0];
+
+    // Get subscription information
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from("company_subscriptions")
+      .select(
+        `
       *,
       subscription_plan:subscription_plans(*)
     `
-    )
-    .eq("company_id", companyUser.company.id)
-    .eq("status", "active")
-    .single();
+      )
+      .eq("company_id", company.id)
+      .eq("status", "active")
+      .single();
 
-  if (subscriptionError) {
-    console.warn("No active subscription found for company:", companyUser.company.id);
-  }
+    if (subscriptionError) {
+      console.warn("No active subscription found for company:", company.id);
+    }
 
-  return {
-    ...companyUser.company,
-    subscription: subscription ? {
-      id: subscription.id,
-      status: subscription.status,
-      billing_cycle: subscription.billing_cycle,
-      current_period_end: subscription.current_period_end,
-      plan: subscription.subscription_plan,
-    } : null,
+    return {
+      ...company,
+      subscription: subscription
+        ? {
+            id: subscription.id,
+            status: subscription.status,
+            billing_cycle: subscription.billing_cycle,
+            current_period_end: subscription.current_period_end,
+            plan: subscription.subscription_plan,
+          }
+        : undefined,
+    };
   };
-};
 
 // Business Hours Actions
-export const getBusinessHours = async (companyId: string) => {
+export const getBusinessHours = async (
+  companyId: string
+): Promise<BusinessHours[]> => {
   const supabase = createClient();
   const user = await serverAuth.getCurrentUser();
 
@@ -329,7 +391,7 @@ export const getBusinessHours = async (companyId: string) => {
 export const upsertBusinessHours = async (
   companyId: string,
   businessHours: BusinessHoursInsert[]
-) => {
+): Promise<BusinessHours[]> => {
   const supabase = createClient();
   const user = await serverAuth.getCurrentUser();
 
@@ -368,7 +430,9 @@ export const upsertBusinessHours = async (
   return newBusinessHours;
 };
 
-export const getPublicBusinessHours = async (companyId: string) => {
+export const getPublicBusinessHours = async (
+  companyId: string
+): Promise<BusinessHours[]> => {
   const supabase = createClient();
 
   const { data: businessHours, error } = await supabase
@@ -383,7 +447,9 @@ export const getPublicBusinessHours = async (companyId: string) => {
 };
 
 // Client-side functions for business hours operations
-export const getBusinessHoursClient = async (companyId: string) => {
+export const getBusinessHoursClient = async (
+  companyId: string
+): Promise<BusinessHours[]> => {
   try {
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
@@ -406,7 +472,7 @@ export const getBusinessHoursClient = async (companyId: string) => {
 export const upsertBusinessHoursClient = async (
   companyId: string,
   businessHours: BusinessHoursInsert[]
-) => {
+): Promise<BusinessHours[]> => {
   try {
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();

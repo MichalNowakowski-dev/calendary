@@ -11,7 +11,7 @@ async function PermissionsOverview() {
     const moduleCounts = companies.reduce((acc, company) => {
       const subscription = company.company_subscriptions?.[0];
       if (subscription?.subscription_plan) {
-        subscription.subscription_plan.plan_modules?.forEach((module: any) => {
+        subscription.subscription_plan.plan_modules?.forEach((module) => {
           if (module.is_enabled) {
             acc[module.module_name] = (acc[module.module_name] || 0) + 1;
           }

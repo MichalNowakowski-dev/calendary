@@ -263,7 +263,10 @@ export const getAllCompaniesWithSubscriptions = async (): Promise<CompanyWithFul
       *,
       company_subscriptions!inner (
         *,
-        subscription_plan:subscription_plans (*)
+        subscription_plan:subscription_plans (
+          *,
+          plan_modules (*)
+        )
       )
     `
     )
