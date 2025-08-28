@@ -30,6 +30,7 @@ import AppointmentEditForm from "@/components/services/AppointmentEditForm";
 import PaymentStatusBadge from "@/components/services/PaymentStatusBadge";
 import PaymentStatusButton from "@/components/services/PaymentStatusButton";
 import { updateAppointmentStatusAction } from "@/lib/actions/appointments";
+import PaymentMethodBadge from "@/components/services/PaymentMethodBadge";
 
 interface AppointmentWithDetails extends Appointment {
   service: Service;
@@ -269,24 +270,30 @@ export default function AppointmentsClient({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm">
+                            <span>Email:</span>
                             <Mail className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                             <span className="text-gray-700 dark:text-gray-300 font-medium">
                               {appointment.customer_email}
                             </span>
                           </div>
+                          {appointment.customer_phone && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span>Telefon:</span>
+                              <Phone className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">
+                                {appointment.customer_phone}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex items-center gap-2 text-sm">
-                            <Phone className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                            <span className="text-gray-700 dark:text-gray-300 font-medium">
-                              {appointment.customer_phone}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
+                            <span>Data:</span>
                             <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                             <span className="text-gray-700 dark:text-gray-300 font-medium">
                               {formatDate(appointment.date)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
+                            <span>Czas:</span>
                             <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                             <span className="text-gray-700 dark:text-gray-300">
                               {appointment.start_time} •{" "}
@@ -297,6 +304,7 @@ export default function AppointmentsClient({
 
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm">
+                            <span>Usługa:</span>
                             <div className="h-4 w-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                               <div className="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"></div>
                             </div>
@@ -306,6 +314,7 @@ export default function AppointmentsClient({
                           </div>
                           {appointment.employee && (
                             <div className="flex items-center gap-2 text-sm">
+                              <span>Specjalista:</span>
                               <User className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                               <span className="text-gray-700 dark:text-gray-300">
                                 {appointment.employee.name}
@@ -314,8 +323,17 @@ export default function AppointmentsClient({
                           )}
                           {/* Payment Status */}
                           <div className="flex items-center gap-2 text-sm">
+                            <span>Status płatności:</span>
                             <PaymentStatusBadge
                               status={appointment.payment_status}
+                              className="text-xs"
+                            />
+                          </div>
+                          {/* Payment Method */}
+                          <div className="flex items-center gap-2 text-sm">
+                            <span>Metoda płatności:</span>
+                            <PaymentMethodBadge
+                              status={appointment.payment_method}
                               className="text-xs"
                             />
                           </div>
