@@ -33,3 +33,16 @@ export const formatPrice = (price: number) =>
   new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format(
     price
   );
+
+export const formatDuration = (minutes: number) => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hours > 0 && mins > 0) {
+    return `${hours}h ${mins}min`;
+  } else if (hours > 0) {
+    return `${hours}h`;
+  } else {
+    return `${mins}min`;
+  }
+};
