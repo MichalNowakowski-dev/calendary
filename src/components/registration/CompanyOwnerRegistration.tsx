@@ -27,7 +27,7 @@ import {
   companyOwnerRegistrationSchema,
   type CompanyOwnerRegistrationFormData,
 } from "@/lib/validations/auth";
-import { INDUSTRIES } from "@/lib/validations/company";
+import { INDUSTRIES, PLANS } from "@/lib/validations/company";
 import { showToast } from "@/lib/toast";
 import { registerUser } from "@/lib/auth/utils";
 
@@ -45,6 +45,7 @@ export default function CompanyOwnerRegistration() {
       email: "",
       password: "",
       confirmPassword: "",
+      plan: "",
       companyName: "",
       companySlug: "",
       industry: "",
@@ -74,6 +75,7 @@ export default function CompanyOwnerRegistration() {
           address_city: data.address_city,
           phone: data.phone,
           industry: data.industry,
+          plan: data.plan,
         },
       });
 
@@ -228,6 +230,33 @@ export default function CompanyOwnerRegistration() {
             Dane firmy
           </h3>
           <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="industry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Plan *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wybierz plan" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PLANS.map((plan) => (
+                        <SelectItem key={plan.value} value={plan.value}>
+                          {plan.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="companyName"

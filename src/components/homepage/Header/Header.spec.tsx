@@ -114,7 +114,6 @@ describe("Header", () => {
         expect(dashboardLink).toHaveAttribute("href", `/${role}`);
 
         // cleanup between loop iterations
-        // eslint-disable-next-line testing-library/no-node-access
         document.body.innerHTML = "";
       }
     );
@@ -134,7 +133,7 @@ describe("Header", () => {
 
     const targetElement = document.createElement("div");
     const scrollIntoViewMock = jest.fn();
-    (targetElement as any).scrollIntoView = scrollIntoViewMock;
+    (targetElement as HTMLElement).scrollIntoView = scrollIntoViewMock;
 
     const querySelectorSpy = jest
       .spyOn(document, "querySelector")

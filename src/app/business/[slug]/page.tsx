@@ -126,6 +126,8 @@ export async function generateMetadata({
 
 export default async function BusinessPage({ params }: PageProps) {
   const resolvedParams = await params;
+  console.log(resolvedParams);
+
   const data = await getCompanyBySlug(resolvedParams.slug);
 
   if (!data) {

@@ -17,8 +17,6 @@ import {
 import { signOut } from "@/lib/auth/utils";
 import type { AuthUser } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { revalidatePath } from "next/cache";
-
 const employeeSidebarItems = [
   {
     name: "Panel pracownika",
@@ -60,11 +58,9 @@ export default function EmployeeDashboardClient({
   const router = useRouter();
 
   const handleSignOut = async () => {
-    "use server";
     try {
       await signOut();
       router.push("/");
-      revalidatePath("/");
     } catch (error) {
       console.error("Sign out error:", error);
     }

@@ -77,7 +77,6 @@ export default function ClientReservationView({
     (Service & { employees: Employee[] }) | null
   >(selectedService || null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const isUserLoggedIn = !!user;
 
   const handleBookService = (service: Service & { employees: Employee[] }) => {
     setSelectedServiceState(service);

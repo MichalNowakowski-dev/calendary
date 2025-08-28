@@ -5,7 +5,7 @@ import {
   createAdminClient,
 } from "@/lib/supabase/server";
 import { serverDb } from "@/lib/db-server";
-import { sendEmail } from "@/lib/email";
+import { sendInvitationEmail } from "@/lib/email";
 import {
   employeeFormSchema,
   type EmployeeFormData,
@@ -166,7 +166,7 @@ export async function createEmployee(
     // Send invitation email
     const employeeName = `${data.first_name} ${data.last_name}`;
 
-    await sendEmail({
+    await sendInvitationEmail({
       to: data.email,
       subject: `Zaproszenie do systemu zarządzania ${companyData.name}`,
       employeeName,

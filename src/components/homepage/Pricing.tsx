@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 const Pricing = () => {
   const pricingTiers = [
@@ -25,7 +26,7 @@ const Pricing = () => {
       ],
       popular: false,
       cta: "Rozpocznij za darmo",
-      href: "/register",
+      href: "/register?role=company_owner",
     },
     {
       name: "Professional",
@@ -43,7 +44,7 @@ const Pricing = () => {
         "Rezerwacje online",
       ],
       popular: true,
-      cta: "Rozpocznij darmowy okres próbny",
+      cta: "Rozpocznij za darmo",
       href: "/register",
     },
     {
@@ -144,7 +145,7 @@ const Pricing = () => {
                   }`}
                   size="lg"
                 >
-                  {tier.cta}
+                  <Link href={tier.href}>{tier.cta}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -156,7 +157,7 @@ const Pricing = () => {
             Potrzebujesz indywidualnego rozwiązania?
           </p>
           <Button variant="outline" size="lg">
-            Skontaktuj się z naszym zespołem
+            <Link href="/contact">Skontaktuj się z naszym zespołem</Link>
           </Button>
         </div>
       </div>

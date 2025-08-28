@@ -25,6 +25,12 @@ export const INDUSTRIES = [
   { value: "other", label: "Inne" },
 ] as const;
 
+export const PLANS = [
+  { value: "basic", label: "Podstawowy" },
+  { value: "pro", label: "Profesjonalny" },
+  { value: "enterprise", label: "Enterprise" },
+] as const;
+
 export const businessHoursSchema = z.object({
   day_of_week: z.number().min(0).max(6),
   open_time: z

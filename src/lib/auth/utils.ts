@@ -25,6 +25,7 @@ export interface RegistrationData {
     address_city?: string;
     phone?: string;
     industry: string;
+    plan: string;
   };
 }
 const supabase = createClient();

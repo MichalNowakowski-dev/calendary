@@ -54,6 +54,8 @@ export const companyOwnerRegistrationSchema = z
     password: passwordValidation,
     confirmPassword: z.string().min(1, "Potwierdzenie hasła jest wymagane"),
 
+    plan: z.string().min(1, "Plan jest wymagany"),
+
     // Company information
     companyName: z.string().min(1, "Nazwa firmy jest wymagana"),
     companySlug: z

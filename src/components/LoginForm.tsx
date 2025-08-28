@@ -47,15 +47,15 @@ const LoginForm = () => {
             name="email"
             type="email"
             className={
-              (state.errors as any)?.email || state.message
+              (state.errors && 'email' in state.errors && state.errors.email) || state.message
                 ? "border-destructive"
                 : ""
             }
             placeholder="twoj@email.pl"
           />
-          {(state.errors as any)?.email && (
+          {(state.errors && 'email' in state.errors && state.errors.email) && (
             <p className="text-sm text-destructive mt-1">
-              {(state.errors as any).email[0]}
+              {state.errors.email[0]}
             </p>
           )}
         </div>
@@ -75,7 +75,7 @@ const LoginForm = () => {
               name="password"
               type={showPassword ? "text" : "password"}
               className={
-                (state.errors as any)?.password || state.message
+                (state.errors && 'password' in state.errors && state.errors.password) || state.message
                   ? "border-destructive"
                   : ""
               }
@@ -95,9 +95,9 @@ const LoginForm = () => {
               )}
             </Button>
           </div>
-          {(state.errors as any)?.password && (
+          {(state.errors && 'password' in state.errors && state.errors.password) && (
             <p className="text-sm text-destructive mt-1">
-              {(state.errors as any).password[0]}
+              {state.errors.password[0]}
             </p>
           )}
           {state.message && (

@@ -3,18 +3,27 @@ import { createClient } from "@/lib/supabase/server";
 import { ROUTE_CONFIGS, ROLE_REDIRECT_MAP } from "@/lib/auth/routes";
 import { type UserRole } from "@/lib/types/database";
 
-const PUBLIC_ROUTES = ["/", "/business", "/404", "/not-found"];
+const PUBLIC_ROUTES = ["/", "/business"];
 const AUTH_ROUTES = ["/login", "/register"];
 
-function getUserRole(user: any): UserRole | null {
+interface SupabaseUser {
+  user_metadata?: {
+    role?: UserRole;
+  };
+}
+
+function getUserRole(user: SupabaseUser | null): UserRole | null {
   return user?.user_metadata?.role || null;
 }
 
 function getRouteType(
   pathname: string
 ): "public" | "auth" | "protected" | "other" {
-  if (PUBLIC_ROUTES.includes(pathname)) return "public";
-  if (AUTH_ROUTES.includes(pathname)) return "auth";
+  // check if any route is included in the pathname
+  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route)))
+    return "public";
+  if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) return "auth";
+
   if (Object.values(ROUTE_CONFIGS).some((cfg) => pathname.startsWith(cfg.path)))
     return "protected";
   return "other";
@@ -36,6 +45,7 @@ export async function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
     const routeType = getRouteType(pathname);
+    console.log(pathname);
 
     // Skip static and API
     if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {

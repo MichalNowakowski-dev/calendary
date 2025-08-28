@@ -2,7 +2,7 @@
 
 ## 🎯 Główne role w systemie
 
-- `owner` – właściciel firmy
+- `company_owner` – właściciel firmy
 - `admin` – zarządzanie systemem
 - `employee` – pracownik (z kontem lub tylko widoczny)
 - `customer` – klient (może mieć konto lub być gościem)
@@ -23,6 +23,7 @@
 - `id` (UUID)
 - `name`
 - `slug`
+- `plan`
 - `description`
 - `address_street`
 - `address_city`
