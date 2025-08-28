@@ -29,7 +29,7 @@ import type {
   CompanySubscriptionWithPlan
 } from "@/lib/types/database";
 import { useToast } from "@/hooks/use-toast";
-import { MODULES } from "@/lib/permissions";
+import { MODULES } from "@/lib/permissions/constants";
 
 interface PermissionsDialogProps {
   open: boolean;
