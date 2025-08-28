@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { serverAuth } from "@/lib/auth/server";
-import type { CompanyInsert, CompanyUpdate } from "@/lib/types/database";
-import type {
+import type { 
+  CompanyInsert, 
+  CompanyUpdate,
   BusinessHoursInsert,
   BusinessHoursUpdate,
+  CompanyWithSubscription,
 } from "@/lib/types/database";
 
 import type { ActionState } from "./types";
@@ -235,6 +237,61 @@ export const getUserCompany = async () => {
   if (error) throw error;
 
   return companyUser?.company;
+};
+
+export const getUserCompanyWithSubscription = async () => {
+  const supabase = createClient();
+  const user = await serverAuth.getCurrentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { data: companyUser, error } = await supabase
+    .from("company_users")
+    .select(
+      `
+      company:companies(*),
+      role
+    `
+    )
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .single();
+
+  if (error) throw error;
+
+  if (!companyUser?.company) {
+    return null;
+  }
+
+  // Get subscription information
+  const { data: subscription, error: subscriptionError } = await supabase
+    .from("company_subscriptions")
+    .select(
+      `
+      *,
+      subscription_plan:subscription_plans(*)
+    `
+    )
+    .eq("company_id", companyUser.company.id)
+    .eq("status", "active")
+    .single();
+
+  if (subscriptionError) {
+    console.warn("No active subscription found for company:", companyUser.company.id);
+  }
+
+  return {
+    ...companyUser.company,
+    subscription: subscription ? {
+      id: subscription.id,
+      status: subscription.status,
+      billing_cycle: subscription.billing_cycle,
+      current_period_end: subscription.current_period_end,
+      plan: subscription.subscription_plan,
+    } : null,
+  };
 };
 
 // Business Hours Actions

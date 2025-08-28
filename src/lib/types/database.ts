@@ -321,6 +321,137 @@ export interface Database {
           updated_at?: string;
         };
       };
+      subscription_plans: {
+        Row: {
+          id: string;
+          name: string;
+          display_name: string;
+          description: string | null;
+          price_monthly: number;
+          price_yearly: number;
+          is_active: boolean;
+          features: Record<string, any>;
+          max_employees: number | null;
+          max_locations: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          display_name: string;
+          description?: string | null;
+          price_monthly?: number;
+          price_yearly?: number;
+          is_active?: boolean;
+          features?: Record<string, any>;
+          max_employees?: number | null;
+          max_locations?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          display_name?: string;
+          description?: string | null;
+          price_monthly?: number;
+          price_yearly?: number;
+          is_active?: boolean;
+          features?: Record<string, any>;
+          max_employees?: number | null;
+          max_locations?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      company_subscriptions: {
+        Row: {
+          id: string;
+          company_id: string;
+          subscription_plan_id: string;
+          status: "active" | "inactive" | "cancelled" | "past_due";
+          billing_cycle: "monthly" | "yearly";
+          current_period_start: string;
+          current_period_end: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          subscription_plan_id: string;
+          status?: "active" | "inactive" | "cancelled" | "past_due";
+          billing_cycle?: "monthly" | "yearly";
+          current_period_start?: string;
+          current_period_end?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          subscription_plan_id?: string;
+          status?: "active" | "inactive" | "cancelled" | "past_due";
+          billing_cycle?: "monthly" | "yearly";
+          current_period_start?: string;
+          current_period_end?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      plan_modules: {
+        Row: {
+          id: string;
+          subscription_plan_id: string;
+          module_name: string;
+          is_enabled: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          subscription_plan_id: string;
+          module_name: string;
+          is_enabled?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          subscription_plan_id?: string;
+          module_name?: string;
+          is_enabled?: boolean;
+          created_at?: string;
+        };
+      };
+      company_modules: {
+        Row: {
+          id: string;
+          company_id: string;
+          module_name: string;
+          is_enabled: boolean;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          module_name: string;
+          is_enabled: boolean;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          module_name?: string;
+          is_enabled?: boolean;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -333,6 +464,15 @@ export interface Database {
       company_user_role: "company_owner" | "employee" | "admin";
       company_user_status: "active" | "invited" | "suspended";
       appointment_status: "booked" | "cancelled" | "completed";
+      subscription_status: "active" | "inactive" | "cancelled" | "past_due";
+      billing_cycle: "monthly" | "yearly";
+      module_name: 
+        | "employee_management" 
+        | "employee_schedules" 
+        | "online_payments" 
+        | "analytics" 
+        | "multi_location" 
+        | "api_access";
       industry_type:
         | "automotive"
         | "beauty"
@@ -408,6 +548,22 @@ export type BusinessHoursInsert =
 export type BusinessHoursUpdate =
   Database["public"]["Tables"]["business_hours"]["Update"];
 
+export type SubscriptionPlan = Database["public"]["Tables"]["subscription_plans"]["Row"];
+export type SubscriptionPlanInsert = Database["public"]["Tables"]["subscription_plans"]["Insert"];
+export type SubscriptionPlanUpdate = Database["public"]["Tables"]["subscription_plans"]["Update"];
+
+export type CompanySubscription = Database["public"]["Tables"]["company_subscriptions"]["Row"];
+export type CompanySubscriptionInsert = Database["public"]["Tables"]["company_subscriptions"]["Insert"];
+export type CompanySubscriptionUpdate = Database["public"]["Tables"]["company_subscriptions"]["Update"];
+
+export type PlanModule = Database["public"]["Tables"]["plan_modules"]["Row"];
+export type PlanModuleInsert = Database["public"]["Tables"]["plan_modules"]["Insert"];
+export type PlanModuleUpdate = Database["public"]["Tables"]["plan_modules"]["Update"];
+
+export type CompanyModule = Database["public"]["Tables"]["company_modules"]["Row"];
+export type CompanyModuleInsert = Database["public"]["Tables"]["company_modules"]["Insert"];
+export type CompanyModuleUpdate = Database["public"]["Tables"]["company_modules"]["Update"];
+
 // Enum types
 export type UserRole = Database["public"]["Enums"]["user_role"];
 export type CompanyUserRole = Database["public"]["Enums"]["company_user_role"];
@@ -415,6 +571,9 @@ export type CompanyUserStatus =
   Database["public"]["Enums"]["company_user_status"];
 export type AppointmentStatus =
   Database["public"]["Enums"]["appointment_status"];
+export type SubscriptionStatus = Database["public"]["Enums"]["subscription_status"];
+export type BillingCycle = Database["public"]["Enums"]["billing_cycle"];
+export type ModuleName = Database["public"]["Enums"]["module_name"];
 export type IndustryType = Database["public"]["Enums"]["industry_type"];
 
 // Combined types for common use cases
@@ -475,4 +634,38 @@ export interface ServiceWithEmployees extends Service {
 export interface ServiceWithEmployeesArray extends Service {
   company: Company;
   employees: Employee[];
+}
+
+// Subscription-related combined types
+export interface CompanyWithSubscription extends Company {
+  subscription?: {
+    id: string;
+    status: SubscriptionStatus;
+    billing_cycle: BillingCycle;
+    current_period_end: string;
+    plan: SubscriptionPlan;
+  };
+}
+
+export interface SubscriptionPlanWithModules extends SubscriptionPlan {
+  plan_modules: PlanModule[];
+}
+
+export interface CompanySubscriptionWithPlan extends CompanySubscription {
+  subscription_plan: SubscriptionPlan;
+  plan_modules: PlanModule[];
+}
+
+export interface CompanyPermissions {
+  companyId: string;
+  modules: Record<ModuleName, boolean>;
+  limits: {
+    maxEmployees: number | null;
+    maxLocations: number | null;
+  };
+  subscription: {
+    status: SubscriptionStatus;
+    planName: string;
+    expiresAt: string;
+  };
 }
