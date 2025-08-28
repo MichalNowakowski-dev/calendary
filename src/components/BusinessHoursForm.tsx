@@ -140,22 +140,25 @@ export default function BusinessHoursForm({
   }
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
           Godziny otwarcia
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           {fields.map((field, index) => {
             const day = DAYS_OF_WEEK.find((d) => d.value === field.day_of_week);
             const isOpen = form.watch(`business_hours.${index}.is_open`);
 
             return (
-              <div key={field.id} className="flex items-center gap-4">
-                <div className="w-24">
+              <div
+                key={field.id}
+                className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+              >
+                <div className="w-full sm:w-24">
                   <Label className="text-sm font-medium">{day?.label}</Label>
                 </div>
 
@@ -173,23 +176,26 @@ export default function BusinessHoursForm({
                 </div>
 
                 {isOpen && (
-                  <>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor={`open_time_${index}`} className="text-sm">
+                      <Label
+                        htmlFor={`open_time_${index}`}
+                        className="text-sm whitespace-nowrap"
+                      >
                         Od:
                       </Label>
                       <Input
                         id={`open_time_${index}`}
                         type="time"
                         {...form.register(`business_hours.${index}.open_time`)}
-                        className="w-32"
+                        className="w-full sm:w-32"
                       />
                     </div>
 
                     <div className="flex items-center gap-2">
                       <Label
                         htmlFor={`close_time_${index}`}
-                        className="text-sm"
+                        className="text-sm whitespace-nowrap"
                       >
                         Do:
                       </Label>
@@ -197,40 +203,43 @@ export default function BusinessHoursForm({
                         id={`close_time_${index}`}
                         type="time"
                         {...form.register(`business_hours.${index}.close_time`)}
-                        className="w-32"
+                        className="w-full sm:w-32"
                       />
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {!isOpen && (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm text-muted-foreground">
                     Zamknięte
                   </span>
                 )}
               </div>
             );
           })}
-
-          <Separator className="my-6" />
-
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Zapisywanie...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Zapisz godziny otwarcia
-                </>
-              )}
-            </Button>
-          </div>
         </form>
       </CardContent>
+
+      <div className="flex justify-end px-6 ">
+        <Button
+          type="submit"
+          disabled={isSaving}
+          onClick={form.handleSubmit(handleSubmit)}
+          className="w-full sm:w-auto"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Zapisywanie...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Zapisz godziny otwarcia
+            </>
+          )}
+        </Button>
+      </div>
     </Card>
   );
 }

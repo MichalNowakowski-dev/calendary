@@ -6,7 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -30,7 +37,7 @@ import PageHeading from "@/components/PageHeading";
 import BusinessHoursForm from "@/components/BusinessHoursForm";
 
 export default function CompanySettingsPage() {
-  const { user, status } = useAuth();
+  const { user } = useAuth();
   const [company, setCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -176,152 +183,184 @@ export default function CompanySettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
+    <>
       <PageHeading
         text="Ustawienia firmy"
         description="Edytuj informacje o swojej firmie"
+        className="mb-6"
       />
-
-      {/* Company form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Dane firmy</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="pb-2" htmlFor="name">
-                  Nazwa firmy *
-                </Label>
-                <Input
-                  id="name"
-                  {...form.register("name")}
-                  onChange={(e) => handleCompanyNameChange(e.target.value)}
-                  placeholder="Nazwa firmy"
-                />
-                {form.formState.errors.name && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.name.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label className="pb-2" htmlFor="slug">
-                  Adres strony
-                </Label>
-                <div className="flex">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
-                    calendary.pl/business/
-                  </span>
-                  <Input
-                    id="slug"
-                    {...form.register("slug")}
-                    className="rounded-l-none"
-                    placeholder="nazwa-firmy"
-                  />
-                </div>
-                {form.formState.errors.slug && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.slug.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Industry and phone */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="industry">Branża *</Label>
-                <Select
-                  value={form.watch("industry")}
-                  onValueChange={(value) => form.setValue("industry", value)}
+      <div className="flex flex-col xl:flex-row gap-6 xl:items-start">
+        {/* Company form */}
+        <div className="flex-1">
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Dane firmy
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz branżę" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIES.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {form.formState.errors.industry && (
-                  <p className="text-sm text-red-600">
-                    {form.formState.errors.industry.message}
-                  </p>
-                )}
-              </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nazwa firmy *</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              onChange={(e) =>
+                                handleCompanyNameChange(e.target.value)
+                              }
+                              placeholder="Nazwa firmy"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telefon *</Label>
-                <Input
-                  id="phone"
-                  {...form.register("phone")}
-                  placeholder="np. +48 123 456 789"
-                />
-                {form.formState.errors.phone && (
-                  <p className="text-sm text-red-600">
-                    {form.formState.errors.phone.message}
-                  </p>
-                )}
-              </div>
-            </div>
+                    <FormField
+                      control={form.control}
+                      name="slug"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Adres strony</FormLabel>
+                          <FormControl>
+                            <div className="flex">
+                              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm whitespace-nowrap">
+                                calendary.pl/business/
+                              </span>
+                              <Input
+                                {...field}
+                                className="rounded-l-none"
+                                placeholder="nazwa-firmy"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-            {/* Address */}
-            <div className="space-y-2">
-              <Label htmlFor="address_street">Adres</Label>
-              <Input
-                id="address_street"
-                {...form.register("address_street")}
-                placeholder="np. ul. Główna 123"
-              />
-              {form.formState.errors.address_street && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.address_street.message}
-                </p>
-              )}
-            </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="industry"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Branża *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Wybierz branżę" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {INDUSTRIES.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-            {/* City */}
-            <div className="space-y-2">
-              <Label htmlFor="address_city">Miasto</Label>
-              <Input
-                id="address_city"
-                {...form.register("address_city")}
-                placeholder="np. Warszawa"
-              />
-              {form.formState.errors.address_city && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.address_city.message}
-                </p>
-              )}
-            </div>
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefon *</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="np. +48 123 456 789"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Opis firmy</Label>
-              <textarea
-                id="description"
-                {...form.register("description")}
-                placeholder="Krótki opis Twojej firmy i usług..."
-                rows={4}
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              {form.formState.errors.description && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.description.message}
-                </p>
-              )}
-            </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="address_street"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Adres</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="np. ul. Główna 123"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-            {/* Submit button */}
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSaving}>
+                    <FormField
+                      control={form.control}
+                      name="address_city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Miasto</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="np. Warszawa" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Opis firmy</FormLabel>
+                        <FormControl>
+                          <textarea
+                            {...field}
+                            placeholder="Krótki opis Twojej firmy i usług..."
+                            rows={4}
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </form>
+              </Form>
+            </CardContent>
+
+            <div className="flex justify-end px-6 ">
+              <Button
+                type="submit"
+                disabled={isSaving}
+                onClick={form.handleSubmit(onSubmit)}
+                className="w-full sm:w-auto"
+              >
                 {isSaving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -335,12 +374,14 @@ export default function CompanySettingsPage() {
                 )}
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </Card>
+        </div>
 
-      {/* Business Hours Form */}
-      {company && <BusinessHoursForm companyId={company.id} />}
-    </div>
+        {/* Business Hours Form */}
+        <div className="flex-1">
+          {company && <BusinessHoursForm companyId={company.id} />}
+        </div>
+      </div>
+    </>
   );
 }
