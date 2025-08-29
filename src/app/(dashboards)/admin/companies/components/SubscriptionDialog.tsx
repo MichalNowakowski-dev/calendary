@@ -13,28 +13,38 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, CreditCard } from "lucide-react";
-import { getSubscriptionPlans, updateCompanySubscription } from "@/lib/actions/subscriptions";
-import type { 
-  Company, 
-  CompanySubscription, 
+import {
+  getSubscriptionPlans,
+  updateCompanySubscription,
+} from "@/lib/actions/subscriptions";
+import type {
+  Company,
+  CompanySubscription,
+  CompanyWithOptionalSubscription,
   SubscriptionPlan,
-  SubscriptionPlanWithModules 
+  SubscriptionPlanWithModules,
 } from "@/lib/types/database";
 import { useToast } from "@/hooks/use-toast";
 
 interface CompanyWithSubscriptionData extends Company {
-  company_subscriptions?: Array<CompanySubscription & {
-    subscription_plan: SubscriptionPlan;
-  }>;
+  company_subscriptions?: Array<
+    CompanySubscription & {
+      subscription_plan: SubscriptionPlan;
+    }
+  >;
 }
 
 interface SubscriptionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  company: CompanyWithSubscriptionData;
+  company: CompanyWithOptionalSubscription;
 }
 
-export function SubscriptionDialog({ open, onOpenChange, company }: SubscriptionDialogProps) {
+export function SubscriptionDialog({
+  open,
+  onOpenChange,
+  company,
+}: SubscriptionDialogProps) {
   const [plans, setPlans] = useState<SubscriptionPlanWithModules[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -71,7 +81,7 @@ export function SubscriptionDialog({ open, onOpenChange, company }: Subscription
     try {
       setUpdating(planId);
       const result = await updateCompanySubscription(company.id, planId);
-      
+
       if (result.success) {
         toast({
           title: "Success",
@@ -132,21 +142,23 @@ export function SubscriptionDialog({ open, onOpenChange, company }: Subscription
               const isUpdating = updating === plan.id;
 
               return (
-                <Card 
-                  key={plan.id} 
-                  className={`relative ${isCurrentPlan ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' : ''}`}
+                <Card
+                  key={plan.id}
+                  className={`relative ${isCurrentPlan ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : ""}`}
                 >
                   {isCurrentPlan && (
                     <Badge className="absolute -top-2 left-4 bg-blue-600">
                       Current Plan
                     </Badge>
                   )}
-                  
+
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span>{plan.display_name}</span>
                       <div className="text-right">
-                        <div className="text-2xl font-bold">${plan.price_monthly}</div>
+                        <div className="text-2xl font-bold">
+                          ${plan.price_monthly}
+                        </div>
                         <div className="text-sm text-gray-500">/month</div>
                       </div>
                     </CardTitle>
@@ -154,23 +166,34 @@ export function SubscriptionDialog({ open, onOpenChange, company }: Subscription
                       {plan.description}
                     </p>
                   </CardHeader>
-                  
+
                   <CardContent>
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-medium mb-2">Features:</h4>
                         <ul className="space-y-1 text-sm">
                           {plan.plan_modules.map((module) => (
-                            <li key={module.id} className="flex items-center space-x-2">
-                              <Check 
+                            <li
+                              key={module.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Check
                                 className={`h-4 w-4 ${
-                                  module.is_enabled 
-                                    ? 'text-green-600' 
-                                    : 'text-gray-400'
-                                }`} 
+                                  module.is_enabled
+                                    ? "text-green-600"
+                                    : "text-gray-400"
+                                }`}
                               />
-                              <span className={module.is_enabled ? '' : 'line-through text-gray-400'}>
-                                {module.module_name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              <span
+                                className={
+                                  module.is_enabled
+                                    ? ""
+                                    : "line-through text-gray-400"
+                                }
+                              >
+                                {module.module_name
+                                  .replace("_", " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
                               </span>
                             </li>
                           ))}
@@ -180,11 +203,15 @@ export function SubscriptionDialog({ open, onOpenChange, company }: Subscription
                       <div className="space-y-1 text-sm">
                         <div>
                           <strong>Employees:</strong>{" "}
-                          {plan.max_employees === null ? "Unlimited" : plan.max_employees}
+                          {plan.max_employees === null
+                            ? "Unlimited"
+                            : plan.max_employees}
                         </div>
                         <div>
                           <strong>Locations:</strong>{" "}
-                          {plan.max_locations === null ? "Unlimited" : plan.max_locations}
+                          {plan.max_locations === null
+                            ? "Unlimited"
+                            : plan.max_locations}
                         </div>
                       </div>
 

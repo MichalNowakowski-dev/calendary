@@ -2,27 +2,33 @@ import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, CreditCard, Activity } from "lucide-react";
 import { getAllCompaniesWithSubscriptions } from "@/lib/actions/subscriptions";
-import type { CompanyWithFullSubscription } from "@/lib/types/database";
+import type {
+  Company,
+  CompanyWithFullSubscription,
+  CompanyWithOptionalSubscription,
+} from "@/lib/types/database";
+import { getAllCompanies } from "@/lib/actions";
 
 async function AdminStats() {
   try {
-    const companies: CompanyWithFullSubscription[] =
+    const companiesWithSubscription: CompanyWithOptionalSubscription[] =
       await getAllCompaniesWithSubscriptions();
-    console.log(companies);
+
+    const allCompanies: Company[] = await getAllCompanies();
 
     const stats = {
-      totalCompanies: companies.length,
-      activeSubscriptions: companies.filter(
+      totalCompanies: allCompanies.length,
+      activeSubscriptions: companiesWithSubscription.filter(
         (c) => c.company_subscriptions?.[0]?.status === "active"
       ).length,
-      totalRevenue: companies.reduce((sum, c) => {
+      totalRevenue: companiesWithSubscription.reduce((sum, c) => {
         const subscription = c.company_subscriptions?.[0];
         if (subscription?.status === "active") {
           return sum + (subscription.subscription_plan?.price_monthly || 0);
         }
         return sum;
       }, 0),
-      planDistribution: companies.reduce(
+      planDistribution: companiesWithSubscription.reduce(
         (acc, c) => {
           const planName =
             c.company_subscriptions?.[0]?.subscription_plan?.name || "none";

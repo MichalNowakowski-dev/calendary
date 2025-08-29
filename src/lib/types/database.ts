@@ -694,3 +694,13 @@ export interface CompanyWithFullSubscription extends Company {
     }
   >;
 }
+
+export interface CompanyWithOptionalSubscription extends Company {
+  company_subscriptions: Array<
+    CompanySubscription & {
+      subscription_plan: SubscriptionPlan & {
+        plan_modules: PlanModule[];
+      };
+    }
+  > | null;
+}

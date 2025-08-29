@@ -12,19 +12,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SubscriptionDialog } from "./SubscriptionDialog";
 import { PermissionsDialog } from "./PermissionsDialog";
-import type { Company, CompanySubscription, SubscriptionPlan } from "@/lib/types/database";
+import type {
+  Company,
+  CompanySubscription,
+  CompanyWithOptionalSubscription,
+  SubscriptionPlan,
+} from "@/lib/types/database";
 
 interface CompanyWithSubscriptionData extends Company {
-  company_subscriptions?: Array<CompanySubscription & {
-    subscription_plan: SubscriptionPlan;
-  }>;
+  company_subscriptions?: Array<
+    CompanySubscription & {
+      subscription_plan: SubscriptionPlan;
+    }
+  >;
 }
 
 interface CompanyActionsDropdownProps {
-  company: CompanyWithSubscriptionData;
+  company: CompanyWithOptionalSubscription;
 }
 
-export function CompanyActionsDropdown({ company }: CompanyActionsDropdownProps) {
+export function CompanyActionsDropdown({
+  company,
+}: CompanyActionsDropdownProps) {
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
 

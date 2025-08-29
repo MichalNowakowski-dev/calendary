@@ -14,6 +14,7 @@ import type {
   ModuleName,
   SubscriptionPlanWithModules,
   CompanyWithFullSubscription,
+  CompanyWithOptionalSubscription,
   Company,
 } from "@/lib/types/database";
 import type { ActionState } from "./types";
@@ -248,7 +249,7 @@ export const toggleCompanyModule = async (
 
 // Admin-only: Get all companies with their subscriptions for admin dashboard
 export const getAllCompaniesWithSubscriptions = async (): Promise<
-  CompanyWithFullSubscription[]
+  CompanyWithOptionalSubscription[]
 > => {
   const supabase = createClient();
   const {
@@ -264,7 +265,7 @@ export const getAllCompaniesWithSubscriptions = async (): Promise<
     .select(
       `
       *,
-      company_subscriptions!inner (
+      company_subscriptions (
         *,
         subscription_plan:subscription_plans (
           *,
@@ -277,7 +278,7 @@ export const getAllCompaniesWithSubscriptions = async (): Promise<
 
   if (error) throw error;
 
-  return companies as CompanyWithFullSubscription[];
+  return companies as CompanyWithOptionalSubscription[];
 };
 
 // Get company modules (overrides)

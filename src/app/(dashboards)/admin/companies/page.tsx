@@ -14,7 +14,7 @@ async function CompaniesTable() {
         {companies.map((company) => {
           const subscription = company.company_subscriptions?.[0];
           const plan = subscription?.subscription_plan;
-          
+
           return (
             <Card key={company.id}>
               <CardContent className="p-6">
@@ -22,7 +22,9 @@ async function CompaniesTable() {
                   <div className="flex-1">
                     <div className="flex items-center space-x-4">
                       <div>
-                        <h3 className="font-semibold text-lg">{company.name}</h3>
+                        <h3 className="font-semibold text-lg">
+                          {company.name}
+                        </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {company.slug} • {company.industry}
                         </p>
@@ -34,20 +36,22 @@ async function CompaniesTable() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-6">
                     {/* Subscription info */}
                     <div className="text-right">
                       <div className="flex items-center space-x-2">
-                        <Badge 
-                          variant={subscription?.status === 'active' ? 'default' : 'secondary'}
+                        <Badge
+                          variant={
+                            subscription?.status === "active"
+                              ? "default"
+                              : "secondary"
+                          }
                         >
-                          {subscription?.status || 'No subscription'}
+                          {subscription?.status || "No subscription"}
                         </Badge>
                         {plan && (
-                          <Badge variant="outline">
-                            {plan.display_name}
-                          </Badge>
+                          <Badge variant="outline">{plan.display_name}</Badge>
                         )}
                       </div>
                       {subscription && (
@@ -57,7 +61,11 @@ async function CompaniesTable() {
                       )}
                       {subscription?.current_period_end && (
                         <p className="text-xs text-gray-500">
-                          Expires: {format(new Date(subscription.current_period_end), 'MMM dd, yyyy')}
+                          Expires:{" "}
+                          {format(
+                            new Date(subscription.current_period_end),
+                            "MMM dd, yyyy"
+                          )}
                         </p>
                       )}
                     </div>
@@ -72,17 +80,20 @@ async function CompaniesTable() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="font-medium">Created:</span>{" "}
-                      {format(new Date(company.created_at), 'MMM dd, yyyy')}
+                      {format(new Date(company.created_at), "MMM dd, yyyy")}
                     </div>
                     {company.phone && (
                       <div>
-                        <span className="font-medium">Phone:</span> {company.phone}
+                        <span className="font-medium">Phone:</span>{" "}
+                        {company.phone}
                       </div>
                     )}
                     {plan?.max_employees && (
                       <div>
                         <span className="font-medium">Employee Limit:</span>{" "}
-                        {plan.max_employees === null ? 'Unlimited' : plan.max_employees}
+                        {plan.max_employees === null
+                          ? "Unlimited"
+                          : plan.max_employees}
                       </div>
                     )}
                   </div>
