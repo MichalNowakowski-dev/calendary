@@ -29,7 +29,6 @@ export const employeeFormSchema = z.object({
   email: emailValidation,
   phone_number: phoneValidation,
   visible: z.boolean(),
-  role: z.enum(["employee", "admin"]),
   selectedServices: z
     .array(z.string())
     .min(1, "Wybierz co najmniej jedną usługę"),

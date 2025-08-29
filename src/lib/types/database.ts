@@ -12,6 +12,7 @@ export interface Database {
           phone: string | null;
           industry: string;
           created_at: string;
+          plan: string;
         };
         Insert: {
           id?: string;
@@ -23,6 +24,7 @@ export interface Database {
           phone?: string | null;
           industry: string;
           created_at?: string;
+          plan?: string;
         };
         Update: {
           id?: string;
@@ -34,6 +36,7 @@ export interface Database {
           phone?: string | null;
           industry?: string;
           created_at?: string;
+          plan?: string;
         };
       };
       company_users: {
@@ -41,7 +44,6 @@ export interface Database {
           id: string;
           company_id: string;
           user_id: string;
-          role: "company_owner" | "employee" | "admin";
           status: "active" | "invited" | "suspended";
           created_at: string;
         };
@@ -49,7 +51,6 @@ export interface Database {
           id?: string;
           company_id: string;
           user_id: string;
-          role: "company_owner" | "employee" | "admin";
           status?: "active" | "invited" | "suspended";
           created_at?: string;
         };
@@ -57,7 +58,6 @@ export interface Database {
           id?: string;
           company_id?: string;
           user_id?: string;
-          role?: "company_owner" | "employee" | "admin";
           status?: "active" | "invited" | "suspended";
           created_at?: string;
         };
@@ -609,7 +609,6 @@ export interface ServiceWithCompany extends Service {
 export interface EmployeeWithDetails extends Employee {
   services: Service[];
   schedules: Schedule[];
-  role?: "company_owner" | "employee" | "admin";
 }
 
 export interface AppointmentWithDetails extends Appointment {
