@@ -280,15 +280,6 @@ export const getAllCompaniesWithSubscriptions = async (): Promise<
   return companies as CompanyWithFullSubscription[];
 };
 
-export const getAllCompanies = async (): Promise<Company[]> => {
-  const supabase = createClient();
-  const { data: companies, error } = await supabase
-    .from("companies")
-    .select("*");
-  if (error) throw error;
-  return companies as Company[];
-};
-
 // Get company modules (overrides)
 export const getCompanyModules = async (companyId: string) => {
   const supabase = createClient();

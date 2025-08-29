@@ -12,7 +12,7 @@ export interface Database {
           phone: string | null;
           industry: string;
           created_at: string;
-          plan: string;
+          plan_id: string;
         };
         Insert: {
           id?: string;
@@ -24,7 +24,7 @@ export interface Database {
           phone?: string | null;
           industry: string;
           created_at?: string;
-          plan?: string;
+          plan_id?: string;
         };
         Update: {
           id?: string;
@@ -36,7 +36,7 @@ export interface Database {
           phone?: string | null;
           industry?: string;
           created_at?: string;
-          plan?: string;
+          plan_id?: string;
         };
       };
       company_users: {
@@ -596,6 +596,10 @@ export interface CompanyWithOwner extends Company {
     first_name: string;
     last_name: string;
   };
+}
+
+export interface CompanyWithPlan extends Company {
+  subscription_plan: SubscriptionPlan;
 }
 
 export interface CompanyWithServices extends Company {

@@ -22,6 +22,15 @@ import type {
 } from "./types";
 import { validateFormData, companyFormDataSchema } from "./types";
 
+export const getAllCompanies = async (): Promise<Company[]> => {
+  const supabase = createClient();
+  const { data: companies, error } = await supabase
+    .from("companies")
+    .select("*");
+  if (error) throw error;
+  return companies as Company[];
+};
+
 export async function createCompanyAction(
   prevState: ActionState,
   formData: FormData
