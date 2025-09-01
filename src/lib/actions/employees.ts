@@ -131,7 +131,6 @@ export async function createEmployee(
       .insert({
         company_id: data.companyId,
         user_id: authData.user.id,
-        role: data.role,
         status: "invited",
       });
 
@@ -242,26 +241,12 @@ export async function updateEmployee(
       };
     }
 
-    // Update role in company_users table
     const { data: employeeData } = await supabase
       .from("employees")
       .select("auth_user_id")
       .eq("id", employeeId)
       .single();
 
-    if (employeeData?.auth_user_id) {
-      const { error: roleError } = await supabase
-        .from("company_users")
-        .update({ role: data.role })
-        .eq("user_id", employeeData.auth_user_id);
-
-      if (roleError) {
-        return {
-          success: false,
-          message: "Nie udało się zaktualizować roli pracownika",
-        };
-      }
-    }
 
     // Update service assignments
     // First, remove all current assignments

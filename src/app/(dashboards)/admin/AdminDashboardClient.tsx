@@ -5,104 +5,62 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
-  Calendar,
   Settings,
   Users,
   BarChart3,
-  Briefcase,
+  Building2,
+  CreditCard,
   Menu,
   X,
   LogOut,
   Home,
-  CreditCard,
+  Shield,
 } from "lucide-react";
 import { signOut } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/lib/context/AuthProvider";
 
-const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
-  const baseItems = [
-    {
-      name: "Przegląd",
-      href: `/${role}`,
-      icon: Home,
-    },
-    {
-      name: "Kalendarz",
-      href: `/${role}/appointments`,
-      icon: Calendar,
-    },
-  ];
+const adminSidebarItems = [
+  {
+    name: "Dashboard",
+    href: "/admin",
+    icon: Home,
+  },
+  {
+    name: "Companies",
+    href: "/admin/companies",
+    icon: Building2,
+  },
+  {
+    name: "Subscriptions",
+    href: "/admin/subscriptions",
+    icon: CreditCard,
+  },
+  {
+    name: "Permissions",
+    href: "/admin/permissions",
+    icon: Shield,
+  },
+  {
+    name: "Analytics",
+    href: "/admin/analytics",
+    icon: BarChart3,
+  },
+  {
+    name: "System Settings",
+    href: "/admin/settings",
+    icon: Settings,
+  },
+];
 
-  if (role === "company_owner") {
-    return [
-      ...baseItems,
-      {
-        name: "Usługi",
-        href: `/${role}/services`,
-        icon: Briefcase,
-      },
-      {
-        name: "Pracownicy",
-        href: `/${role}/employees`,
-        icon: Users,
-      },
-      {
-        name: "Klienci",
-        href: `/${role}/customers`,
-        icon: Users,
-      },
-      {
-        name: "Statystyki",
-        href: `/${role}/analytics`,
-        icon: BarChart3,
-      },
-      {
-        name: "Subskrypcja",
-        href: `/${role}/subscription`,
-        icon: CreditCard,
-      },
-      {
-        name: "Ustawienia",
-        href: `/${role}/settings`,
-        icon: Settings,
-      },
-    ];
-  } else if (role === "admin") {
-    return [
-      ...baseItems,
-      {
-        name: "Pracownicy",
-        href: `/${role}/employees`,
-        icon: Users,
-      },
-      {
-        name: "Klienci",
-        href: `/${role}/customers`,
-        icon: Users,
-      },
-      {
-        name: "Statystyki",
-        href: `/${role}/analytics`,
-        icon: BarChart3,
-      },
-    ];
-  } else {
-    // Employee role - limited access
-    return baseItems;
-  }
-};
-
-interface DashboardClientProps {
+interface AdminDashboardClientProps {
   children: React.ReactNode;
 }
 
-export default function DashboardClient({ children }: DashboardClientProps) {
+export default function AdminDashboardClient({ children }: AdminDashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
-
-  const userRole = user?.role as "company_owner" | "admin" | "employee";
 
   const handleSignOut = async () => {
     try {
@@ -149,22 +107,17 @@ export default function DashboardClient({ children }: DashboardClientProps) {
           </div>
 
           {/* User info */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/20">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                {user?.first_name.charAt(0)}
-                {user?.last_name.charAt(0)}
+              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white font-semibold">
+                <Shield className="h-5 w-5" />
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-gray-100">
                   {user?.first_name} {user?.last_name}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {userRole === "company_owner"
-                    ? "Właściciel firmy"
-                    : userRole === "admin"
-                      ? "Administrator"
-                      : "Pracownik"}
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                  System Administrator
                 </p>
               </div>
             </div>
@@ -172,7 +125,7 @@ export default function DashboardClient({ children }: DashboardClientProps) {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
-            {getSidebarItems(userRole).map((item) => (
+            {adminSidebarItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -194,7 +147,7 @@ export default function DashboardClient({ children }: DashboardClientProps) {
               onClick={handleSignOut}
             >
               <LogOut className="h-5 w-5 mr-3" />
-              Wyloguj się
+              Sign Out
             </Button>
           </div>
         </div>
@@ -215,7 +168,13 @@ export default function DashboardClient({ children }: DashboardClientProps) {
             </Button>
             <div className="flex-1" />
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block  ">
+              <div className="flex items-center space-x-2">
+                <Shield className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <span className="text-sm font-medium text-red-600 dark:text-red-400">
+                  Admin Panel
+                </span>
+              </div>
+              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                 {user?.email}
               </span>
             </div>

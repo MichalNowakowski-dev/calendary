@@ -8,6 +8,10 @@ import {
   TrendingUp,
   Clock,
   Shield,
+  User,
+  MapPin,
+  Euro,
+  Timer,
 } from "lucide-react";
 import Link from "next/link";
 import PageHeading from "@/components/PageHeading";
@@ -112,25 +116,95 @@ export default async function DashboardPage() {
         {/* Recent appointments */}
         <Card>
           <CardHeader>
-            <CardTitle>Ostatnie wizyty</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Ostatnie wizyty
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {stats.recentAppointments && stats.recentAppointments.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {stats.recentAppointments.map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    className="border border-gray-200 dark:border-gray-700 p-5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="flex items-center space-x-3">
-                      <AppointmentStatus status={appointment.status} />
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <div className="space-y-4">
+                      {/* Customer name as main heading */}
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                           {appointment.customer_name}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {appointment.service?.name}
-                        </p>
+                        </h3>
+                        <AppointmentStatus status={appointment.status} />
+                      </div>
+
+                      {/* Appointment details with labels */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-blue-500" />
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              Termin:
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300 font-medium ml-6">
+                            {appointment.start_time} - {appointment.end_time}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-4 w-4 text-green-500" />
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              Usługa:
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300 font-medium ml-6">
+                            {appointment.service?.name}
+                          </div>
+                        </div>
+
+                        {appointment.employee && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 text-purple-500" />
+                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                Pracownik:
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-700 dark:text-gray-300 font-medium ml-6">
+                              {appointment.employee.name}
+                            </div>
+                          </div>
+                        )}
+
+                        {appointment.payment_status && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Euro className="h-4 w-4 text-orange-500" />
+                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                Płatność:
+                              </span>
+                            </div>
+                            <div className="ml-6">
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                  appointment.payment_status === "paid"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                    : appointment.payment_status === "pending"
+                                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                }`}
+                              >
+                                {appointment.payment_status === "paid"
+                                  ? "Opłacona"
+                                  : appointment.payment_status === "pending"
+                                    ? "Oczekująca"
+                                    : "Nieopłacona"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -147,25 +221,108 @@ export default async function DashboardPage() {
         {/* Popular services */}
         <Card>
           <CardHeader>
-            <CardTitle>Popularne usługi</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Popularne usługi
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {stats.popularServices && stats.popularServices.length > 0 ? (
-              <div className="space-y-3">
-                {stats.popularServices.map((service) => (
+              <div className="space-y-4">
+                {stats.popularServices.map((service, index) => (
                   <div
                     key={service.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    className="border border-gray-200 dark:border-gray-700 p-5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {service.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {service.appointment_count} wizyt
-                      </p>
+                    <div className="space-y-4">
+                      {/* Service name as main heading with ranking */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                              index === 0
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                : index === 1
+                                  ? "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                                  : index === 2
+                                    ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                                    : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                            }`}
+                          >
+                            {index + 1}
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            {service.name}
+                          </h3>
+                        </div>
+                        <div
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            index === 0
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                          }`}
+                        >
+                          {index === 0 ? "Najpopularniejsza" : `#${index + 1}`}
+                        </div>
+                      </div>
+
+                      {/* Service details with labels */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-blue-500" />
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              Liczba wizyt:
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300 font-medium ml-6">
+                            {service.appointment_count} wizyt
+                          </div>
+                        </div>
+
+                        {service.price && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Euro className="h-4 w-4 text-green-500" />
+                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                Cena:
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-700 dark:text-gray-300 font-medium ml-6">
+                              {service.price} zł
+                            </div>
+                          </div>
+                        )}
+
+                        {service.duration_minutes && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Timer className="h-4 w-4 text-purple-500" />
+                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                Czas trwania:
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-700 dark:text-gray-300 font-medium ml-6">
+                              {service.duration_minutes} min
+                            </div>
+                          </div>
+                        )}
+
+                        {service.description && (
+                          <div className="space-y-2 md:col-span-2">
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="h-4 w-4 text-gray-500" />
+                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                Opis:
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400 ml-6 line-clamp-2">
+                              {service.description}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <TrendingUp className="h-4 w-4 text-green-500" />
                   </div>
                 ))}
               </div>

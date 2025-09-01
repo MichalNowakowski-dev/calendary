@@ -3,9 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { ROUTE_CONFIGS, ROLE_REDIRECT_MAP } from "@/lib/auth/routes";
 import { type UserRole } from "@/lib/types/database";
 
-const PUBLIC_ROUTES = ["/", "/business"];
+const PUBLIC_ROUTES = ["/business", "/404"];
 const AUTH_ROUTES = ["/login", "/register"];
-
+const ADMIN_ROUTES = ["/admin"];
 interface SupabaseUser {
   user_metadata?: {
     role?: UserRole;
@@ -18,14 +18,15 @@ function getUserRole(user: SupabaseUser | null): UserRole | null {
 
 function getRouteType(
   pathname: string
-): "public" | "auth" | "protected" | "other" {
+): "public" | "auth" | "protected" | "admin" | "other" {
   // check if any route is included in the pathname
-  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route)))
-    return "public";
+  if (pathname === "/") return "public";
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) return "auth";
-
+  if (ADMIN_ROUTES.some((route) => pathname.startsWith(route))) return "admin";
   if (Object.values(ROUTE_CONFIGS).some((cfg) => pathname.startsWith(cfg.path)))
     return "protected";
+  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route)))
+    return "public";
   return "other";
 }
 
@@ -45,8 +46,7 @@ export async function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
     const routeType = getRouteType(pathname);
-    console.log(pathname);
-
+    console.log(routeType);
     // Skip static and API
     if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {
       return NextResponse.next();
@@ -69,6 +69,7 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
     const role = getUserRole(user);
 
+    console.log(role);
     // Auth rules
     if (routeType === "protected" && !user) {
       return createRedirect(request, "/login", { redirectTo: pathname });
@@ -76,6 +77,14 @@ export async function middleware(request: NextRequest) {
 
     if (routeType === "auth" && user) {
       return createRedirect(request, ROLE_REDIRECT_MAP[role ?? "customer"]);
+    }
+
+    if (routeType === "admin" && !user) {
+      return createRedirect(request, "/login");
+    }
+
+    if (routeType === "admin" && user && user.user_metadata?.role !== "admin") {
+      return createRedirect(request, "/404");
     }
 
     if (routeType === "protected" && user) {

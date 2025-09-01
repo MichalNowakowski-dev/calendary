@@ -347,7 +347,6 @@ export async function getServicesData() {
     .select(
       `
       id,
-      role,
       status,
       company:companies (
         id,
