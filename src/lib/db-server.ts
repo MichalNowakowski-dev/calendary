@@ -133,7 +133,6 @@ export const serverDb = {
         id,
         user_id,
         company_id,
-        role,
         status,
         company:companies (
           id,

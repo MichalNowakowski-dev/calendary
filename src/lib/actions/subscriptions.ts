@@ -18,6 +18,9 @@ import type {
   Company,
 } from "@/lib/types/database";
 import type { ActionState } from "./types";
+import { moduleLifecycleManager } from "@/lib/modules/lifecycle";
+import { moduleAuditTracker } from "@/lib/modules/audit";
+import { gracefulDegradationManager } from "@/lib/modules/degradation";
 
 // Get all subscription plans with their modules
 export const getSubscriptionPlans = async (): Promise<
@@ -55,7 +58,7 @@ export const getCompanySubscription = async (companyId: string) => {
   // Check if user has access to this company or is admin
   const { data: companyUser } = await supabase
     .from("company_users")
-    .select("role")
+    .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
     .single();
@@ -85,7 +88,7 @@ export const getCompanySubscription = async (companyId: string) => {
   return subscription;
 };
 
-// Admin-only: Update company subscription
+// Admin-only: Update company subscription with automated module management
 export const updateCompanySubscription = async (
   companyId: string,
   planId: string
@@ -103,16 +106,17 @@ export const updateCompanySubscription = async (
       };
     }
 
-    // Check if subscription exists
-    const { data: existingSubscription } = await supabase
+    // Get current subscription to track old plan
+    const { data: currentSubscription } = await supabase
       .from("company_subscriptions")
-      .select("id")
+      .select("subscription_plan_id")
       .eq("company_id", companyId)
       .single();
 
+    const oldPlanId = currentSubscription?.subscription_plan_id || null;
     let result;
 
-    if (existingSubscription) {
+    if (currentSubscription) {
       // Update existing subscription
       const { data, error } = await supabase
         .from("company_subscriptions")
@@ -151,13 +155,44 @@ export const updateCompanySubscription = async (
       result = data;
     }
 
+    // Handle module lifecycle changes
+    const lifecycleResult = await moduleLifecycleManager.handleSubscriptionChange(
+      companyId,
+      planId,
+      oldPlanId,
+      "subscription_change",
+      user.id
+    );
+
+    if (!lifecycleResult.success) {
+      console.warn("Module lifecycle management failed:", lifecycleResult.message);
+    }
+
+    // Create graceful degradation warnings for revoked modules
+    for (const transition of lifecycleResult.transitions) {
+      if (!transition.to_status && transition.from_status) {
+        await gracefulDegradationManager.createRevocationWarning(
+          companyId,
+          transition.module,
+          "subscription_change"
+        );
+      }
+    }
+
     revalidatePath(`/admin`);
     revalidatePath(`/company_owner`);
 
+    const successMessage = lifecycleResult.transitions.length > 0
+      ? `Subscription updated with ${lifecycleResult.transitions.length} module changes`
+      : "Subscription updated successfully";
+
     return {
       success: true,
-      message: "Subscription updated successfully",
-      data: result,
+      message: successMessage,
+      data: {
+        ...result,
+        module_transitions: lifecycleResult.transitions,
+      },
     };
   } catch (error) {
     console.error("Error updating subscription:", error);
@@ -168,7 +203,7 @@ export const updateCompanySubscription = async (
   }
 };
 
-// Admin-only: Toggle module access for a specific company
+// Admin-only: Toggle module access for a specific company with enhanced validation
 export const toggleCompanyModule = async (
   companyId: string,
   moduleName: ModuleName,
@@ -185,6 +220,30 @@ export const toggleCompanyModule = async (
       return {
         success: false,
         message: "Access denied. Admin privileges required.",
+      };
+    }
+
+    // Get current module status
+    const { data: currentModule } = await supabase
+      .from("company_modules")
+      .select("is_enabled")
+      .eq("company_id", companyId)
+      .eq("module_name", moduleName)
+      .single();
+
+    const currentStatus = currentModule?.is_enabled || false;
+
+    // Validate dependencies before making changes
+    const validation = await moduleLifecycleManager.validateModuleDependencies(
+      companyId,
+      moduleName,
+      enabled
+    );
+
+    if (!validation.valid) {
+      return {
+        success: false,
+        message: `Cannot proceed: ${validation.conflicts.join(', ')}`,
       };
     }
 
@@ -230,13 +289,51 @@ export const toggleCompanyModule = async (
       result = data;
     }
 
+    // Record the change in audit trail
+    await supabase
+      .from('module_changes')
+      .insert({
+        company_id: companyId,
+        module_name: moduleName,
+        action: 'overridden',
+        reason: 'admin_override',
+        previous_status: currentStatus,
+        new_status: enabled,
+        changed_by_user_id: user.id,
+        notes: notes,
+      });
+
+    // Handle graceful degradation if module is being disabled
+    if (!enabled && currentStatus) {
+      await gracefulDegradationManager.createRevocationWarning(
+        companyId,
+        moduleName,
+        'admin_override'
+      );
+    }
+
+    // Record usage tracking
+    await moduleAuditTracker.recordModuleUsage(companyId, moduleName, {
+      admin_toggle: true,
+      previous_status: currentStatus,
+      new_status: enabled,
+    });
+
     revalidatePath(`/admin`);
     revalidatePath(`/company_owner`);
 
+    let message = `Module ${moduleName} ${enabled ? "enabled" : "disabled"} for company`;
+    if (validation.warnings.length > 0) {
+      message += `. Warnings: ${validation.warnings.join(', ')}`;
+    }
+
     return {
       success: true,
-      message: `Module ${moduleName} ${enabled ? "enabled" : "disabled"} for company`,
-      data: result,
+      message,
+      data: {
+        ...result,
+        validation_warnings: validation.warnings,
+      },
     };
   } catch (error) {
     console.error("Error toggling company module:", error);
@@ -295,7 +392,7 @@ export const getCompanyModules = async (companyId: string) => {
   // Check if user has access to this company or is admin
   const { data: companyUser } = await supabase
     .from("company_users")
-    .select("role")
+    .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
     .single();

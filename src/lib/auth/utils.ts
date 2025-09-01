@@ -173,7 +173,6 @@ export const getUserCompanies = async (userId: string) => {
       .select(
         `
         id,
-        role,
         status,
         company:companies (
           id,
@@ -248,18 +247,29 @@ export async function getUserRoleInCompany(
 ): Promise<"company_owner" | "admin" | "employee" | null> {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  // Check if user is associated with the company
+  const { data: companyUser, error: companyError } = await supabase
     .from("company_users")
-    .select("role")
+    .select("id")
     .eq("user_id", userId)
     .eq("company_id", companyId)
     .single();
 
-  if (error || !data) {
+  if (companyError || !companyUser) {
     return null;
   }
 
-  return data.role;
+  // Get user's role from auth metadata
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.admin.getUserById(userId);
+
+  if (userError || !user) {
+    return null;
+  }
+
+  return user.user_metadata?.role || null;
 }
 
 export async function isUserAdminOrOwner(

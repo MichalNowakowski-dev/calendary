@@ -452,6 +452,134 @@ export interface Database {
           updated_at?: string;
         };
       };
+      module_changes: {
+        Row: {
+          id: string;
+          company_id: string;
+          module_name: string;
+          action: "granted" | "revoked" | "overridden";
+          reason: "subscription_change" | "admin_override" | "expiration" | "downgrade" | "manual";
+          previous_status: boolean;
+          new_status: boolean;
+          changed_by_user_id: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          module_name: string;
+          action: "granted" | "revoked" | "overridden";
+          reason: "subscription_change" | "admin_override" | "expiration" | "downgrade" | "manual";
+          previous_status: boolean;
+          new_status: boolean;
+          changed_by_user_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          module_name?: string;
+          action?: "granted" | "revoked" | "overridden";
+          reason?: "subscription_change" | "admin_override" | "expiration" | "downgrade" | "manual";
+          previous_status?: boolean;
+          new_status?: boolean;
+          changed_by_user_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+      };
+      module_dependencies: {
+        Row: {
+          id: string;
+          module_name: string;
+          depends_on: string;
+          is_required: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          module_name: string;
+          depends_on: string;
+          is_required?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          module_name?: string;
+          depends_on?: string;
+          is_required?: boolean;
+          created_at?: string;
+        };
+      };
+      module_usage_tracking: {
+        Row: {
+          id: string;
+          company_id: string;
+          module_name: string;
+          usage_count: number;
+          last_used_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          module_name: string;
+          usage_count?: number;
+          last_used_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          module_name?: string;
+          usage_count?: number;
+          last_used_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      module_warnings: {
+        Row: {
+          id: string;
+          company_id: string;
+          module_name: string;
+          warning_type: "expiration_warning" | "downgrade_warning" | "usage_limit_warning";
+          warning_message: string;
+          expires_at: string;
+          is_acknowledged: boolean;
+          acknowledged_at: string | null;
+          acknowledged_by_user_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          module_name: string;
+          warning_type: "expiration_warning" | "downgrade_warning" | "usage_limit_warning";
+          warning_message: string;
+          expires_at: string;
+          is_acknowledged?: boolean;
+          acknowledged_at?: string | null;
+          acknowledged_by_user_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          module_name?: string;
+          warning_type?: "expiration_warning" | "downgrade_warning" | "usage_limit_warning";
+          warning_message?: string;
+          expires_at?: string;
+          is_acknowledged?: boolean;
+          acknowledged_at?: string | null;
+          acknowledged_by_user_id?: string | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -484,6 +612,17 @@ export interface Database {
         | "education"
         | "veterinary"
         | "other";
+      module_change_action: "granted" | "revoked" | "overridden";
+      module_change_reason:
+        | "subscription_change"
+        | "admin_override"
+        | "expiration"
+        | "downgrade"
+        | "manual";
+      module_warning_type:
+        | "expiration_warning"
+        | "downgrade_warning"
+        | "usage_limit_warning";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -575,6 +714,33 @@ export type CompanyModuleInsert =
 export type CompanyModuleUpdate =
   Database["public"]["Tables"]["company_modules"]["Update"];
 
+export type ModuleChange = Database["public"]["Tables"]["module_changes"]["Row"];
+export type ModuleChangeInsert =
+  Database["public"]["Tables"]["module_changes"]["Insert"];
+export type ModuleChangeUpdate =
+  Database["public"]["Tables"]["module_changes"]["Update"];
+
+export type ModuleDependency =
+  Database["public"]["Tables"]["module_dependencies"]["Row"];
+export type ModuleDependencyInsert =
+  Database["public"]["Tables"]["module_dependencies"]["Insert"];
+export type ModuleDependencyUpdate =
+  Database["public"]["Tables"]["module_dependencies"]["Update"];
+
+export type ModuleUsageTracking =
+  Database["public"]["Tables"]["module_usage_tracking"]["Row"];
+export type ModuleUsageTrackingInsert =
+  Database["public"]["Tables"]["module_usage_tracking"]["Insert"];
+export type ModuleUsageTrackingUpdate =
+  Database["public"]["Tables"]["module_usage_tracking"]["Update"];
+
+export type ModuleWarning =
+  Database["public"]["Tables"]["module_warnings"]["Row"];
+export type ModuleWarningInsert =
+  Database["public"]["Tables"]["module_warnings"]["Insert"];
+export type ModuleWarningUpdate =
+  Database["public"]["Tables"]["module_warnings"]["Update"];
+
 // Enum types
 export type UserRole = Database["public"]["Enums"]["user_role"];
 export type CompanyUserRole = Database["public"]["Enums"]["company_user_role"];
@@ -587,6 +753,9 @@ export type SubscriptionStatus =
 export type BillingCycle = Database["public"]["Enums"]["billing_cycle"];
 export type ModuleName = Database["public"]["Enums"]["module_name"];
 export type IndustryType = Database["public"]["Enums"]["industry_type"];
+export type ModuleChangeAction = Database["public"]["Enums"]["module_change_action"];
+export type ModuleChangeReason = Database["public"]["Enums"]["module_change_reason"];
+export type ModuleWarningType = Database["public"]["Enums"]["module_warning_type"];
 
 // Combined types for common use cases
 export interface CompanyWithOwner extends Company {
@@ -703,4 +872,51 @@ export interface CompanyWithOptionalSubscription extends Company {
       };
     }
   > | null;
+}
+
+// Enhanced module system types
+export interface ModuleChangeWithDetails extends ModuleChange {
+  changed_by_user?: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  };
+}
+
+export interface ModuleDependencyGraph {
+  module: ModuleName;
+  dependencies: {
+    module: ModuleName;
+    required: boolean;
+  }[];
+  dependents: {
+    module: ModuleName;
+    required: boolean;
+  }[];
+}
+
+export interface CompanyModuleUsage {
+  company_id: string;
+  modules: Record<ModuleName, {
+    enabled: boolean;
+    usage_count: number;
+    last_used_at: string | null;
+    warnings: ModuleWarning[];
+  }>;
+}
+
+export interface ModuleTransition {
+  module: ModuleName;
+  from_status: boolean;
+  to_status: boolean;
+  reason: ModuleChangeReason;
+  dependencies_affected: ModuleName[];
+  warnings_generated: ModuleWarning[];
+}
+
+export interface EnhancedCompanyPermissions extends CompanyPermissions {
+  module_warnings: ModuleWarning[];
+  module_usage: Record<ModuleName, ModuleUsageTracking>;
+  pending_transitions: ModuleTransition[];
 }

@@ -233,7 +233,7 @@ export const updateCompany = async (
   // Check if user has access to this company
   const { data: companyUser } = await supabase
     .from("company_users")
-    .select("role")
+    .select("id")
     .eq("company_id", id)
     .eq("user_id", user.id)
     .single();
@@ -377,7 +377,7 @@ export const getBusinessHours = async (
   // Check if user has access to this company
   const { data: companyUser } = await supabase
     .from("company_users")
-    .select("role")
+    .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
     .single();
@@ -411,7 +411,7 @@ export const upsertBusinessHours = async (
   // Check if user has access to this company
   const { data: companyUser } = await supabase
     .from("company_users")
-    .select("role")
+    .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
     .single();

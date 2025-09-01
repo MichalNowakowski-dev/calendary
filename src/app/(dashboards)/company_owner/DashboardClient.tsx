@@ -14,6 +14,7 @@ import {
   X,
   LogOut,
   Home,
+  CreditCard,
 } from "lucide-react";
 import { signOut } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -55,6 +56,11 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
         name: "Statystyki",
         href: `/${role}/analytics`,
         icon: BarChart3,
+      },
+      {
+        name: "Subskrypcja",
+        href: `/${role}/subscription`,
+        icon: CreditCard,
       },
       {
         name: "Ustawienia",
