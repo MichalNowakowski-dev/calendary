@@ -12,11 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, CreditCard } from "lucide-react";
-import {
-  getSubscriptionPlans,
-  updateCompanySubscription,
-} from "@/lib/actions/subscriptions";
+import { Check, CreditCard, Loader2 } from "lucide-react";
+import { getSubscriptionPlans } from "@/lib/actions/subscriptions";
+import { createCheckoutSession } from "@/lib/actions/payments";
 import type {
   Company,
   CompanySubscription,
@@ -77,33 +75,53 @@ export function SubscriptionDialog({
     }
   };
 
-  const handleUpdateSubscription = async (planId: string) => {
+  const handleSelectPlan = async (
+    plan: SubscriptionPlanWithModules,
+    billingCycle: "monthly" | "yearly"
+  ) => {
     try {
-      setUpdating(planId);
-      const result = await updateCompanySubscription(company.id, planId);
+      setUpdating(plan.id);
 
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        });
-        router.refresh();
-        onOpenChange(false);
-      } else {
+      // Determine the price ID based on billing cycle
+      const priceId =
+        billingCycle === "yearly"
+          ? plan.stripe_price_id_yearly
+          : plan.stripe_price_id_monthly;
+
+      if (!priceId) {
         toast({
           title: "Error",
-          description: result.message,
+          description: `${billingCycle === "yearly" ? "Yearly" : "Monthly"} billing not available for this plan`,
           variant: "destructive",
         });
+        setUpdating(null);
+        return;
       }
-    } catch (error) {
-      console.error("Error updating subscription:", error);
+
       toast({
-        title: "Error",
-        description: "Failed to update subscription",
+        title: "Redirecting to payment",
+        description: "Please wait while we prepare your secure checkout...",
+      });
+
+      // Create Stripe checkout session
+      const checkoutUrl = await createCheckoutSession(
+        priceId,
+        company.id,
+        plan.id
+      );
+
+      // Redirect to Stripe Checkout
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      toast({
+        title: "Payment Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to initiate payment. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setUpdating(null);
     }
   };
@@ -160,6 +178,12 @@ export function SubscriptionDialog({
                           ${plan.price_monthly}
                         </div>
                         <div className="text-sm text-gray-500">/month</div>
+                        {plan.price_yearly && (
+                          <div className="text-xs text-green-600">
+                            Save ${plan.price_monthly * 12 - plan.price_yearly}{" "}
+                            yearly
+                          </div>
+                        )}
                       </div>
                     </CardTitle>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -215,23 +239,69 @@ export function SubscriptionDialog({
                         </div>
                       </div>
 
-                      <Button
-                        onClick={() => handleUpdateSubscription(plan.id)}
-                        disabled={isCurrentPlan || isUpdating}
-                        className="w-full"
-                        variant={isCurrentPlan ? "secondary" : "default"}
-                      >
-                        {isUpdating ? (
-                          "Updating..."
-                        ) : isCurrentPlan ? (
-                          "Current Plan"
-                        ) : (
-                          <>
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Select Plan
-                          </>
-                        )}
-                      </Button>
+                      {isCurrentPlan ? (
+                        <Button disabled className="w-full" variant="secondary">
+                          Current Plan
+                        </Button>
+                      ) : (
+                        <div className="space-y-2">
+                          {/* Monthly Payment Button */}
+                          {plan.stripe_price_id_monthly ? (
+                            <Button
+                              onClick={() => handleSelectPlan(plan, "monthly")}
+                              disabled={isUpdating}
+                              className="w-full"
+                              variant="default"
+                            >
+                              {isUpdating ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Redirecting...
+                                </>
+                              ) : (
+                                <>
+                                  <CreditCard className="mr-2 h-4 w-4" />
+                                  Pay Monthly - ${plan.price_monthly}
+                                </>
+                              )}
+                            </Button>
+                          ) : (
+                            <Button
+                              disabled
+                              className="w-full"
+                              variant="outline"
+                            >
+                              Monthly billing not available
+                            </Button>
+                          )}
+
+                          {/* Yearly Payment Button */}
+                          {plan.stripe_price_id_yearly ? (
+                            <Button
+                              onClick={() => handleSelectPlan(plan, "yearly")}
+                              disabled={isUpdating}
+                              className="w-full"
+                              variant="outline"
+                            >
+                              {isUpdating ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Redirecting...
+                                </>
+                              ) : (
+                                <>
+                                  <CreditCard className="mr-2 h-4 w-4" />
+                                  Pay Yearly - ${plan.price_yearly}
+                                </>
+                              )}
+                            </Button>
+                          ) : (
+                            <div className="text-xs text-gray-500 text-center py-2">
+                              Yearly billing coming soon
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

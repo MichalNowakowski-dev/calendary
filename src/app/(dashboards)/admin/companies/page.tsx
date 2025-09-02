@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { getAllCompaniesWithSubscriptions } from "@/lib/actions/subscriptions";
 import { CompanyActionsDropdown } from "./components/CompanyActionsDropdown";
 import { format } from "date-fns";
+import { CreditCard, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 async function CompaniesTable() {
   try {
@@ -38,6 +40,38 @@ async function CompaniesTable() {
                   </div>
 
                   <div className="flex items-center space-x-6">
+                    {/* Payment Status Indicator */}
+                    <div className="flex flex-col items-center">
+                      {subscription?.payment_status ? (
+                        <div className="flex items-center space-x-1">
+                          {subscription.payment_status === 'active' && (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          )}
+                          {subscription.payment_status === 'past_due' && (
+                            <AlertTriangle className="h-4 w-4 text-red-600" />
+                          )}
+                          {subscription.payment_status === 'trialing' && (
+                            <CreditCard className="h-4 w-4 text-blue-600" />
+                          )}
+                          {['canceled', 'unpaid', 'incomplete'].includes(subscription.payment_status) && (
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          )}
+                          {['incomplete_expired', 'paused'].includes(subscription.payment_status) && (
+                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4" />
+                      )}
+                      <span className="text-xs text-gray-500 mt-1">
+                        {subscription?.payment_status ? (
+                          subscription.payment_status.replace('_', ' ')
+                        ) : (
+                          'No payment'
+                        )}
+                      </span>
+                    </div>
+
                     {/* Subscription info */}
                     <div className="text-right">
                       <div className="flex items-center space-x-2">
@@ -45,6 +79,8 @@ async function CompaniesTable() {
                           variant={
                             subscription?.status === "active"
                               ? "default"
+                              : subscription?.status === "past_due"
+                              ? "destructive"
                               : "secondary"
                           }
                         >
@@ -53,6 +89,11 @@ async function CompaniesTable() {
                         {plan && (
                           <Badge variant="outline">{plan.display_name}</Badge>
                         )}
+                        {subscription?.stripe_customer_id && (
+                          <Badge variant="outline" className="bg-green-50 text-green-700">
+                            Stripe
+                          </Badge>
+                        )}
                       </div>
                       {subscription && (
                         <p className="text-xs text-gray-500 mt-1">
@@ -60,7 +101,12 @@ async function CompaniesTable() {
                         </p>
                       )}
                       {subscription?.current_period_end && (
-                        <p className="text-xs text-gray-500">
+                        <p className={cn(
+                          "text-xs mt-1",
+                          new Date(subscription.current_period_end) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) 
+                            ? "text-red-600" 
+                            : "text-gray-500"
+                        )}>
                           Expires:{" "}
                           {format(
                             new Date(subscription.current_period_end),
@@ -77,7 +123,7 @@ async function CompaniesTable() {
 
                 {/* Company details */}
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <span className="font-medium">Created:</span>{" "}
                       {format(new Date(company.created_at), "MMM dd, yyyy")}
@@ -94,6 +140,14 @@ async function CompaniesTable() {
                         {plan.max_employees === null
                           ? "Unlimited"
                           : plan.max_employees}
+                      </div>
+                    )}
+                    {subscription?.stripe_customer_id && (
+                      <div>
+                        <span className="font-medium">Stripe ID:</span>{" "}
+                        <span className="font-mono text-xs">
+                          {subscription.stripe_customer_id.substring(0, 12)}...
+                        </span>
                       </div>
                     )}
                   </div>
