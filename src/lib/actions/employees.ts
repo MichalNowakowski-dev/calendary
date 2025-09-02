@@ -20,7 +20,7 @@ interface CreateEmployeeData extends EmployeeFormData {
 export async function createEmployee(
   data: CreateEmployeeData
 ): Promise<EmployeeActionResult> {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   // Server-side validation
   const validationResult = employeeFormSchema.safeParse(data);
@@ -201,7 +201,7 @@ export async function updateEmployee(
   employeeId: string,
   data: EmployeeFormData
 ): Promise<EmployeeActionResult> {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   // Server-side validation
   const validationResult = employeeFormSchema.safeParse(data);
@@ -314,7 +314,7 @@ export async function deleteEmployeeClient(
 ) {
   try {
     const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Delete employee record
     const { error: employeeError } = await supabase

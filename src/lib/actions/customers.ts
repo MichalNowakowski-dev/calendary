@@ -24,7 +24,7 @@ interface CustomerWithAppointments extends Customer {
 export async function getCustomers(
   companyId: string
 ): Promise<CustomerWithStats[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     // First, check if company_id column exists
@@ -89,7 +89,7 @@ export async function getCustomers(
 export async function getCustomerById(
   customerId: string
 ): Promise<Customer | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     const { data, error } = await supabase
@@ -109,7 +109,7 @@ export async function getCustomerById(
 export async function createCustomer(
   customerData: CustomerInsert
 ): Promise<Customer | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     const { data, error } = await supabase
@@ -130,7 +130,7 @@ export async function updateCustomer(
   customerId: string,
   customerData: CustomerUpdate
 ): Promise<Customer | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     const { data, error } = await supabase
@@ -149,7 +149,7 @@ export async function updateCustomer(
 }
 
 export async function deleteCustomer(customerId: string): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     const { error } = await supabase
@@ -171,7 +171,7 @@ export async function findOrCreateCustomer(
   phone: string | null,
   companyId: string
 ): Promise<Customer> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     // First, try to find existing customer by email

@@ -28,7 +28,9 @@ export interface DegradationStatus {
 }
 
 export class GracefulDegradationManager {
-  private supabase = createClient();
+  private async getSupabaseClient() {
+    return await createClient();
+  }
   
   private defaultConfig: GracefulDegradationConfig = {
     warningPeriodDays: 14,
@@ -67,7 +69,8 @@ export class GracefulDegradationManager {
 
       const warningMessage = this.generateWarningMessage(moduleName, reason, config);
 
-      const { data: warning, error } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data: warning, error } = await supabase
         .from('module_warnings')
         .insert({
           company_id: companyId,
@@ -103,7 +106,8 @@ export class GracefulDegradationManager {
    * Get degradation status for company modules
    */
   async getCompanyDegradationStatus(companyId: string): Promise<DegradationStatus[]> {
-    const { data: warnings, error } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data: warnings, error } = await supabase
       .from('module_warnings')
       .select('*')
       .eq('company_id', companyId)
@@ -153,7 +157,8 @@ export class GracefulDegradationManager {
 
       // In a real implementation, you'd schedule this with a job queue
       // For now, we'll store the schedule in the database for manual processing
-      await this.supabase
+      const supabase = await this.getSupabaseClient();
+      await supabase
         .from('module_warnings')
         .insert({
           company_id: companyId,
@@ -177,7 +182,8 @@ export class GracefulDegradationManager {
     restrictions: string[];
     message: string;
   }> {
-    const { data: warnings } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data: warnings } = await supabase
       .from('module_warnings')
       .select('*')
       .eq('company_id', companyId)
@@ -279,7 +285,8 @@ export class GracefulDegradationManager {
       };
 
       if (extendGracePeriod) {
-        const { data: warning } = await this.supabase
+        const supabase = await this.getSupabaseClient();
+        const { data: warning } = await supabase
           .from('module_warnings')
           .select('expires_at')
           .eq('id', warningId)
@@ -293,7 +300,8 @@ export class GracefulDegradationManager {
         }
       }
 
-      const { error } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { error } = await supabase
         .from('module_warnings')
         .update(updateData)
         .eq('id', warningId)
@@ -478,7 +486,8 @@ export class GracefulDegradationManager {
 
   // Module-specific export handlers
   private async exportEmployeeData(companyId: string) {
-    const { data } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data } = await supabase
       .from('employees')
       .select('*')
       .eq('company_id', companyId);
@@ -486,7 +495,8 @@ export class GracefulDegradationManager {
   }
 
   private async exportScheduleData(companyId: string) {
-    const { data } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data } = await supabase
       .from('schedules')
       .select('*, employee:employees(*)')
       .eq('employees.company_id', companyId);
@@ -494,7 +504,8 @@ export class GracefulDegradationManager {
   }
 
   private async exportPaymentData(companyId: string) {
-    const { data } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data } = await supabase
       .from('appointments')
       .select('*')
       .eq('company_id', companyId)
@@ -508,7 +519,8 @@ export class GracefulDegradationManager {
   }
 
   private async exportLocationData(companyId: string) {
-    const { data } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data } = await supabase
       .from('companies')
       .select('*')
       .eq('id', companyId);

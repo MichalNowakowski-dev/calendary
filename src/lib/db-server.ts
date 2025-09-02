@@ -1,6 +1,7 @@
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
 import type {
+  AppointmentWithDetails,
   Company,
   CompanyWithServices,
   Employee,
@@ -15,7 +16,7 @@ import type {
 export const serverDb = {
   // Company operations
   async getCompanyBySlug(slug: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("companies")
       .select("*")
@@ -27,7 +28,7 @@ export const serverDb = {
   },
 
   async getCompanyById(id: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("companies")
       .select("*")
@@ -40,7 +41,7 @@ export const serverDb = {
 
   // User operations
   async getCurrentUser() {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase.auth.getUser();
 
     if (error || !data.user) return null;
@@ -58,7 +59,7 @@ export const serverDb = {
   async getSearchResults(searchTerm: string): Promise<CompanyWithServices[]> {
     if (!searchTerm.trim()) return [];
 
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     try {
       // Search for services by name
@@ -125,7 +126,7 @@ export const serverDb = {
   },
 
   async getUserCompanies(userId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("company_users")
       .select(
@@ -156,7 +157,7 @@ export const serverDb = {
 
   // Service operations
   async getServices(companyId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("services")
       .select("*")
@@ -169,7 +170,7 @@ export const serverDb = {
   },
 
   async getServicesWithEmployees(companyId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("services")
       .select(
@@ -194,7 +195,7 @@ export const serverDb = {
 
   // Employee operations
   async getEmployees(companyId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("employees")
       .select("id, name, visible")
@@ -207,7 +208,7 @@ export const serverDb = {
   },
 
   async getEmployeesWithDetails(companyId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("employees")
       .select(
@@ -234,7 +235,7 @@ export const serverDb = {
 
   // Appointment operations
   async getAppointments(companyId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("appointments")
       .select(
@@ -257,11 +258,11 @@ export const serverDb = {
       .order("start_time", { ascending: true });
 
     if (error) throw error;
-    return data;
+    return data as AppointmentWithDetails[];
   },
 
   async getEmployeeAppointments(userId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // First, get the employee record for this user
     const { data: employeeData, error: employeeError } = await supabase
@@ -297,7 +298,7 @@ export const serverDb = {
   },
 
   async getEmployeeAppointmentsByCompany(companyId: string, userId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // First, get the employee record for this user in this company
     const { data: employeeData, error: employeeError } = await supabase
@@ -335,7 +336,7 @@ export const serverDb = {
 
   // Settings operations
   async getCompanySettings(companyId: string) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from("settings")
       .select("*")

@@ -9,7 +9,7 @@ import {
 export { MODULES, getUpgradeMessage } from './constants';
 
 export async function getCompanyPermissions(companyId: string): Promise<CompanyPermissions | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     // Get company subscription with plan details and modules
@@ -113,7 +113,7 @@ export async function checkEmployeeLimit(companyId: string): Promise<{ allowed: 
     return { allowed: true, current: 0, max: null };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Get current employee count
   const { count, error } = await supabase

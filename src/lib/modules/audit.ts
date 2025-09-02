@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@/lib/supabase/server";
 import type {
   ModuleName,
   ModuleChange,
@@ -7,10 +7,12 @@ import type {
   ModuleChangeAction,
   CompanyModuleUsage,
   ModuleUsageTracking,
-} from '@/lib/types/database';
+} from "@/lib/types/database";
 
 export class ModuleAuditTracker {
-  private supabase = createClient();
+  private async getSupabaseClient() {
+    return await createClient();
+  }
 
   /**
    * Get comprehensive audit trail for a company's module changes
@@ -25,22 +27,23 @@ export class ModuleAuditTracker {
       includeUserDetails?: boolean;
     }
   ): Promise<ModuleChangeWithDetails[]> {
-    let query = this.supabase
-      .from('module_changes')
-      .select('*')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false });
+    const supabase = await this.getSupabaseClient();
+    let query = supabase
+      .from("module_changes")
+      .select("*")
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: false });
 
     if (options?.module) {
-      query = query.eq('module_name', options.module);
+      query = query.eq("module_name", options.module);
     }
 
     if (options?.startDate) {
-      query = query.gte('created_at', options.startDate);
+      query = query.gte("created_at", options.startDate);
     }
 
     if (options?.endDate) {
-      query = query.lte('created_at', options.endDate);
+      query = query.lte("created_at", options.endDate);
     }
 
     if (options?.limit) {
@@ -62,20 +65,22 @@ export class ModuleAuditTracker {
           return change as ModuleChangeWithDetails;
         }
 
-        const { data: userData } = await this.supabase
-          .from('auth.users')
-          .select('id, email, user_metadata')
-          .eq('id', change.changed_by_user_id)
+        const { data: userData } = await supabase
+          .from("auth.users")
+          .select("id, email, user_metadata")
+          .eq("id", change.changed_by_user_id)
           .single();
 
         return {
           ...change,
-          changed_by_user: userData ? {
-            id: userData.id,
-            email: userData.email,
-            first_name: userData.user_metadata?.first_name || '',
-            last_name: userData.user_metadata?.last_name || '',
-          } : undefined,
+          changed_by_user: userData
+            ? {
+                id: userData.id,
+                email: userData.email,
+                first_name: userData.user_metadata?.first_name || "",
+                last_name: userData.user_metadata?.last_name || "",
+              }
+            : undefined,
         } as ModuleChangeWithDetails;
       })
     );
@@ -88,74 +93,81 @@ export class ModuleAuditTracker {
    */
   async getCompanyModuleUsage(companyId: string): Promise<CompanyModuleUsage> {
     // Get usage tracking data
-    const { data: usageData, error: usageError } = await this.supabase
-      .from('module_usage_tracking')
-      .select('*')
-      .eq('company_id', companyId);
+    const supabase = await this.getSupabaseClient();
+    const { data: usageData, error: usageError } = await supabase
+      .from("module_usage_tracking")
+      .select("*")
+      .eq("company_id", companyId);
 
     if (usageError) throw usageError;
 
     // Get active warnings
-    const { data: warnings, error: warningsError } = await this.supabase
-      .from('module_warnings')
-      .select('*')
-      .eq('company_id', companyId)
-      .eq('is_acknowledged', false)
-      .gte('expires_at', new Date().toISOString());
+    const { data: warnings, error: warningsError } = await supabase
+      .from("module_warnings")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("is_acknowledged", false)
+      .gte("expires_at", new Date().toISOString());
 
     if (warningsError) throw warningsError;
 
     // Get current module status
-    const { data: companyModules, error: modulesError } = await this.supabase
-      .from('company_modules')
-      .select('*')
-      .eq('company_id', companyId);
+    const { data: companyModules, error: modulesError } = await supabase
+      .from("company_modules")
+      .select("*")
+      .eq("company_id", companyId);
 
     if (modulesError) throw modulesError;
 
     // Get subscription plan modules
-    const { data: subscription, error: subscriptionError } = await this.supabase
-      .from('company_subscriptions')
-      .select(`
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from("company_subscriptions")
+      .select(
+        `
         *,
         subscription_plan:subscription_plans (
           *,
           plan_modules (*)
         )
-      `)
-      .eq('company_id', companyId)
-      .eq('status', 'active')
+      `
+      )
+      .eq("company_id", companyId)
+      .eq("status", "active")
       .single();
 
     if (subscriptionError) throw subscriptionError;
 
     // Build module usage map
-    const modules: CompanyModuleUsage['modules'] = {};
+    const modules = {} as CompanyModuleUsage["modules"];
     const allModules: ModuleName[] = [
-      'employee_management',
-      'employee_schedules',
-      'online_payments',
-      'analytics',
-      'multi_location',
-      'api_access'
+      "employee_management",
+      "employee_schedules",
+      "online_payments",
+      "analytics",
+      "multi_location",
+      "api_access",
     ];
 
     for (const moduleName of allModules) {
       // Determine if module is enabled
-      const companyOverride = companyModules?.find(m => m.module_name === moduleName);
+      const companyOverride = companyModules?.find(
+        (m) => m.module_name === moduleName
+      );
       const planModule = subscription?.subscription_plan?.plan_modules?.find(
-        (pm: { module_name: string; is_enabled: boolean }) => pm.module_name === moduleName
+        (pm: { module_name: string; is_enabled: boolean }) =>
+          pm.module_name === moduleName
       );
 
-      const isEnabled = companyOverride 
-        ? companyOverride.is_enabled 
+      const isEnabled = companyOverride
+        ? companyOverride.is_enabled
         : planModule?.is_enabled || false;
 
       // Get usage data
-      const usage = usageData?.find(u => u.module_name === moduleName);
-      
+      const usage = usageData?.find((u) => u.module_name === moduleName);
+
       // Get warnings for this module
-      const moduleWarnings = warnings?.filter(w => w.module_name === moduleName) || [];
+      const moduleWarnings =
+        warnings?.filter((w) => w.module_name === moduleName) || [];
 
       modules[moduleName] = {
         enabled: isEnabled,
@@ -181,38 +193,37 @@ export class ModuleAuditTracker {
   ): Promise<void> {
     try {
       // Update usage tracking
-      const { data: existing, error: selectError } = await this.supabase
-        .from('module_usage_tracking')
-        .select('*')
-        .eq('company_id', companyId)
-        .eq('module_name', moduleName)
+      const supabase = await this.getSupabaseClient();
+      const { data: existing, error: selectError } = await supabase
+        .from("module_usage_tracking")
+        .select("*")
+        .eq("company_id", companyId)
+        .eq("module_name", moduleName)
         .single();
 
-      if (selectError && selectError.code !== 'PGRST116') {
+      if (selectError && selectError.code !== "PGRST116") {
         throw selectError;
       }
 
       if (existing) {
-        await this.supabase
-          .from('module_usage_tracking')
+        await supabase
+          .from("module_usage_tracking")
           .update({
             usage_count: existing.usage_count + 1,
             last_used_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existing.id);
+          .eq("id", existing.id);
       } else {
-        await this.supabase
-          .from('module_usage_tracking')
-          .insert({
-            company_id: companyId,
-            module_name: moduleName,
-            usage_count: 1,
-            last_used_at: new Date().toISOString(),
-          });
+        await supabase.from("module_usage_tracking").insert({
+          company_id: companyId,
+          module_name: moduleName,
+          usage_count: 1,
+          last_used_at: new Date().toISOString(),
+        });
       }
     } catch (error) {
-      console.error('Error recording module usage:', error);
+      console.error("Error recording module usage:", error);
       // Don't throw - usage tracking shouldn't break functionality
     }
   }
@@ -229,22 +240,24 @@ export class ModuleAuditTracker {
     changesByReason: Record<ModuleChangeReason, number>;
     changesByAction: Record<ModuleChangeAction, number>;
     mostActiveCompanies: { company_id: string; change_count: number }[];
-    usageStats: Record<ModuleName, {
-      companies_using: number;
-      total_usage: number;
-      avg_usage_per_company: number;
-    }>;
+    usageStats: Record<
+      ModuleName,
+      {
+        companies_using: number;
+        total_usage: number;
+        avg_usage_per_company: number;
+      }
+    >;
   }> {
-    let query = this.supabase
-      .from('module_changes')
-      .select('*');
+    const supabase = await this.getSupabaseClient();
+    let query = supabase.from("module_changes").select("*");
 
     if (options?.startDate) {
-      query = query.gte('created_at', options.startDate);
+      query = query.gte("created_at", options.startDate);
     }
 
     if (options?.endDate) {
-      query = query.lte('created_at', options.endDate);
+      query = query.lte("created_at", options.endDate);
     }
 
     const { data: changes, error } = await query;
@@ -252,9 +265,9 @@ export class ModuleAuditTracker {
     if (error) throw error;
 
     // Get usage statistics
-    const { data: usageData, error: usageError } = await this.supabase
-      .from('module_usage_tracking')
-      .select('*');
+    const { data: usageData, error: usageError } = await supabase
+      .from("module_usage_tracking")
+      .select("*");
 
     if (usageError) throw usageError;
 
@@ -285,44 +298,73 @@ export class ModuleAuditTracker {
     const companyChangeCounts: Record<string, number> = {};
 
     // Process changes
-    (changes || []).forEach(change => {
+    (changes || []).forEach((change) => {
       changesByModule[change.module_name as ModuleName]++;
       changesByReason[change.reason as ModuleChangeReason]++;
       changesByAction[change.action as ModuleChangeAction]++;
-      companyChangeCounts[change.company_id] = (companyChangeCounts[change.company_id] || 0) + 1;
+      companyChangeCounts[change.company_id] =
+        (companyChangeCounts[change.company_id] || 0) + 1;
     });
 
     // Process usage statistics
-    const usageStats: Record<ModuleName, {
-      companies_using: number;
-      total_usage: number;
-      avg_usage_per_company: number;
-    }> = {
-      employee_management: { companies_using: 0, total_usage: 0, avg_usage_per_company: 0 },
-      employee_schedules: { companies_using: 0, total_usage: 0, avg_usage_per_company: 0 },
-      online_payments: { companies_using: 0, total_usage: 0, avg_usage_per_company: 0 },
-      analytics: { companies_using: 0, total_usage: 0, avg_usage_per_company: 0 },
-      multi_location: { companies_using: 0, total_usage: 0, avg_usage_per_company: 0 },
-      api_access: { companies_using: 0, total_usage: 0, avg_usage_per_company: 0 },
+    const usageStats: Record<
+      ModuleName,
+      {
+        companies_using: number;
+        total_usage: number;
+        avg_usage_per_company: number;
+      }
+    > = {
+      employee_management: {
+        companies_using: 0,
+        total_usage: 0,
+        avg_usage_per_company: 0,
+      },
+      employee_schedules: {
+        companies_using: 0,
+        total_usage: 0,
+        avg_usage_per_company: 0,
+      },
+      online_payments: {
+        companies_using: 0,
+        total_usage: 0,
+        avg_usage_per_company: 0,
+      },
+      analytics: {
+        companies_using: 0,
+        total_usage: 0,
+        avg_usage_per_company: 0,
+      },
+      multi_location: {
+        companies_using: 0,
+        total_usage: 0,
+        avg_usage_per_company: 0,
+      },
+      api_access: {
+        companies_using: 0,
+        total_usage: 0,
+        avg_usage_per_company: 0,
+      },
     };
 
-    (usageData || []).forEach(usage => {
+    (usageData || []).forEach((usage) => {
       const moduleName = usage.module_name as ModuleName;
       usageStats[moduleName].companies_using++;
       usageStats[moduleName].total_usage += usage.usage_count;
     });
 
     // Calculate averages
-    Object.keys(usageStats).forEach(moduleKey => {
+    Object.keys(usageStats).forEach((moduleKey) => {
       const stats = usageStats[moduleKey as ModuleName];
-      stats.avg_usage_per_company = stats.companies_using > 0 
-        ? stats.total_usage / stats.companies_using 
-        : 0;
+      stats.avg_usage_per_company =
+        stats.companies_using > 0
+          ? stats.total_usage / stats.companies_using
+          : 0;
     });
 
     // Get most active companies
     const mostActiveCompanies = Object.entries(companyChangeCounts)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([company_id, change_count]) => ({ company_id, change_count }));
 
@@ -347,13 +389,16 @@ export class ModuleAuditTracker {
     recordsDeleted?: number;
     success: boolean;
   }> {
-    const cutoffDate = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000).toISOString();
+    const cutoffDate = new Date(
+      Date.now() - olderThanDays * 24 * 60 * 60 * 1000
+    ).toISOString();
 
     // First, count records that would be deleted
-    const { count, error: countError } = await this.supabase
-      .from('module_changes')
-      .select('*', { count: 'exact', head: true })
-      .lt('created_at', cutoffDate);
+    const supabase = await this.getSupabaseClient();
+    const { count, error: countError } = await supabase
+      .from("module_changes")
+      .select("*", { count: "exact", head: true })
+      .lt("created_at", cutoffDate);
 
     if (countError) throw countError;
 
@@ -365,10 +410,10 @@ export class ModuleAuditTracker {
     }
 
     // Actually delete records
-    const { error: deleteError } = await this.supabase
-      .from('module_changes')
+    const { error: deleteError } = await supabase
+      .from("module_changes")
       .delete()
-      .lt('created_at', cutoffDate);
+      .lt("created_at", cutoffDate);
 
     if (deleteError) throw deleteError;
 
@@ -384,14 +429,14 @@ export class ModuleAuditTracker {
    */
   async exportAuditTrail(
     companyId: string,
-    format: 'json' | 'csv' = 'json'
+    format: "json" | "csv" = "json"
   ): Promise<{ success: boolean; data?: unknown; error?: string }> {
     try {
       const auditTrail = await this.getCompanyModuleAuditTrail(companyId, {
         includeUserDetails: true,
       });
 
-      if (format === 'json') {
+      if (format === "json") {
         return {
           success: true,
           data: {
@@ -404,25 +449,25 @@ export class ModuleAuditTracker {
 
       // CSV format
       const csvHeaders = [
-        'Date',
-        'Module',
-        'Action',
-        'Reason',
-        'Previous Status',
-        'New Status',
-        'Changed By',
-        'Notes'
+        "Date",
+        "Module",
+        "Action",
+        "Reason",
+        "Previous Status",
+        "New Status",
+        "Changed By",
+        "Notes",
       ];
 
-      const csvRows = auditTrail.map(change => [
+      const csvRows = auditTrail.map((change) => [
         change.created_at,
         change.module_name,
         change.action,
         change.reason,
         change.previous_status,
         change.new_status,
-        change.changed_by_user?.email || 'System',
-        change.notes || ''
+        change.changed_by_user?.email || "System",
+        change.notes || "",
       ]);
 
       return {
@@ -435,7 +480,7 @@ export class ModuleAuditTracker {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Export failed',
+        error: error instanceof Error ? error.message : "Export failed",
       };
     }
   }

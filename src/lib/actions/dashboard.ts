@@ -30,7 +30,7 @@ export async function getDashboardData(): Promise<{
 
     const userCompany = companies[0]?.company as unknown as Company;
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get dashboard statistics
     const [

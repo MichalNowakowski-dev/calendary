@@ -12,7 +12,7 @@ export default async function EmployeeDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Get the current user on the server
   const {

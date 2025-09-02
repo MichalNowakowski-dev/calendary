@@ -7,7 +7,7 @@ export const db = {
   // Company operations
 
   async getEmployeesWithDetails(companyId: string) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("employees")
       .select(

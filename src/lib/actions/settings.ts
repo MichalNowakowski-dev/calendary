@@ -10,7 +10,7 @@ export async function updateCompanySettingsAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const companyId = formData.get("companyId") as string;
     if (!companyId) {

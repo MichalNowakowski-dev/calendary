@@ -10,7 +10,7 @@ export async function createScheduleAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const scheduleData = {
       employee_id: formData.get("employeeId") as string,
@@ -53,7 +53,7 @@ export async function updateScheduleAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const scheduleId = formData.get("scheduleId") as string;
     if (!scheduleId) {
@@ -104,7 +104,7 @@ export async function deleteScheduleAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const scheduleId = formData.get("scheduleId") as string;
     if (!scheduleId) {

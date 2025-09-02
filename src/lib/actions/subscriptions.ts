@@ -26,7 +26,7 @@ import { gracefulDegradationManager } from "@/lib/modules/degradation";
 export const getSubscriptionPlans = async (): Promise<
   SubscriptionPlanWithModules[]
 > => {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: plans, error } = await supabase
     .from("subscription_plans")
@@ -46,7 +46,7 @@ export const getSubscriptionPlans = async (): Promise<
 
 // Get company's current subscription
 export const getCompanySubscription = async (companyId: string) => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -94,7 +94,7 @@ export const updateCompanySubscription = async (
   planId: string
 ): Promise<ActionState> => {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -156,16 +156,20 @@ export const updateCompanySubscription = async (
     }
 
     // Handle module lifecycle changes
-    const lifecycleResult = await moduleLifecycleManager.handleSubscriptionChange(
-      companyId,
-      planId,
-      oldPlanId,
-      "subscription_change",
-      user.id
-    );
+    const lifecycleResult =
+      await moduleLifecycleManager.handleSubscriptionChange(
+        companyId,
+        planId,
+        oldPlanId,
+        "subscription_change",
+        user.id
+      );
 
     if (!lifecycleResult.success) {
-      console.warn("Module lifecycle management failed:", lifecycleResult.message);
+      console.warn(
+        "Module lifecycle management failed:",
+        lifecycleResult.message
+      );
     }
 
     // Create graceful degradation warnings for revoked modules
@@ -182,9 +186,10 @@ export const updateCompanySubscription = async (
     revalidatePath(`/admin`);
     revalidatePath(`/company_owner`);
 
-    const successMessage = lifecycleResult.transitions.length > 0
-      ? `Subscription updated with ${lifecycleResult.transitions.length} module changes`
-      : "Subscription updated successfully";
+    const successMessage =
+      lifecycleResult.transitions.length > 0
+        ? `Subscription updated with ${lifecycleResult.transitions.length} module changes`
+        : "Subscription updated successfully";
 
     return {
       success: true,
@@ -211,7 +216,7 @@ export const toggleCompanyModule = async (
   notes?: string
 ): Promise<ActionState> => {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -243,7 +248,7 @@ export const toggleCompanyModule = async (
     if (!validation.valid) {
       return {
         success: false,
-        message: `Cannot proceed: ${validation.conflicts.join(', ')}`,
+        message: `Cannot proceed: ${validation.conflicts.join(", ")}`,
       };
     }
 
@@ -290,25 +295,23 @@ export const toggleCompanyModule = async (
     }
 
     // Record the change in audit trail
-    await supabase
-      .from('module_changes')
-      .insert({
-        company_id: companyId,
-        module_name: moduleName,
-        action: 'overridden',
-        reason: 'admin_override',
-        previous_status: currentStatus,
-        new_status: enabled,
-        changed_by_user_id: user.id,
-        notes: notes,
-      });
+    await supabase.from("module_changes").insert({
+      company_id: companyId,
+      module_name: moduleName,
+      action: "overridden",
+      reason: "admin_override",
+      previous_status: currentStatus,
+      new_status: enabled,
+      changed_by_user_id: user.id,
+      notes: notes,
+    });
 
     // Handle graceful degradation if module is being disabled
     if (!enabled && currentStatus) {
       await gracefulDegradationManager.createRevocationWarning(
         companyId,
         moduleName,
-        'admin_override'
+        "admin_override"
       );
     }
 
@@ -324,7 +327,7 @@ export const toggleCompanyModule = async (
 
     let message = `Module ${moduleName} ${enabled ? "enabled" : "disabled"} for company`;
     if (validation.warnings.length > 0) {
-      message += `. Warnings: ${validation.warnings.join(', ')}`;
+      message += `. Warnings: ${validation.warnings.join(", ")}`;
     }
 
     return {
@@ -348,7 +351,7 @@ export const toggleCompanyModule = async (
 export const getAllCompaniesWithSubscriptions = async (): Promise<
   CompanyWithOptionalSubscription[]
 > => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -380,7 +383,7 @@ export const getAllCompaniesWithSubscriptions = async (): Promise<
 
 // Get company modules (overrides)
 export const getCompanyModules = async (companyId: string) => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -413,13 +416,109 @@ export const getCompanyModules = async (companyId: string) => {
   return modules;
 };
 
+// Get complete subscription data for company owner dashboard
+export const getCompanySubscriptionData = async () => {
+  const supabase = await createClient();
+  const user = await serverAuth.getCurrentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  // Get user's company
+  const { data: companyUser, error: companyUserError } = await supabase
+    .from("company_users")
+    .select(
+      `
+      company:companies (
+        id,
+        name,
+        plan_id
+      )
+    `
+    )
+    .eq("user_id", user.id)
+    .single();
+
+  if (companyUserError || !companyUser?.company) {
+    throw new Error("Company not found");
+  }
+
+  const company = companyUser.company as unknown as Pick<
+    Company,
+    "id" | "name" | "plan_id"
+  >;
+
+  // Get all subscription plans (including free plan)
+  const { data: allPlans, error: plansError } = await supabase
+    .from("subscription_plans")
+    .select(
+      `
+      *,
+      plan_modules (*)
+    `
+    )
+    .eq("is_active", true)
+    .order("price_monthly", { ascending: true });
+
+  if (plansError) throw plansError;
+
+  const plans = allPlans as SubscriptionPlanWithModules[];
+  const freePlan = plans.find((plan) => plan.name === "free");
+
+  if (!freePlan) {
+    throw new Error("Free plan not found");
+  }
+
+  // Get current subscription
+  const { data: subscription } = await supabase
+    .from("company_subscriptions")
+    .select(
+      `
+      *,
+      subscription_plan:subscription_plans (
+        *,
+        plan_modules (*)
+      )
+    `
+    )
+    .eq("company_id", company.id)
+    .single();
+
+  // Prepare current subscription data with fallback to free plan
+  const currentPlan = subscription?.subscription_plan || freePlan;
+  const currentSubscription = subscription || {
+    id: crypto.randomUUID(),
+    company_id: company.id,
+    subscription_plan_id: freePlan.id,
+    status: "active" as const,
+    billing_cycle: "monthly" as const,
+    current_period_start: new Date().toISOString(),
+    current_period_end: new Date(
+      Date.now() + 365 * 24 * 60 * 60 * 1000
+    ).toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    subscription_plan: freePlan,
+  };
+
+  return {
+    company,
+    current: {
+      plan: currentPlan as SubscriptionPlanWithModules,
+      subscription: currentSubscription,
+    },
+    available: plans.filter((plan) => plan.name !== "free"),
+  };
+};
+
 // Admin-only: Remove company module override (revert to plan default)
 export const removeCompanyModuleOverride = async (
   companyId: string,
   moduleName: ModuleName
 ): Promise<ActionState> => {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
