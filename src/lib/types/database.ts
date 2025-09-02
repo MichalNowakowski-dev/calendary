@@ -333,6 +333,8 @@ export interface Database {
           features: Record<string, string>;
           max_employees: number | null;
           max_locations: number | null;
+          stripe_price_id_monthly: string | null;
+          stripe_price_id_yearly: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -347,6 +349,8 @@ export interface Database {
           features?: Record<string, string>;
           max_employees?: number | null;
           max_locations?: number | null;
+          stripe_price_id_monthly?: string | null;
+          stripe_price_id_yearly?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -361,6 +365,8 @@ export interface Database {
           features?: Record<string, string>;
           max_employees?: number | null;
           max_locations?: number | null;
+          stripe_price_id_monthly?: string | null;
+          stripe_price_id_yearly?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -374,6 +380,9 @@ export interface Database {
           billing_cycle: "monthly" | "yearly";
           current_period_start: string;
           current_period_end: string;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          payment_status: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused" | null;
           created_at: string;
           updated_at: string;
         };
@@ -385,6 +394,9 @@ export interface Database {
           billing_cycle?: "monthly" | "yearly";
           current_period_start?: string;
           current_period_end?: string;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          payment_status?: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused" | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -396,6 +408,9 @@ export interface Database {
           billing_cycle?: "monthly" | "yearly";
           current_period_start?: string;
           current_period_end?: string;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          payment_status?: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused" | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -580,6 +595,41 @@ export interface Database {
           created_at?: string;
         };
       };
+      payment_events: {
+        Row: {
+          id: string;
+          company_id: string | null;
+          stripe_event_id: string;
+          event_type: string;
+          event_data: Record<string, any>;
+          processed: boolean;
+          processed_at: string | null;
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id?: string | null;
+          stripe_event_id: string;
+          event_type: string;
+          event_data: Record<string, any>;
+          processed?: boolean;
+          processed_at?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string | null;
+          stripe_event_id?: string;
+          event_type?: string;
+          event_data?: Record<string, any>;
+          processed?: boolean;
+          processed_at?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -594,6 +644,7 @@ export interface Database {
       appointment_status: "booked" | "cancelled" | "completed";
       subscription_status: "active" | "inactive" | "cancelled" | "past_due";
       billing_cycle: "monthly" | "yearly";
+      stripe_payment_status: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused";
       module_name:
         | "employee_management"
         | "employee_schedules"
@@ -740,6 +791,12 @@ export type ModuleWarningInsert =
   Database["public"]["Tables"]["module_warnings"]["Insert"];
 export type ModuleWarningUpdate =
   Database["public"]["Tables"]["module_warnings"]["Update"];
+
+export type PaymentEvent = Database["public"]["Tables"]["payment_events"]["Row"];
+export type PaymentEventInsert =
+  Database["public"]["Tables"]["payment_events"]["Insert"];
+export type PaymentEventUpdate =
+  Database["public"]["Tables"]["payment_events"]["Update"];
 
 // Enum types
 export type UserRole = Database["public"]["Enums"]["user_role"];

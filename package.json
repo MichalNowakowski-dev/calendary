@@ -26,6 +26,7 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.52.1",
     "@types/lodash": "^4.17.20",
+    "@types/stripe": "^8.0.416",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -39,6 +40,7 @@
     "react-hook-form": "^7.61.0",
     "react-toastify": "^11.0.5",
     "resend": "^4.7.0",
+    "stripe": "^18.5.0",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.0.8"
   },
