@@ -19,7 +19,7 @@ export async function createServiceAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const {
       data: { user },
@@ -119,7 +119,7 @@ export async function updateServiceAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const serviceId = formData.get("serviceId") as string;
     if (!serviceId) {
@@ -200,7 +200,7 @@ export async function deleteServiceAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const serviceId = formData.get("serviceId") as string;
     if (!serviceId) {
@@ -243,7 +243,7 @@ export async function assignEmployeeToServiceAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const employeeId = formData.get("employeeId") as string;
     const serviceId = formData.get("serviceId") as string;
@@ -287,7 +287,7 @@ export async function unassignEmployeeFromServiceAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const employeeId = formData.get("employeeId") as string;
     const serviceId = formData.get("serviceId") as string;
@@ -329,7 +329,7 @@ export async function unassignEmployeeFromServiceAction(
 
 // Data fetching function
 export async function getServicesData() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Get current user from server-side
   const {

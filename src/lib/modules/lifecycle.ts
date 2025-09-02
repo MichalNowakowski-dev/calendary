@@ -14,7 +14,9 @@ import type {
 } from '@/lib/types/database';
 
 export class ModuleLifecycleManager {
-  private supabase = createClient();
+  private async getSupabaseClient() {
+    return await createClient();
+  }
 
   /**
    * Automatically manage module access when subscription changes
@@ -28,7 +30,8 @@ export class ModuleLifecycleManager {
   ): Promise<{ success: boolean; transitions: ModuleTransition[]; message: string }> {
     try {
       // Get new plan modules
-      const { data: newPlanModules, error: newPlanError } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data: newPlanModules, error: newPlanError } = await supabase
         .from('plan_modules')
         .select('*')
         .eq('subscription_plan_id', newPlanId);
@@ -38,7 +41,7 @@ export class ModuleLifecycleManager {
       // Get old plan modules if exists
       let oldPlanModules: { module_name: string; is_enabled: boolean }[] = [];
       if (oldPlanId) {
-        const { data, error } = await this.supabase
+        const { data, error } = await supabase
           .from('plan_modules')
           .select('*')
           .eq('subscription_plan_id', oldPlanId);
@@ -48,7 +51,7 @@ export class ModuleLifecycleManager {
       }
 
       // Get current company module overrides
-      const { data: companyModules, error: companyModulesError } = await this.supabase
+      const { data: companyModules, error: companyModulesError } = await supabase
         .from('company_modules')
         .select('*')
         .eq('company_id', companyId);
@@ -171,8 +174,9 @@ export class ModuleLifecycleManager {
       await this.updateUsageTracking(companyId, transition.module);
 
       // Create warnings if needed
+      const supabase = await this.getSupabaseClient();
       for (const warning of transition.warnings_generated) {
-        await this.supabase
+        await supabase
           .from('module_warnings')
           .insert({
             company_id: companyId,
@@ -203,7 +207,8 @@ export class ModuleLifecycleManager {
     changedByUserId?: string,
     notes?: string
   ): Promise<void> {
-    await this.supabase
+    const supabase = await this.getSupabaseClient();
+    await supabase
       .from('module_changes')
       .insert({
         company_id: companyId,
@@ -224,7 +229,8 @@ export class ModuleLifecycleManager {
     if (newStatus) return []; // Enabling a module doesn't affect dependencies
 
     // Get modules that depend on this one
-    const { data: dependents, error } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data: dependents, error } = await supabase
       .from('module_dependencies')
       .select('module_name, is_required')
       .eq('depends_on', module);
@@ -298,7 +304,8 @@ export class ModuleLifecycleManager {
    * Update usage tracking for a module
    */
   private async updateUsageTracking(companyId: string, moduleName: ModuleName): Promise<void> {
-    const { data: existing, error: selectError } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data: existing, error: selectError } = await supabase
       .from('module_usage_tracking')
       .select('*')
       .eq('company_id', companyId)
@@ -311,7 +318,7 @@ export class ModuleLifecycleManager {
 
     if (existing) {
       // Update existing record
-      await this.supabase
+      await supabase
         .from('module_usage_tracking')
         .update({
           usage_count: existing.usage_count + 1,
@@ -321,7 +328,7 @@ export class ModuleLifecycleManager {
         .eq('id', existing.id);
     } else {
       // Create new record
-      await this.supabase
+      await supabase
         .from('module_usage_tracking')
         .insert({
           company_id: companyId,
@@ -337,7 +344,8 @@ export class ModuleLifecycleManager {
    */
   async getModuleDependencyGraph(module: ModuleName): Promise<ModuleDependencyGraph> {
     // Get dependencies (what this module depends on)
-    const { data: dependencies, error: depsError } = await this.supabase
+    const supabase = await this.getSupabaseClient();
+    const { data: dependencies, error: depsError } = await supabase
       .from('module_dependencies')
       .select('depends_on, is_required')
       .eq('module_name', module);
@@ -345,7 +353,7 @@ export class ModuleLifecycleManager {
     if (depsError) throw depsError;
 
     // Get dependents (what depends on this module)
-    const { data: dependents, error: depsentsError } = await this.supabase
+    const { data: dependents, error: depsentsError } = await supabase
       .from('module_dependencies')
       .select('module_name, is_required')
       .eq('depends_on', module);
@@ -381,7 +389,8 @@ export class ModuleLifecycleManager {
       const dependencyGraph = await this.getModuleDependencyGraph(module);
       
       // Get current permissions to see what's currently enabled
-      const { data: companyModules } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data: companyModules } = await supabase
         .from('company_modules')
         .select('*')
         .eq('company_id', companyId);
@@ -406,7 +415,8 @@ export class ModuleLifecycleManager {
       for (const dependency of dependencyGraph.dependencies) {
         if (dependency.required) {
           // Check if required dependency is enabled
-          const { data: depModule } = await this.supabase
+          const supabase = await this.getSupabaseClient();
+          const { data: depModule } = await supabase
             .from('company_modules')
             .select('is_enabled')
             .eq('company_id', companyId)

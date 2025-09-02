@@ -23,7 +23,7 @@ import type {
 import { validateFormData, companyFormDataSchema } from "./types";
 
 export const getAllCompanies = async (): Promise<Company[]> => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: companies, error } = await supabase
     .from("companies")
     .select("*");
@@ -36,7 +36,7 @@ export async function createCompanyAction(
   formData: FormData
 ): Promise<CompanyActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const {
       data: { user },
@@ -125,7 +125,7 @@ export async function updateCompanyAction(
   formData: FormData
 ): Promise<CompanyActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const companyId = formData.get("companyId");
     if (!companyId || typeof companyId !== "string") {
@@ -191,7 +191,7 @@ export async function updateCompanyAction(
 }
 
 export const createCompany = async (data: CompanyInsert): Promise<Company> => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await serverAuth.getCurrentUser();
 
   if (!user) {
@@ -223,7 +223,7 @@ export const updateCompany = async (
   id: string,
   data: CompanyUpdate
 ): Promise<Company> => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await serverAuth.getCurrentUser();
 
   if (!user) {
@@ -255,7 +255,7 @@ export const updateCompany = async (
 };
 
 export const getCompanyBySlug = async (slug: string): Promise<Company> => {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: company, error } = await supabase
     .from("companies")
@@ -269,7 +269,7 @@ export const getCompanyBySlug = async (slug: string): Promise<Company> => {
 };
 
 export const getUserCompany = async (): Promise<Company | null> => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await serverAuth.getCurrentUser();
 
   if (!user) {
@@ -299,7 +299,7 @@ export const getUserCompany = async (): Promise<Company | null> => {
 
 export const getUserCompanyWithSubscription =
   async (): Promise<CompanyWithSubscription | null> => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const user = await serverAuth.getCurrentUser();
 
     if (!user) {
@@ -367,7 +367,7 @@ export const getUserCompanyWithSubscription =
 export const getBusinessHours = async (
   companyId: string
 ): Promise<BusinessHours[]> => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await serverAuth.getCurrentUser();
 
   if (!user) {
@@ -401,7 +401,7 @@ export const upsertBusinessHours = async (
   companyId: string,
   businessHours: BusinessHoursInsert[]
 ): Promise<BusinessHours[]> => {
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await serverAuth.getCurrentUser();
 
   if (!user) {
@@ -442,7 +442,7 @@ export const upsertBusinessHours = async (
 export const getPublicBusinessHours = async (
   companyId: string
 ): Promise<BusinessHours[]> => {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: businessHours, error } = await supabase
     .from("business_hours")
@@ -461,7 +461,7 @@ export const getBusinessHoursClient = async (
 ): Promise<BusinessHours[]> => {
   try {
     const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: businessHours, error } = await supabase
       .from("business_hours")
@@ -484,7 +484,7 @@ export const upsertBusinessHoursClient = async (
 ): Promise<BusinessHours[]> => {
   try {
     const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Delete existing business hours for this company
     const { error: deleteError } = await supabase

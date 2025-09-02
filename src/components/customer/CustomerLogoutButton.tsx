@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export const CustomerLogoutButton = () => {
   const handleLogout = async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signOut();
     window.location.href = "/";
   };

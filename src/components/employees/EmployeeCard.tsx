@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Eye,
-  EyeOff,
-  Edit,
-  Trash2,
-  UserCheck,
-  Clock,
-} from "lucide-react";
+import { Eye, EyeOff, Edit, Trash2, UserCheck, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import { deleteEmployeeClient } from "@/lib/actions/employees";

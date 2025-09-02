@@ -5,21 +5,25 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-export const createClient = () => {
-  const cookieStore = cookies();
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing required Supabase environment variables");
+}
 
-  return createServerClient(supabaseUrl!, supabaseKey!, {
+export const createClient = async () => {
+  const cookieStore = await cookies();
+
+  return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
-      async getAll() {
-        return (await cookieStore).getAll();
+      getAll() {
+        return cookieStore.getAll();
       },
-      async setAll(cookiesToSet) {
+      setAll(cookiesToSet) {
         try {
-          cookiesToSet.forEach(async ({ name, value, options }) => {
-            (await cookieStore).set(name, value, options);
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
           });
         } catch (error) {
-          console.error(error);
+          console.warn("Failed to set cookies:", error);
         }
       },
     },
@@ -32,14 +36,17 @@ export const createAdminClient = () => {
     throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
   }
 
-  return createServerClient(supabaseUrl!, supabaseServiceRoleKey, {
+  return createServerClient(supabaseUrl, supabaseServiceRoleKey, {
     cookies: {
-      async getAll() {
+      getAll() {
         return [];
       },
-      async setAll() {
+      setAll() {
         // No-op for admin client
       },
+    },
+    auth: {
+      persistSession: false,
     },
   });
 };

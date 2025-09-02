@@ -64,7 +64,7 @@ export async function getAnalyticsData(
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(timeRange));
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Fetch appointments with service details
     const { data: appointments } = await supabase

@@ -28,7 +28,7 @@ interface ServiceWithEmployees extends Service {
 
 // Helper function to get company by slug with services and employees
 async function getCompanyBySlug(slug: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     // Get company by slug

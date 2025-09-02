@@ -68,7 +68,7 @@ export async function loginAction(
   console.log("redirectTo", redirectTo);
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: authData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -129,7 +129,7 @@ export async function forgotPassword(
   }
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
     });

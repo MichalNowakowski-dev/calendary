@@ -63,7 +63,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Fetch user
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

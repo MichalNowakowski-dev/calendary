@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Employee } from "@/lib/types/database";
 import { BookingFormData } from "../validations/booking";
 
-const supabase = createClient();
+const supabase = await createClient();
 
 export async function fetchAvailableTimeSlots(
   date: string,

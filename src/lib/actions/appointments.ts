@@ -11,7 +11,7 @@ export async function createAppointmentAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const appointmentData = {
       company_id: formData.get("companyId") as string,
@@ -61,7 +61,7 @@ export async function updateAppointmentAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const appointmentId = formData.get("appointmentId") as string;
     if (!appointmentId) {
@@ -117,7 +117,7 @@ export async function deleteAppointmentAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const appointmentId = formData.get("appointmentId") as string;
     if (!appointmentId) {
@@ -159,7 +159,7 @@ export async function getEmployeeAppointments(employeeId: string) {
 
 export async function getCustomerAppointments(customerEmail: string) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // First, get appointments with service_id, employee_id, and company_id
     const { data: appointmentsData, error: appointmentsError } = await supabase
@@ -303,7 +303,7 @@ export async function getCustomerAppointments(customerEmail: string) {
 
 export async function cancelAppointmentAction(appointmentId: string) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("appointments")
       .update({ status: "cancelled" })
@@ -335,7 +335,7 @@ export async function updatePaymentStatusAction(
   paymentStatus: "pending" | "paid" | "refunded" | "cancelled"
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("appointments")
       .update({ payment_status: paymentStatus })
@@ -367,7 +367,7 @@ export async function updateAppointmentStatusAction(
   newStatus: "booked" | "cancelled" | "completed"
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase
       .from("appointments")
       .update({ status: newStatus })
@@ -401,7 +401,7 @@ export async function updatePaymentStatusClient(
 ) {
   try {
     const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { error } = await supabase
       .from("appointments")
@@ -431,7 +431,7 @@ export async function updatePaymentStatusClient(
 export async function cancelAppointmentClient(appointmentId: string) {
   try {
     const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { error } = await supabase
       .from("appointments")

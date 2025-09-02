@@ -23,7 +23,7 @@ export async function getUserRoleInCompany(
   userId: string,
   companyId: string
 ): Promise<"company_owner" | "admin" | "employee" | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Check if user has access to this company
   const { data: companyUserData, error: companyUserError } = await supabase
