@@ -176,11 +176,14 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
  */
 export const getUserCompanies = async (userId: string) => {
   try {
+    const userRole: UserRole = (await supabase.auth.getUser()).data.user
+      ?.user_metadata.role;
     // Get companies where user is owner
-    const { data: ownedCompanies, error: ownerError } = await supabase
-      .from("company_owners")
-      .select(
-        `
+    if (userRole === "company_owner") {
+      const { data: ownedCompanies, error: ownerError } = await supabase
+        .from("company_owners")
+        .select(
+          `
         id,
         company:companies (
           id,
@@ -194,56 +197,37 @@ export const getUserCompanies = async (userId: string) => {
           created_at
         )
       `
-      )
-      .eq("user_id", userId);
-
-    if (ownerError) throw ownerError;
-
-    // Get companies where user is employee
-    const { data: employeeCompanies, error: employeeError } = await supabase
-      .from("employees")
-      .select(
-        `
-        id,
-        company:companies (
-          id,
-          name,
-          slug,
-          description,
-          address_street,
-          address_city,
-          phone,
-          industry,
-          created_at
         )
-      `
-      )
-      .eq("user_id", userId);
+        .eq("user_id", userId);
+      if (ownerError) throw ownerError;
 
-    if (employeeError) throw employeeError;
+      return ownedCompanies;
+    }
 
-    // Combine and deduplicate results
-    const allCompanies = [
-      ...(ownedCompanies || []).map((item) => ({
-        ...item,
-        status: "active" as const,
-        role: "owner" as const,
-      })),
-      ...(employeeCompanies || []).map((item) => ({
-        ...item,
-        status: "active" as const,
-        role: "employee" as const,
-      })),
-    ];
+    if (userRole === "employee") {
+      const { data: employeeCompanies, error: employeeError } = await supabase
+        .from("employees")
+        .select(
+          `
+          id,
+          company:companies (
+            id,
+            name,
+            slug,
+            description,
+            address_street,
+            address_city,
+            phone,
+            industry,
+            created_at
+          )
+        `
+        )
+        .eq("user_id", userId);
 
-    // Remove duplicates based on company id
-    const uniqueCompanies = allCompanies.filter(
-      (company, index, self) =>
-        index ===
-        self.findIndex((c) => c.company[0].id === company.company[0].id)
-    );
-
-    return uniqueCompanies;
+      if (employeeError) throw employeeError;
+      return employeeCompanies;
+    }
   } catch (error) {
     console.error("Get user companies error:", error);
     return [];
