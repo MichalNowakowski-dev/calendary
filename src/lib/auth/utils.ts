@@ -218,7 +218,7 @@ export const getUserCompanies = async (userId: string) => {
         )
       `
       )
-      .eq("auth_user_id", userId);
+      .eq("user_id", userId);
 
     if (employeeError) throw employeeError;
 
