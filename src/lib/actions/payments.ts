@@ -99,6 +99,13 @@ export async function createCheckoutSession(
       );
     }
 
+    console.log("💳 Creating checkout session with metadata:", {
+      company_id: companyId,
+      plan_id: planId,
+      price_id: priceId,
+      customer_id: customerId,
+    });
+
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -118,6 +125,12 @@ export async function createCheckoutSession(
       },
       allow_promotion_codes: true,
       billing_address_collection: "required",
+    });
+
+    console.log("✅ Checkout session created:", {
+      session_id: session.id,
+      url: session.url,
+      metadata: session.metadata,
     });
 
     // Only save the customer ID if we have an existing subscription record that needs updating

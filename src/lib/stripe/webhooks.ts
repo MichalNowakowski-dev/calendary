@@ -137,7 +137,13 @@ export async function updateCompanySubscription(
 export async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session
 ): Promise<void> {
+  console.log("🎯 Processing checkout.session.completed webhook:", session.id);
+  
   if (!session.customer || !session.subscription) {
+    console.error("❌ Missing customer or subscription in session:", {
+      customer: session.customer,
+      subscription: session.subscription,
+    });
     throw new StripeWebhookError(
       "Missing customer or subscription in checkout session"
     );
@@ -145,27 +151,72 @@ export async function handleCheckoutSessionCompleted(
 
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
+  
+  console.log("📋 Session details:", {
+    customerId,
+    subscriptionId,
+    metadata: session.metadata,
+  });
 
   // Extract metadata from session
   const companyId = session.metadata?.company_id;
   const planId = session.metadata?.plan_id;
 
   if (!companyId || !planId) {
+    console.error("❌ Missing metadata in session:", {
+      company_id: companyId,
+      plan_id: planId,
+      all_metadata: session.metadata,
+    });
     throw new StripeWebhookError(
       "Missing company_id or plan_id in session metadata"
     );
   }
 
+  console.log("✅ Extracted metadata:", { companyId, planId });
+
+  // Create Supabase client
+  const supabase = await createClient();
+
+  // Validate plan exists in our database
+  console.log("🔍 Validating plan exists in database:", planId);
+  const { data: planExists, error: planError } = await supabase
+    .from("subscription_plans")
+    .select("id, name, display_name")
+    .eq("id", planId)
+    .single();
+
+  if (planError || !planExists) {
+    console.error("❌ Plan not found in database:", {
+      planId,
+      error: planError?.message,
+      planExists,
+    });
+    throw new StripeWebhookError(
+      `Plan with ID ${planId} not found in database: ${planError?.message}`
+    );
+  }
+
+  console.log("✅ Plan validated:", planExists);
+
   // Fetch the subscription details from Stripe
+  console.log("🔄 Fetching subscription from Stripe:", subscriptionId);
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  
+  console.log("📊 Stripe subscription details:", {
+    id: subscription.id,
+    status: subscription.status,
+    current_period_start: subscription.items.data[0]?.current_period_start,
+    current_period_end: subscription.items.data[0]?.current_period_end,
+    interval: subscription.items.data[0]?.price?.recurring?.interval,
+  });
 
   // Determine billing cycle from subscription interval
   const priceId = subscription.items.data[0]?.price?.id;
   const interval = subscription.items.data[0]?.price?.recurring?.interval;
   const billingCycle = interval === "year" ? "yearly" : "monthly";
 
-  // Create or update the company subscription with all details
-  const supabase = await createClient();
+  console.log("💳 Billing details:", { priceId, interval, billingCycle });
   
   const subscriptionUpsertData: CompanySubscriptionInsert = {
     company_id: companyId,
@@ -183,18 +234,31 @@ export async function handleCheckoutSessionCompleted(
     ).toISOString(),
   };
 
+  console.log("💾 Preparing to upsert subscription data:", subscriptionUpsertData);
+
   // Use upsert to handle both new subscriptions and updates
-  const { error } = await supabase
+  const { data: upsertedData, error } = await supabase
     .from("company_subscriptions")
     .upsert(subscriptionUpsertData, {
       onConflict: "company_id",
-    });
+    })
+    .select("*");
 
   if (error) {
+    console.error("❌ Failed to upsert company subscription:", {
+      error: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      subscriptionData: subscriptionUpsertData,
+    });
     throw new StripeWebhookError(
       `Failed to upsert company subscription: ${error.message}`
     );
   }
+
+  console.log("✅ Successfully upserted subscription:", upsertedData);
+  console.log("🎉 Checkout session completed successfully for company:", companyId);
 }
 
 export async function handleInvoicePaymentSucceeded(
@@ -345,52 +409,74 @@ export async function handleSubscriptionDeleted(
 }
 
 export async function processWebhookEvent(event: Stripe.Event): Promise<void> {
+  console.log("🚀 Processing webhook event:", {
+    id: event.id,
+    type: event.type,
+    created: new Date(event.created * 1000).toISOString(),
+  });
+
   const companyId: string | null = null;
 
   try {
     // Log the event first
+    console.log("📝 Logging payment event to database");
     await logPaymentEvent(event, companyId);
 
     // Process different event types
+    console.log("🔄 Processing event type:", event.type);
     switch (event.type) {
       case "checkout.session.completed":
+        console.log("💳 Handling checkout.session.completed");
         await handleCheckoutSessionCompleted(
           event.data.object as Stripe.Checkout.Session
         );
         break;
 
       case "invoice.payment_succeeded":
+        console.log("✅ Handling invoice.payment_succeeded");
         await handleInvoicePaymentSucceeded(
           event.data.object as Stripe.Invoice
         );
         break;
 
       case "invoice.payment_failed":
+        console.log("❌ Handling invoice.payment_failed");
         await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
 
       case "customer.subscription.updated":
+        console.log("🔄 Handling customer.subscription.updated");
         await handleSubscriptionUpdated(
           event.data.object as Stripe.Subscription
         );
         break;
 
       case "customer.subscription.deleted":
+        console.log("🗑️ Handling customer.subscription.deleted");
         await handleSubscriptionDeleted(
           event.data.object as Stripe.Subscription
         );
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`⚠️ Unhandled event type: ${event.type}`);
     }
 
     // Mark as successfully processed
+    console.log("✅ Marking event as processed:", event.id);
     await markEventAsProcessed(event.id);
+    console.log("🎉 Webhook event processed successfully:", event.id);
   } catch (error) {
     // Mark as failed with error message
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+    console.error("💥 Webhook processing failed:", {
+      eventId: event.id,
+      eventType: event.type,
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    
     await markEventAsProcessed(event.id, errorMessage);
     throw error;
   }
