@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { stripe } from "./client";
 import { STRIPE_CONFIG, STRIPE_ERRORS } from "./config";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import {
   PaymentEventInsert,
   CompanySubscriptionUpdate,
@@ -42,7 +42,7 @@ export async function logPaymentEvent(
   event: Stripe.Event,
   companyId?: string | null
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient(); // Use admin client for webhook operations
 
   const paymentEvent: PaymentEventInsert = {
     company_id: companyId,
@@ -65,7 +65,7 @@ export async function markEventAsProcessed(
   eventId: string,
   errorMessage?: string
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient(); // Use admin client for webhook operations
 
   const { error } = await supabase
     .from("payment_events")
@@ -86,7 +86,7 @@ export async function markEventAsProcessed(
 export async function findCompanyByStripeCustomerId(
   customerId: string
 ): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient(); // Use admin client for webhook operations
 
   // First try to find by existing subscription record
   const { data: subscriptionData } = await supabase
@@ -117,7 +117,7 @@ export async function updateCompanySubscription(
   companyId: string,
   updates: CompanySubscriptionUpdate
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient(); // Use admin client for webhook operations
 
   const { error } = await supabase
     .from("company_subscriptions")
@@ -175,8 +175,8 @@ export async function handleCheckoutSessionCompleted(
 
   console.log("✅ Extracted metadata:", { companyId, planId });
 
-  // Create Supabase client
-  const supabase = await createClient();
+  // Create Supabase admin client for webhook operations
+  const supabase = createAdminClient();
 
   // Validate plan exists in our database
   console.log("🔍 Validating plan exists in database:", planId);
