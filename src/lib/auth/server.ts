@@ -25,26 +25,38 @@ export async function getUserRoleInCompany(
 ): Promise<"company_owner" | "admin" | "employee" | null> {
   const supabase = await createClient();
   
-  // Check if user has access to this company
-  const { data: companyUserData, error: companyUserError } = await supabase
-    .from("company_users")
+  // Check if user is the owner of this company
+  const { data: companyOwnerData, error: companyOwnerError } = await supabase
+    .from("company_owners")
     .select("user_id")
     .eq("user_id", userId)
     .eq("company_id", companyId)
     .single();
 
-  if (companyUserError || !companyUserData) {
-    return null;
+  if (!companyOwnerError && companyOwnerData) {
+    return "company_owner";
   }
 
-  // Get user role from auth metadata
+  // Check if user is an employee of this company
+  const { data: employeeData, error: employeeError } = await supabase
+    .from("employees")
+    .select("auth_user_id")
+    .eq("auth_user_id", userId)
+    .eq("company_id", companyId)
+    .single();
+
+  if (!employeeError && employeeData) {
+    return "employee";
+  }
+
+  // Get user role from auth metadata for admin check
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) {
     return null;
   }
 
   const role = authData.user.user_metadata?.role;
-  return role || null;
+  return role === "admin" ? "admin" : null;
 }
 
 export async function isUserAdminOrOwner(

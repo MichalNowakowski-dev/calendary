@@ -1,23 +1,32 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CreditCard, Loader2, AlertTriangle } from 'lucide-react';
-import { createPaymentMethodUpdateSession } from '@/lib/stripe/recovery';
-import { PaymentProcessingLoader, usePaymentProcessingState } from '@/components/subscription/PaymentProcessingLoader';
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CreditCard, Loader2, AlertTriangle } from "lucide-react";
+import { createPaymentMethodUpdateSession } from "@/lib/stripe/recovery";
+import {
+  PaymentProcessingLoader,
+  usePaymentProcessingState,
+} from "@/components/subscription/PaymentProcessingLoader";
 
 export default function UpdatePaymentMethodPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { state, message, updateState } = usePaymentProcessingState();
   const [error, setError] = useState<string | null>(null);
-  
-  const customerId = searchParams.get('customer_id');
-  const companyId = searchParams.get('company_id');
-  const sessionId = searchParams.get('session_id');
+
+  const customerId = searchParams.get("customer_id");
+  const companyId = searchParams.get("company_id");
+  const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
     // If we have a session_id, it means we're returning from Stripe
@@ -27,46 +36,51 @@ export default function UpdatePaymentMethodPage() {
   }, [sessionId]);
 
   const handleReturnFromStripe = async () => {
-    updateState('completing_setup', 'Confirming payment method update...');
-    
+    updateState("completing_setup", "Confirming payment method update...");
+
     try {
       // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      updateState('success', 'Payment method updated successfully!');
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      updateState("success", "Payment method updated successfully!");
+
       // Redirect to dashboard after success
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push("/dashboard");
       }, 2000);
     } catch (err) {
-      console.error('Error confirming payment method update:', err);
-      updateState('error', 'Failed to confirm payment method update');
+      console.error("Error confirming payment method update:", err);
+      updateState("error", "Failed to confirm payment method update");
     }
   };
 
   const handleUpdatePaymentMethod = async () => {
     if (!customerId || !companyId) {
-      setError('Missing required parameters. Please contact support.');
+      setError("Missing required parameters. Please contact support.");
       return;
     }
 
     try {
-      updateState('initializing', 'Preparing payment method update...');
-      
-      const updateUrl = await createPaymentMethodUpdateSession(customerId, companyId);
-      
-      updateState('processing_payment', 'Redirecting to secure payment form...');
-      
+      updateState("initializing", "Preparing payment method update...");
+
+      const updateUrl = await createPaymentMethodUpdateSession(
+        customerId,
+        companyId
+      );
+
+      updateState(
+        "processing_payment",
+        "Redirecting to secure payment form..."
+      );
+
       // Redirect to Stripe
       setTimeout(() => {
         window.location.href = updateUrl;
       }, 1000);
-      
     } catch (err) {
-      console.error('Error creating payment method update session:', err);
-      setError('Failed to create payment update session. Please try again.');
-      updateState('error');
+      console.error("Error creating payment method update session:", err);
+      setError("Failed to create payment update session. Please try again.");
+      updateState("error");
     }
   };
 
@@ -75,11 +89,11 @@ export default function UpdatePaymentMethodPage() {
   };
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   // Show processing states
-  if (state === 'success') {
+  if (state === "success") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
@@ -89,7 +103,8 @@ export default function UpdatePaymentMethodPage() {
             </div>
             <CardTitle className="text-2xl">Payment Method Updated</CardTitle>
             <CardDescription>
-              Your payment method has been successfully updated. Future payments will use your new payment method.
+              Your payment method has been successfully updated. Future payments
+              will use your new payment method.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -102,7 +117,7 @@ export default function UpdatePaymentMethodPage() {
     );
   }
 
-  if (state !== 'initializing' && state !== 'error') {
+  if (state !== "initializing" && state !== "error") {
     return <PaymentProcessingLoader state={state} message={message} />;
   }
 
@@ -116,7 +131,8 @@ export default function UpdatePaymentMethodPage() {
           </div>
           <CardTitle className="text-2xl">Update Payment Method</CardTitle>
           <CardDescription>
-            Update your payment method to continue using your subscription without interruption.
+            Update your payment method to continue using your subscription
+            without interruption.
           </CardDescription>
         </CardHeader>
 
@@ -136,10 +152,15 @@ export default function UpdatePaymentMethodPage() {
               <div className="text-sm text-blue-800">
                 <p className="font-medium">Secure Payment Update</p>
                 <ul className="text-xs text-blue-600 mt-2 space-y-1">
-                  <li>• You'll be redirected to Stripe's secure payment form</li>
+                  <li>
+                    • You&apos;ll be redirected to Stripe&apos;s secure payment
+                    form
+                  </li>
                   <li>• Your current subscription will remain active</li>
                   <li>• No charges will be made during the update process</li>
-                  <li>• Your new payment method will be used for future billing</li>
+                  <li>
+                    • Your new payment method will be used for future billing
+                  </li>
                 </ul>
               </div>
             </div>
@@ -148,10 +169,10 @@ export default function UpdatePaymentMethodPage() {
           <div className="space-y-3">
             <Button
               onClick={handleUpdatePaymentMethod}
-              disabled={state === 'initializing' || !customerId || !companyId}
+              disabled={state === "initializing" || !customerId || !companyId}
               className="w-full"
             >
-              {state === 'initializing' ? (
+              {state === "initializing" ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Preparing...
@@ -168,7 +189,7 @@ export default function UpdatePaymentMethodPage() {
               onClick={handleGoBack}
               variant="outline"
               className="w-full"
-              disabled={state === 'initializing'}
+              disabled={state === "initializing"}
             >
               Go Back
             </Button>
@@ -176,8 +197,8 @@ export default function UpdatePaymentMethodPage() {
 
           <div className="text-center text-xs text-gray-500">
             <p>
-              This will open a secure Stripe payment form in your browser. 
-              Your payment information is encrypted and never stored on our servers.
+              This will open a secure Stripe payment form in your browser. Your
+              payment information is encrypted and never stored on our servers.
             </p>
           </div>
         </CardContent>

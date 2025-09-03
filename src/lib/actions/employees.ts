@@ -125,22 +125,8 @@ export async function createEmployee(
       };
     }
 
-    // Create company_user record
-    const { error: companyUserError } = await supabase
-      .from("company_users")
-      .insert({
-        company_id: data.companyId,
-        user_id: authData.user.id,
-        status: "invited",
-      });
-
-    if (companyUserError) {
-      console.error("Company user creation error:", companyUserError);
-      return {
-        success: false,
-        message: "Nie udało się przypisać pracownika do firmy",
-      };
-    }
+    // No need to create company_user record in new structure
+    // Employees are managed through the employees table only
 
     // Create employee-service relationships
     if (data.selectedServices.length > 0) {
@@ -329,18 +315,8 @@ export async function deleteEmployeeClient(
       };
     }
 
-    // Delete company_user record if auth_user_id exists
-    if (authUserId) {
-      const { error: companyUserError } = await supabase
-        .from("company_users")
-        .delete()
-        .eq("user_id", authUserId);
-
-      if (companyUserError) {
-        console.error("Error deleting company_user record:", companyUserError);
-        // Don't fail the operation if this fails, as the main employee record is deleted
-      }
-    }
+    // No need to delete company_user record in new structure
+    // Employees are managed through the employees table only
 
     return {
       success: true,

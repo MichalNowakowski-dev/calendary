@@ -1,3 +1,5 @@
+import Stripe from "stripe";
+
 export interface Database {
   public: {
     Tables: {
@@ -13,6 +15,7 @@ export interface Database {
           industry: string;
           created_at: string;
           plan_id: string;
+          owner_id: string | null;
         };
         Insert: {
           id?: string;
@@ -25,6 +28,7 @@ export interface Database {
           industry: string;
           created_at?: string;
           plan_id?: string;
+          owner_id?: string | null;
         };
         Update: {
           id?: string;
@@ -37,28 +41,38 @@ export interface Database {
           industry?: string;
           created_at?: string;
           plan_id?: string;
+          owner_id?: string | null;
         };
       };
-      company_users: {
+      company_owners: {
         Row: {
           id: string;
           company_id: string;
           user_id: string;
-          status: "active" | "invited" | "suspended";
+          first_name: string;
+          last_name: string;
+          email: string;
+          phone: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           company_id: string;
           user_id: string;
-          status?: "active" | "invited" | "suspended";
+          first_name: string;
+          last_name: string;
+          email: string;
+          phone?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           company_id?: string;
           user_id?: string;
-          status?: "active" | "invited" | "suspended";
+          first_name?: string;
+          last_name?: string;
+          email?: string;
+          phone?: string | null;
           created_at?: string;
         };
       };
@@ -382,7 +396,16 @@ export interface Database {
           current_period_end: string;
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
-          payment_status: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused" | null;
+          payment_status:
+            | "active"
+            | "trialing"
+            | "past_due"
+            | "canceled"
+            | "unpaid"
+            | "incomplete"
+            | "incomplete_expired"
+            | "paused"
+            | null;
           created_at: string;
           updated_at: string;
         };
@@ -396,7 +419,16 @@ export interface Database {
           current_period_end?: string;
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
-          payment_status?: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused" | null;
+          payment_status?:
+            | "active"
+            | "trialing"
+            | "past_due"
+            | "canceled"
+            | "unpaid"
+            | "incomplete"
+            | "incomplete_expired"
+            | "paused"
+            | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -410,7 +442,16 @@ export interface Database {
           current_period_end?: string;
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
-          payment_status?: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused" | null;
+          payment_status?:
+            | "active"
+            | "trialing"
+            | "past_due"
+            | "canceled"
+            | "unpaid"
+            | "incomplete"
+            | "incomplete_expired"
+            | "paused"
+            | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -473,7 +514,12 @@ export interface Database {
           company_id: string;
           module_name: string;
           action: "granted" | "revoked" | "overridden";
-          reason: "subscription_change" | "admin_override" | "expiration" | "downgrade" | "manual";
+          reason:
+            | "subscription_change"
+            | "admin_override"
+            | "expiration"
+            | "downgrade"
+            | "manual";
           previous_status: boolean;
           new_status: boolean;
           changed_by_user_id: string | null;
@@ -485,7 +531,12 @@ export interface Database {
           company_id: string;
           module_name: string;
           action: "granted" | "revoked" | "overridden";
-          reason: "subscription_change" | "admin_override" | "expiration" | "downgrade" | "manual";
+          reason:
+            | "subscription_change"
+            | "admin_override"
+            | "expiration"
+            | "downgrade"
+            | "manual";
           previous_status: boolean;
           new_status: boolean;
           changed_by_user_id?: string | null;
@@ -497,7 +548,12 @@ export interface Database {
           company_id?: string;
           module_name?: string;
           action?: "granted" | "revoked" | "overridden";
-          reason?: "subscription_change" | "admin_override" | "expiration" | "downgrade" | "manual";
+          reason?:
+            | "subscription_change"
+            | "admin_override"
+            | "expiration"
+            | "downgrade"
+            | "manual";
           previous_status?: boolean;
           new_status?: boolean;
           changed_by_user_id?: string | null;
@@ -562,7 +618,10 @@ export interface Database {
           id: string;
           company_id: string;
           module_name: string;
-          warning_type: "expiration_warning" | "downgrade_warning" | "usage_limit_warning";
+          warning_type:
+            | "expiration_warning"
+            | "downgrade_warning"
+            | "usage_limit_warning";
           warning_message: string;
           expires_at: string;
           is_acknowledged: boolean;
@@ -574,7 +633,10 @@ export interface Database {
           id?: string;
           company_id: string;
           module_name: string;
-          warning_type: "expiration_warning" | "downgrade_warning" | "usage_limit_warning";
+          warning_type:
+            | "expiration_warning"
+            | "downgrade_warning"
+            | "usage_limit_warning";
           warning_message: string;
           expires_at: string;
           is_acknowledged?: boolean;
@@ -586,7 +648,10 @@ export interface Database {
           id?: string;
           company_id?: string;
           module_name?: string;
-          warning_type?: "expiration_warning" | "downgrade_warning" | "usage_limit_warning";
+          warning_type?:
+            | "expiration_warning"
+            | "downgrade_warning"
+            | "usage_limit_warning";
           warning_message?: string;
           expires_at?: string;
           is_acknowledged?: boolean;
@@ -601,7 +666,7 @@ export interface Database {
           company_id: string | null;
           stripe_event_id: string;
           event_type: string;
-          event_data: Record<string, any>;
+          event_data: Stripe.Event.Data;
           processed: boolean;
           processed_at: string | null;
           error_message: string | null;
@@ -612,7 +677,7 @@ export interface Database {
           company_id?: string | null;
           stripe_event_id: string;
           event_type: string;
-          event_data: Record<string, any>;
+          event_data: Stripe.Event.Data;
           processed?: boolean;
           processed_at?: string | null;
           error_message?: string | null;
@@ -623,7 +688,7 @@ export interface Database {
           company_id?: string | null;
           stripe_event_id?: string;
           event_type?: string;
-          event_data?: Record<string, any>;
+          event_data?: Stripe.Event.Data;
           processed?: boolean;
           processed_at?: string | null;
           error_message?: string | null;
@@ -639,12 +704,18 @@ export interface Database {
     };
     Enums: {
       user_role: "admin" | "company_owner" | "employee" | "customer";
-      company_user_role: "company_owner" | "employee" | "admin";
-      company_user_status: "active" | "invited" | "suspended";
       appointment_status: "booked" | "cancelled" | "completed";
       subscription_status: "active" | "inactive" | "cancelled" | "past_due";
       billing_cycle: "monthly" | "yearly";
-      stripe_payment_status: "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | "paused";
+      stripe_payment_status:
+        | "active"
+        | "trialing"
+        | "past_due"
+        | "canceled"
+        | "unpaid"
+        | "incomplete"
+        | "incomplete_expired"
+        | "paused";
       module_name:
         | "employee_management"
         | "employee_schedules"
@@ -686,11 +757,12 @@ export type Company = Database["public"]["Tables"]["companies"]["Row"];
 export type CompanyInsert = Database["public"]["Tables"]["companies"]["Insert"];
 export type CompanyUpdate = Database["public"]["Tables"]["companies"]["Update"];
 
-export type CompanyUser = Database["public"]["Tables"]["company_users"]["Row"];
-export type CompanyUserInsert =
-  Database["public"]["Tables"]["company_users"]["Insert"];
-export type CompanyUserUpdate =
-  Database["public"]["Tables"]["company_users"]["Update"];
+export type CompanyOwner =
+  Database["public"]["Tables"]["company_owners"]["Row"];
+export type CompanyOwnerInsert =
+  Database["public"]["Tables"]["company_owners"]["Insert"];
+export type CompanyOwnerUpdate =
+  Database["public"]["Tables"]["company_owners"]["Update"];
 
 export type Service = Database["public"]["Tables"]["services"]["Row"];
 export type ServiceInsert = Database["public"]["Tables"]["services"]["Insert"];
@@ -765,7 +837,8 @@ export type CompanyModuleInsert =
 export type CompanyModuleUpdate =
   Database["public"]["Tables"]["company_modules"]["Update"];
 
-export type ModuleChange = Database["public"]["Tables"]["module_changes"]["Row"];
+export type ModuleChange =
+  Database["public"]["Tables"]["module_changes"]["Row"];
 export type ModuleChangeInsert =
   Database["public"]["Tables"]["module_changes"]["Insert"];
 export type ModuleChangeUpdate =
@@ -792,7 +865,8 @@ export type ModuleWarningInsert =
 export type ModuleWarningUpdate =
   Database["public"]["Tables"]["module_warnings"]["Update"];
 
-export type PaymentEvent = Database["public"]["Tables"]["payment_events"]["Row"];
+export type PaymentEvent =
+  Database["public"]["Tables"]["payment_events"]["Row"];
 export type PaymentEventInsert =
   Database["public"]["Tables"]["payment_events"]["Insert"];
 export type PaymentEventUpdate =
@@ -800,9 +874,6 @@ export type PaymentEventUpdate =
 
 // Enum types
 export type UserRole = Database["public"]["Enums"]["user_role"];
-export type CompanyUserRole = Database["public"]["Enums"]["company_user_role"];
-export type CompanyUserStatus =
-  Database["public"]["Enums"]["company_user_status"];
 export type AppointmentStatus =
   Database["public"]["Enums"]["appointment_status"];
 export type SubscriptionStatus =
@@ -810,18 +881,16 @@ export type SubscriptionStatus =
 export type BillingCycle = Database["public"]["Enums"]["billing_cycle"];
 export type ModuleName = Database["public"]["Enums"]["module_name"];
 export type IndustryType = Database["public"]["Enums"]["industry_type"];
-export type ModuleChangeAction = Database["public"]["Enums"]["module_change_action"];
-export type ModuleChangeReason = Database["public"]["Enums"]["module_change_reason"];
-export type ModuleWarningType = Database["public"]["Enums"]["module_warning_type"];
+export type ModuleChangeAction =
+  Database["public"]["Enums"]["module_change_action"];
+export type ModuleChangeReason =
+  Database["public"]["Enums"]["module_change_reason"];
+export type ModuleWarningType =
+  Database["public"]["Enums"]["module_warning_type"];
 
 // Combined types for common use cases
 export interface CompanyWithOwner extends Company {
-  owner?: {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
+  company_owners?: CompanyOwner;
 }
 
 export interface CompanyWithPlan extends Company {
@@ -955,12 +1024,15 @@ export interface ModuleDependencyGraph {
 
 export interface CompanyModuleUsage {
   company_id: string;
-  modules: Record<ModuleName, {
-    enabled: boolean;
-    usage_count: number;
-    last_used_at: string | null;
-    warnings: ModuleWarning[];
-  }>;
+  modules: Record<
+    ModuleName,
+    {
+      enabled: boolean;
+      usage_count: number;
+      last_used_at: string | null;
+      warnings: ModuleWarning[];
+    }
+  >;
 }
 
 export interface ModuleTransition {

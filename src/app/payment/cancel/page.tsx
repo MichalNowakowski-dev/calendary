@@ -1,19 +1,25 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { XCircle, ArrowLeft } from 'lucide-react';
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { XCircle, ArrowLeft } from "lucide-react";
 
 export default function PaymentCancelPage() {
   const router = useRouter();
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   const handleTryAgain = () => {
-    router.push('/admin/companies');
+    router.push("/admin/companies");
   };
 
   return (
@@ -30,15 +36,22 @@ export default function PaymentCancelPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-gray-600 text-center">
-            <p>Don't worry! You can try again anytime.</p>
-            <p className="mt-2">Your account remains active with your current plan until you're ready to upgrade.</p>
+            <p>Don&apos;t worry! You can try again anytime.</p>
+            <p className="mt-2">
+              Your account remains active with your current plan until
+              you&apos;re ready to upgrade.
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button onClick={handleTryAgain} className="flex-1">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Try Again
             </Button>
-            <Button onClick={handleGoToDashboard} variant="outline" className="flex-1">
+            <Button
+              onClick={handleGoToDashboard}
+              variant="outline"
+              className="flex-1"
+            >
               Go to Dashboard
             </Button>
           </div>

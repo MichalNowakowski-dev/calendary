@@ -90,18 +90,37 @@ export async function createCompanyAction(
       };
     }
 
-    // Link user to company as company_owner
-    const { error: linkError } = await supabase.from("company_users").insert({
-      company_id: company.id,
-      user_id: user.id,
-      role: "company_owner",
-      status: "active",
-    });
+    // Create company_owners record
+    const { data: ownerData, error: ownerError } = await supabase
+      .from("company_owners")
+      .insert({
+        company_id: company.id,
+        user_id: user.id,
+        first_name: user.user_metadata?.first_name || 'Unknown',
+        last_name: user.user_metadata?.last_name || 'Owner',
+        email: user.email || 'unknown@example.com',
+        phone: user.user_metadata?.phone,
+      })
+      .select()
+      .single();
 
-    if (linkError) {
+    if (ownerError) {
       return {
         success: false,
-        message: `Błąd podczas łączenia użytkownika z firmą: ${linkError.message}`,
+        message: `Błąd podczas tworzenia właściciela firmy: ${ownerError.message}`,
+      };
+    }
+
+    // Update company with owner_id reference
+    const { error: updateError } = await supabase
+      .from("companies")
+      .update({ owner_id: ownerData.id })
+      .eq("id", company.id);
+
+    if (updateError) {
+      return {
+        success: false,
+        message: `Błąd podczas łączenia właściciela z firmą: ${updateError.message}`,
       };
     }
 
@@ -206,15 +225,29 @@ export const createCompany = async (data: CompanyInsert): Promise<Company> => {
 
   if (error) throw error;
 
-  // Create company_user relationship
-  const { error: userError } = await supabase.from("company_users").insert({
-    company_id: company.id,
-    user_id: user.id,
-    role: "company_owner",
-    status: "active",
-  });
+  // Create company_owners record
+  const { data: ownerData, error: ownerError } = await supabase
+    .from("company_owners")
+    .insert({
+      company_id: company.id,
+      user_id: user.id,
+      first_name: user.first_name || 'Unknown',
+      last_name: user.last_name || 'Owner',
+      email: user.email,
+      phone: user.phone,
+    })
+    .select()
+    .single();
 
-  if (userError) throw userError;
+  if (ownerError) throw ownerError;
+
+  // Update company with owner_id reference
+  const { error: updateError } = await supabase
+    .from("companies")
+    .update({ owner_id: ownerData.id })
+    .eq("id", company.id);
+
+  if (updateError) throw updateError;
 
   return company;
 };
@@ -230,15 +263,15 @@ export const updateCompany = async (
     throw new Error("Unauthorized");
   }
 
-  // Check if user has access to this company
-  const { data: companyUser } = await supabase
-    .from("company_users")
+  // Check if user is the owner of this company
+  const { data: companyOwner } = await supabase
+    .from("company_owners")
     .select("id")
     .eq("company_id", id)
     .eq("user_id", user.id)
     .single();
 
-  if (!companyUser) {
+  if (!companyOwner) {
     throw new Error("Access denied");
   }
 
@@ -276,25 +309,24 @@ export const getUserCompany = async (): Promise<Company | null> => {
     throw new Error("Unauthorized");
   }
 
-  const { data: companyUser, error } = await supabase
-    .from("company_users")
+  const { data: companyOwner, error } = await supabase
+    .from("company_owners")
     .select(
       `
       company:companies(*)
     `
     )
     .eq("user_id", user.id)
-    .eq("status", "active")
     .single();
 
   if (error) throw error;
 
-  // Type the companyUser correctly - company is an array in Supabase joins
-  const typedCompanyUser = companyUser as {
+  // Type the companyOwner correctly - company is an array in Supabase joins
+  const typedCompanyOwner = companyOwner as {
     company: Company[];
   } | null;
 
-  return typedCompanyUser?.company?.[0] || null;
+  return typedCompanyOwner?.company?.[0] || null;
 };
 
 export const getUserCompanyWithSubscription =
@@ -306,31 +338,28 @@ export const getUserCompanyWithSubscription =
       throw new Error("Unauthorized");
     }
 
-    const { data: companyUser, error } = await supabase
-      .from("company_users")
+    const { data: companyOwner, error } = await supabase
+      .from("company_owners")
       .select(
         `
-      company:companies(*),
-      role
+      company:companies(*)
     `
       )
       .eq("user_id", user.id)
-      .eq("status", "active")
       .single();
 
     if (error) throw error;
 
-    // Type the companyUser correctly - company is an array in Supabase joins
-    const typedCompanyUser = companyUser as {
+    // Type the companyOwner correctly - company is an array in Supabase joins
+    const typedCompanyOwner = companyOwner as {
       company: Company[];
-      role: string;
     } | null;
 
-    if (!typedCompanyUser?.company?.[0]) {
+    if (!typedCompanyOwner?.company?.[0]) {
       return null;
     }
 
-    const company = typedCompanyUser.company[0];
+    const company = typedCompanyOwner.company[0];
 
     // Get subscription information
     const { data: subscription, error: subscriptionError } = await supabase
@@ -374,15 +403,15 @@ export const getBusinessHours = async (
     throw new Error("Unauthorized");
   }
 
-  // Check if user has access to this company
-  const { data: companyUser } = await supabase
-    .from("company_users")
+  // Check if user is the owner of this company
+  const { data: companyOwner } = await supabase
+    .from("company_owners")
     .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
     .single();
 
-  if (!companyUser) {
+  if (!companyOwner) {
     throw new Error("Access denied");
   }
 
@@ -408,15 +437,15 @@ export const upsertBusinessHours = async (
     throw new Error("Unauthorized");
   }
 
-  // Check if user has access to this company
-  const { data: companyUser } = await supabase
-    .from("company_users")
+  // Check if user is the owner of this company
+  const { data: companyOwner } = await supabase
+    .from("company_owners")
     .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
     .single();
 
-  if (!companyUser) {
+  if (!companyOwner) {
     throw new Error("Access denied");
   }
 

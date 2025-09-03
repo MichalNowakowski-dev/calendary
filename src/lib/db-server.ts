@@ -128,13 +128,12 @@ export const serverDb = {
   async getUserCompanies(userId: string) {
     const supabase = await createServerClient();
     const { data, error } = await supabase
-      .from("company_users")
+      .from("company_owners")
       .select(
         `
         id,
         user_id,
         company_id,
-        status,
         company:companies (
           id,
           name,
@@ -148,8 +147,7 @@ export const serverDb = {
         )
       `
       )
-      .eq("user_id", userId)
-      .in("status", ["active", "invited"]);
+      .eq("user_id", userId);
 
     if (error) throw error;
     return data || [];

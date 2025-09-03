@@ -34,14 +34,13 @@ export async function createServiceAction(
     }
 
     // Get user's company
-    const { data: companyUsers, error: companyError } = await supabase
-      .from("company_users")
+    const { data: companyOwner, error: companyError } = await supabase
+      .from("company_owners")
       .select("company_id")
       .eq("user_id", user.id)
-      .eq("status", "active")
       .single();
 
-    if (companyError || !companyUsers) {
+    if (companyError || !companyOwner) {
       return {
         success: false,
         message: "Nie znaleziono firmy",
@@ -82,7 +81,7 @@ export async function createServiceAction(
     const { data, error } = await supabase
       .from("services")
       .insert({
-        company_id: companyUsers.company_id,
+        company_id: companyOwner.company_id,
         name: validatedData.name,
         description: validatedData.description || null,
         duration_minutes: validatedData.duration_minutes,
@@ -342,12 +341,11 @@ export async function getServicesData() {
   }
 
   // Get user's company
-  const { data: companyUsers, error: companyError } = await supabase
-    .from("company_users")
+  const { data: companyOwner, error: companyError } = await supabase
+    .from("company_owners")
     .select(
       `
       id,
-      status,
       company:companies (
         id,
         name,
@@ -362,18 +360,18 @@ export async function getServicesData() {
     `
     )
     .eq("user_id", user.id)
-    .eq("status", "active");
+    .single();
 
   if (companyError) {
     console.error("Error loading company:", companyError);
     throw companyError;
   }
 
-  if (!companyUsers || companyUsers.length === 0) {
+  if (!companyOwner) {
     throw new Error("No company found for user");
   }
 
-  const company = companyUsers[0]?.company as unknown as Company;
+  const company = companyOwner?.company as unknown as Company;
 
   // Get services with assigned employees
   const { data: services, error: servicesError } = await supabase

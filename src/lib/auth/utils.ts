@@ -55,7 +55,7 @@ export const registerUser = async (data: RegistrationData) => {
       throw new Error("User registration failed");
     }
 
-    // If this is a company owner, create the company and link the user
+    // If this is a company owner, create the company and owner record
     if (data.role === "company_owner" && data.companyData) {
       const { data: companyData, error: companyError } = await supabase
         .from("companies")
@@ -73,15 +73,29 @@ export const registerUser = async (data: RegistrationData) => {
 
       if (companyError) throw companyError;
 
-      // Link user to company as company_owner
-      const { error: linkError } = await supabase.from("company_users").insert({
-        company_id: companyData.id,
-        user_id: authData.user.id,
-        role: "company_owner",
-        status: "active",
-      });
+      // Create company_owners record
+      const { data: ownerData, error: ownerError } = await supabase
+        .from("company_owners")
+        .insert({
+          company_id: companyData.id,
+          user_id: authData.user.id,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          phone: data.phone,
+        })
+        .select()
+        .single();
 
-      if (linkError) throw linkError;
+      if (ownerError) throw ownerError;
+
+      // Update company with owner_id reference
+      const { error: updateError } = await supabase
+        .from("companies")
+        .update({ owner_id: ownerData.id })
+        .eq("id", companyData.id);
+
+      if (updateError) throw updateError;
     }
 
     // If this is a customer, create customer record
@@ -168,12 +182,12 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
  */
 export const getUserCompanies = async (userId: string) => {
   try {
-    const { data, error } = await supabase
-      .from("company_users")
+    // Get companies where user is owner
+    const { data: ownedCompanies, error: ownerError } = await supabase
+      .from("company_owners")
       .select(
         `
         id,
-        status,
         company:companies (
           id,
           name,
@@ -187,12 +201,55 @@ export const getUserCompanies = async (userId: string) => {
         )
       `
       )
-      .eq("user_id", userId)
-      .in("status", ["active", "invited"]);
+      .eq("user_id", userId);
 
-    if (error) throw error;
+    if (ownerError) throw ownerError;
 
-    return data || [];
+    // Get companies where user is employee
+    const { data: employeeCompanies, error: employeeError } = await supabase
+      .from("employees")
+      .select(
+        `
+        id,
+        company:companies (
+          id,
+          name,
+          slug,
+          description,
+          address_street,
+          address_city,
+          phone,
+          industry,
+          created_at
+        )
+      `
+      )
+      .eq("auth_user_id", userId);
+
+    if (employeeError) throw employeeError;
+
+    // Combine and deduplicate results
+    const allCompanies = [
+      ...(ownedCompanies || []).map((item) => ({
+        ...item,
+        status: "active" as const,
+        role: "owner" as const,
+      })),
+      ...(employeeCompanies || []).map((item) => ({
+        ...item,
+        status: "active" as const,
+        role: "employee" as const,
+      })),
+    ];
+
+    // Remove duplicates based on company id
+    const uniqueCompanies = allCompanies.filter(
+      (company, index, self) =>
+        index ===
+        self.findIndex((c) => c.company[0].id === company.company[0].id)
+    );
+
+    return uniqueCompanies;
   } catch (error) {
     console.error("Get user companies error:", error);
     return [];
@@ -247,29 +304,41 @@ export async function getUserRoleInCompany(
 ): Promise<"company_owner" | "admin" | "employee" | null> {
   const supabase = await createClient();
 
-  // Check if user is associated with the company
-  const { data: companyUser, error: companyError } = await supabase
-    .from("company_users")
+  // Check if user is the owner of this company
+  const { data: companyOwner, error: ownerError } = await supabase
+    .from("company_owners")
     .select("id")
     .eq("user_id", userId)
     .eq("company_id", companyId)
     .single();
 
-  if (companyError || !companyUser) {
-    return null;
+  if (!ownerError && companyOwner) {
+    return "company_owner";
   }
 
-  // Get user's role from auth metadata
+  // Check if user is an employee of this company
+  const { data: employee, error: employeeError } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("auth_user_id", userId)
+    .eq("company_id", companyId)
+    .single();
+
+  if (!employeeError && employee) {
+    return "employee";
+  }
+
+  // Get user's role from auth metadata for admin check
   const {
     data: { user },
     error: userError,
-  } = await supabase.auth.admin.getUserById(userId);
+  } = await supabase.auth.getUser();
 
   if (userError || !user) {
     return null;
   }
 
-  return user.user_metadata?.role || null;
+  return user.user_metadata?.role === "admin" ? "admin" : null;
 }
 
 export async function isUserAdminOrOwner(

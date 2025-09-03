@@ -85,10 +85,8 @@ export default function EmployeeCard({
         .delete()
         .eq("id", currentEmployee.id);
 
-      const { error: companyUserError } = await supabase
-        .from("company_users")
-        .delete()
-        .eq("user_id", currentEmployee.auth_user_id!);
+      // No need to delete from company_users in new structure
+      // Employees are managed through the employees table only
 
       if (currentEmployee.auth_user_id) {
         const { success, message } = await deleteEmployeeClient(
@@ -100,8 +98,6 @@ export default function EmployeeCard({
           throw new Error(message);
         }
       }
-
-      if (companyUserError) throw companyUserError;
 
       if (error) throw error;
 

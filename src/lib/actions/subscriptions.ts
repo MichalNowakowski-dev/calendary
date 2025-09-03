@@ -55,17 +55,17 @@ export const getCompanySubscription = async (companyId: string) => {
     throw new Error("Unauthorized");
   }
 
-  // Check if user has access to this company or is admin
-  const { data: companyUser } = await supabase
-    .from("company_users")
+  // Check if user is the owner of this company or is admin
+  const { data: companyOwner } = await supabase
+    .from("company_owners")
     .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
     .single();
 
-  // Allow if user is admin (global admin) or has company access
+  // Allow if user is admin (global admin) or owns the company
   const isAdmin = user.user_metadata?.role === "admin";
-  if (!companyUser && !isAdmin) {
+  if (!companyOwner && !isAdmin) {
     throw new Error("Access denied");
   }
 
@@ -394,7 +394,7 @@ export const getCompanyModules = async (companyId: string) => {
 
   // Check if user has access to this company or is admin
   const { data: companyUser } = await supabase
-    .from("company_users")
+    .from("company_owners")
     .select("id")
     .eq("company_id", companyId)
     .eq("user_id", user.id)
@@ -427,7 +427,7 @@ export const getCompanySubscriptionData = async () => {
 
   // Get user's company
   const { data: companyUser, error: companyUserError } = await supabase
-    .from("company_users")
+    .from("company_owners")
     .select(
       `
       company:companies (

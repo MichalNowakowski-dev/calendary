@@ -1,39 +1,51 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, CreditCard } from 'lucide-react';
-import { PaymentProcessingLoader, usePaymentProcessingState } from '@/components/subscription/PaymentProcessingLoader';
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, CreditCard } from "lucide-react";
+import {
+  PaymentProcessingLoader,
+  usePaymentProcessingState,
+} from "@/components/subscription/PaymentProcessingLoader";
 
 export default function PaymentMethodUpdatedPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { state, message, updateState } = usePaymentProcessingState();
-  
-  const sessionId = searchParams.get('session_id');
+
+  const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
     const processUpdate = async () => {
       if (!sessionId) {
-        updateState('error', 'No session ID provided');
+        updateState("error", "No session ID provided");
         return;
       }
 
       try {
-        updateState('processing_payment', 'Verifying payment method update...');
-        
+        updateState("processing_payment", "Verifying payment method update...");
+
         // Simulate processing time for better UX
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        updateState('completing_setup', 'Finalizing payment method update...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        updateState('success', 'Your payment method has been updated successfully!');
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        updateState("completing_setup", "Finalizing payment method update...");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        updateState(
+          "success",
+          "Your payment method has been updated successfully!"
+        );
       } catch (err) {
-        console.error('Payment method update error:', err);
-        updateState('error', 'Failed to verify payment method update');
+        console.error("Payment method update error:", err);
+        updateState("error", "Failed to verify payment method update");
       }
     };
 
@@ -41,21 +53,21 @@ export default function PaymentMethodUpdatedPage() {
   }, [sessionId, updateState]);
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   const handleRetryPayment = () => {
     // This could trigger a retry of failed payments
-    router.push('/dashboard?action=retry_payment');
+    router.push("/dashboard?action=retry_payment");
   };
 
   // Show loading states during processing
-  if (state !== 'success' && state !== 'error') {
+  if (state !== "success" && state !== "error") {
     return <PaymentProcessingLoader state={state} message={message} />;
   }
 
   // Show error state
-  if (state === 'error') {
+  if (state === "error") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
@@ -68,13 +80,23 @@ export default function PaymentMethodUpdatedPage() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <div className="text-sm text-gray-600">
-              <p>If your payment method was updated but you're seeing this error, please contact support.</p>
+              <p>
+                If your payment method was updated but you&apos;re seeing this
+                error, please contact support.
+              </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button onClick={handleGoToDashboard} variant="outline" className="flex-1">
+              <Button
+                onClick={handleGoToDashboard}
+                variant="outline"
+                className="flex-1"
+              >
                 Go to Dashboard
               </Button>
-              <Button onClick={() => window.location.href = '/support'} className="flex-1">
+              <Button
+                onClick={() => (window.location.href = "/support")}
+                className="flex-1"
+              >
                 Contact Support
               </Button>
             </div>
@@ -106,7 +128,9 @@ export default function PaymentMethodUpdatedPage() {
                 <ul className="text-xs text-green-600 mt-2 space-y-1 text-left">
                   <li>• Your new payment method is now active</li>
                   <li>• Any failed payments will be automatically retried</li>
-                  <li>• Your subscription will continue without interruption</li>
+                  <li>
+                    • Your subscription will continue without interruption
+                  </li>
                   <li>• Future billing will use your updated payment method</li>
                 </ul>
               </div>
@@ -117,7 +141,11 @@ export default function PaymentMethodUpdatedPage() {
             <Button onClick={handleRetryPayment} className="flex-1">
               Retry Failed Payments
             </Button>
-            <Button onClick={handleGoToDashboard} variant="outline" className="flex-1">
+            <Button
+              onClick={handleGoToDashboard}
+              variant="outline"
+              className="flex-1"
+            >
               Go to Dashboard
             </Button>
           </div>
