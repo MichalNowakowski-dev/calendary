@@ -20,10 +20,10 @@ import {
 } from "@/components/ui/select";
 import { Loader2, ArrowUp, CreditCard } from "lucide-react";
 import { createUpgradeCheckoutSession } from "@/lib/actions/payments";
-import { 
-  validateUpgradeEligibility, 
+import {
+  validateUpgradeEligibility,
   getUpgradeBenefits,
-  calculateUpgradeCost 
+  calculateUpgradeCost,
 } from "@/lib/utils/subscription-upgrades";
 import type { SubscriptionPlanWithModules } from "@/lib/types/database";
 
@@ -34,19 +34,25 @@ interface UpgradeButtonProps {
   className?: string;
 }
 
-export function UpgradeButton({ 
-  plan, 
-  currentPlan, 
-  companyId, 
-  className 
+export function UpgradeButton({
+  plan,
+  currentPlan,
+  companyId,
+  className,
 }: UpgradeButtonProps) {
   const [showDialog, setShowDialog] = useState(false);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
+    "monthly"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Validate upgrade eligibility
-  const upgradeValidation = validateUpgradeEligibility(currentPlan, plan, billingCycle);
+  const upgradeValidation = validateUpgradeEligibility(
+    currentPlan,
+    plan,
+    billingCycle
+  );
   const upgradeBenefits = getUpgradeBenefits(currentPlan, plan);
   const isCurrent = plan.id === currentPlan.id;
 
@@ -56,10 +62,10 @@ export function UpgradeButton({
   }
 
   const costCalculation = calculateUpgradeCost(currentPlan, plan, billingCycle);
-  
+
   const monthlyPrice = plan.price_monthly;
   const yearlyPrice = plan.price_yearly;
-  
+
   // Calculate savings for yearly billing
   const yearlySavings = costCalculation.savings || 0;
 
@@ -69,7 +75,11 @@ export function UpgradeButton({
 
     try {
       // Re-validate with current billing cycle
-      const currentValidation = validateUpgradeEligibility(currentPlan, plan, billingCycle);
+      const currentValidation = validateUpgradeEligibility(
+        currentPlan,
+        plan,
+        billingCycle
+      );
       if (!currentValidation.canUpgrade) {
         throw new Error(currentValidation.reason || "Upgrade not available");
       }
@@ -94,7 +104,7 @@ export function UpgradeButton({
 
   return (
     <>
-      <Button 
+      <Button
         onClick={() => setShowDialog(true)}
         className={className}
         variant="default"
@@ -111,8 +121,8 @@ export function UpgradeButton({
               Upgrade to {plan.display_name}
             </DialogTitle>
             <DialogDescription>
-              You&apos;re about to upgrade from {currentPlan.display_name} to {plan.display_name}.
-              Choose your billing cycle below.
+              You&apos;re about to upgrade from {currentPlan.display_name} to{" "}
+              {plan.display_name}. Choose your billing cycle below.
             </DialogDescription>
           </DialogHeader>
 
@@ -123,7 +133,9 @@ export function UpgradeButton({
               </label>
               <Select
                 value={billingCycle}
-                onValueChange={(value: "monthly" | "yearly") => setBillingCycle(value)}
+                onValueChange={(value: "monthly" | "yearly") =>
+                  setBillingCycle(value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -150,23 +162,32 @@ export function UpgradeButton({
               </Select>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-lg space-y-2">
+            <div className="bg-slate-50 p-4 rounded-lg space-y-2 dark:bg-gray-700">
               <div className="flex justify-between text-sm">
                 <span>Current Plan:</span>
-                <span>{currentPlan.display_name} ({costCalculation.currentCost}zł/{billingCycle === "yearly" ? "year" : "month"})</span>
+                <span>
+                  {currentPlan.display_name} ({costCalculation.currentCost}zł/
+                  {billingCycle === "yearly" ? "year" : "month"})
+                </span>
               </div>
               <div className="flex justify-between text-sm font-medium">
                 <span>New Plan:</span>
-                <span>{plan.display_name} ({costCalculation.targetCost}zł/{billingCycle === "yearly" ? "year" : "month"})</span>
+                <span>
+                  {plan.display_name} ({costCalculation.targetCost}zł/
+                  {billingCycle === "yearly" ? "year" : "month"})
+                </span>
               </div>
               <div className="flex justify-between text-sm text-green-600 font-medium pt-2 border-t">
                 <span>Additional Cost:</span>
-                <span>+{costCalculation.additionalCost}zł/{billingCycle === "yearly" ? "year" : "month"}</span>
+                <span>
+                  +{costCalculation.additionalCost}zł/
+                  {billingCycle === "yearly" ? "year" : "month"}
+                </span>
               </div>
             </div>
 
             {upgradeBenefits.length > 0 && (
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-blue-50 p-4 rounded-lg dark:bg-gray-700">
                 <h4 className="text-sm font-medium mb-2">Upgrade Benefits:</h4>
                 <ul className="text-sm space-y-1">
                   {upgradeBenefits.map((benefit, index) => (

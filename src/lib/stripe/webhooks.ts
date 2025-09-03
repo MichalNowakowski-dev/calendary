@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   PaymentEventInsert,
   CompanySubscriptionUpdate,
+  CompanySubscriptionInsert,
 } from "@/lib/types/database";
 
 export class StripeWebhookError extends Error {
@@ -87,17 +88,29 @@ export async function findCompanyByStripeCustomerId(
 ): Promise<string | null> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  // First try to find by existing subscription record
+  const { data: subscriptionData } = await supabase
     .from("company_subscriptions")
     .select("company_id")
     .eq("stripe_customer_id", customerId)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    return null;
+  if (subscriptionData?.company_id) {
+    return subscriptionData.company_id;
   }
 
-  return data.company_id;
+  // If no subscription record exists, try to find by Stripe customer metadata
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    
+    if (customer && !customer.deleted && customer.metadata?.company_id) {
+      return customer.metadata.company_id;
+    }
+  } catch (error) {
+    console.error("Error retrieving Stripe customer:", error);
+  }
+
+  return null;
 }
 
 export async function updateCompanySubscription(
@@ -133,31 +146,55 @@ export async function handleCheckoutSessionCompleted(
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
 
-  // Fetch the subscription details from Stripe
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  // Extract metadata from session
+  const companyId = session.metadata?.company_id;
+  const planId = session.metadata?.plan_id;
 
-  // Find the company associated with this customer
-  const companyId = await findCompanyByStripeCustomerId(customerId);
-
-  if (!companyId) {
+  if (!companyId || !planId) {
     throw new StripeWebhookError(
-      `No company found for customer: ${customerId}`
+      "Missing company_id or plan_id in session metadata"
     );
   }
 
-  // Update the company subscription with Stripe details
-  await updateCompanySubscription(companyId, {
+  // Fetch the subscription details from Stripe
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+  // Determine billing cycle from subscription interval
+  const priceId = subscription.items.data[0]?.price?.id;
+  const interval = subscription.items.data[0]?.price?.recurring?.interval;
+  const billingCycle = interval === "year" ? "yearly" : "monthly";
+
+  // Create or update the company subscription with all details
+  const supabase = await createClient();
+  
+  const subscriptionUpsertData: CompanySubscriptionInsert = {
+    company_id: companyId,
+    subscription_plan_id: planId,
     stripe_customer_id: customerId,
     stripe_subscription_id: subscriptionId,
     payment_status: subscription.status,
     status: subscription.status === "active" ? "active" : "inactive",
+    billing_cycle: billingCycle,
     current_period_start: new Date(
       subscription.items.data[0].current_period_start * 1000
     ).toISOString(),
     current_period_end: new Date(
       subscription.items.data[0].current_period_end * 1000
     ).toISOString(),
-  });
+  };
+
+  // Use upsert to handle both new subscriptions and updates
+  const { error } = await supabase
+    .from("company_subscriptions")
+    .upsert(subscriptionUpsertData, {
+      onConflict: "company_id",
+    });
+
+  if (error) {
+    throw new StripeWebhookError(
+      `Failed to upsert company subscription: ${error.message}`
+    );
+  }
 }
 
 export async function handleInvoicePaymentSucceeded(

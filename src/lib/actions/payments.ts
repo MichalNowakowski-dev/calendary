@@ -120,28 +120,21 @@ export async function createCheckoutSession(
       billing_address_collection: "required",
     });
 
-    // Update or create company subscription with customer ID
-    const subscriptionData: CompanySubscriptionInsert = {
-      company_id: companyId,
-      subscription_plan_id: planId,
-      stripe_customer_id: customerId,
-      status: "inactive",
-      billing_cycle: priceId.includes("yearly") ? "yearly" : "monthly",
-      current_period_start: new Date().toISOString(),
-      current_period_end: new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 30 days from now
-    };
+    // Only save the customer ID if we have an existing subscription record that needs updating
+    // The webhook will create/update the full subscription record upon successful payment
+    if (existingSubscription) {
+      const { error: updateError } = await supabase
+        .from("company_subscriptions")
+        .update({
+          stripe_customer_id: customerId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("company_id", companyId);
 
-    const { error: upsertError } = await supabase
-      .from("company_subscriptions")
-      .upsert(subscriptionData, {
-        onConflict: "company_id",
-      });
-
-    if (upsertError) {
-      console.error("Error upserting subscription:", upsertError);
-      throw new Error("Failed to update subscription");
+      if (updateError) {
+        console.error("Error updating customer ID:", updateError);
+        throw new Error("Failed to update customer ID");
+      }
     }
 
     return session.url!;
