@@ -359,3 +359,125 @@ export async function syncSubscriptionWithStripe(companyId: string) {
     throw new Error("Failed to sync subscription");
   }
 }
+
+export async function createUpgradeCheckoutSession(
+  companyId: string,
+  newPlanId: string,
+  billingCycle: "monthly" | "yearly" = "monthly"
+): Promise<string> {
+  try {
+    const supabase = await createClient();
+
+    // Get company details and current subscription
+    const { data: company, error: companyError } = await supabase
+      .from("companies")
+      .select("name, slug")
+      .eq("id", companyId)
+      .single();
+
+    if (companyError || !company) {
+      throw new Error("Company not found");
+    }
+
+    // Get current subscription (may not exist for free plan companies)
+    const { data: currentSubscription, error: subscriptionError } = await supabase
+      .from("company_subscriptions")
+      .select(`
+        *,
+        subscription_plan:subscription_plans(*)
+      `)
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    // Get new plan details for validation
+    const { data: newPlan, error: newPlanError } = await supabase
+      .from("subscription_plans")
+      .select("*")
+      .eq("id", newPlanId)
+      .single();
+
+    if (newPlanError || !newPlan) {
+      throw new Error("Target plan not found");
+    }
+
+    // Validate upgrade - if there's a current subscription, ensure this is an upgrade
+    if (currentSubscription && currentSubscription.subscription_plan) {
+      const currentPrice = billingCycle === "yearly" 
+        ? currentSubscription.subscription_plan.price_yearly 
+        : currentSubscription.subscription_plan.price_monthly;
+      const newPrice = billingCycle === "yearly" 
+        ? newPlan.price_yearly 
+        : newPlan.price_monthly;
+
+      if (newPrice <= currentPrice) {
+        throw new Error("Plan change must be an upgrade to a higher-tier plan");
+      }
+    }
+    // If no current subscription (free plan), any paid plan is considered an upgrade
+
+    // Get the Stripe price ID from the new plan
+    const priceId = billingCycle === "yearly" 
+      ? newPlan.stripe_price_id_yearly 
+      : newPlan.stripe_price_id_monthly;
+
+    if (!priceId) {
+      throw new Error(`No ${billingCycle} price ID configured for ${newPlan.display_name}`);
+    }
+
+    // Get or use existing Stripe customer
+    let customerId = currentSubscription?.stripe_customer_id;
+    
+    if (!customerId) {
+      // Get company owner email for customer creation
+      const { data: owner, error: ownerError } = await supabase
+        .from("company_owners")
+        .select("email")
+        .eq("company_id", companyId)
+        .single();
+
+      if (ownerError || !owner?.email) {
+        throw new Error("Company owner not found");
+      }
+
+      customerId = await createStripeCustomer(owner.email, company.name, companyId);
+    }
+
+    // Create checkout session for upgrade
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: "subscription",
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}&upgrade=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel?upgrade=true`,
+      metadata: {
+        company_id: companyId,
+        plan_id: newPlanId,
+        upgrade_from_plan: currentSubscription?.subscription_plan_id || "free",
+        upgrade_type: "plan_upgrade",
+      },
+      allow_promotion_codes: true,
+      billing_address_collection: "required",
+      // For upgrades, we want to cancel the existing subscription and create a new one
+      subscription_data: {
+        metadata: {
+          company_id: companyId,
+          plan_id: newPlanId,
+          upgrade_from_plan: currentSubscription?.subscription_plan_id || "free",
+        },
+      },
+    });
+
+    return session.url!;
+  } catch (error) {
+    console.error("Error creating upgrade checkout session:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to create upgrade checkout session"
+    );
+  }
+}

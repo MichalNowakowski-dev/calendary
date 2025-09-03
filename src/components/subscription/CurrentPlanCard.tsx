@@ -1,29 +1,56 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CreditCard, Calendar } from "lucide-react";
+import { CreditCard, Calendar, ArrowUp, Sparkles } from "lucide-react";
 import { PlanFeatureList } from "./PlanFeatureList";
-import { 
-  getSubscriptionStatusLabel, 
-  getBillingCycleLabel, 
+import {
+  getSubscriptionStatusLabel,
+  getBillingCycleLabel,
   formatSubscriptionDate,
   getPlanLimitsDisplay,
   isFreePlan,
-  getSubscriptionStatusVariant
+  getSubscriptionStatusVariant,
 } from "@/lib/utils/subscription";
-import type { SubscriptionPlanWithModules, CompanySubscription } from "@/lib/types/database";
+import type {
+  SubscriptionPlanWithModules,
+  CompanySubscription,
+} from "@/lib/types/database";
+import UpgradePlanCta from "./UpgradePlanCta";
 
 interface CurrentPlanCardProps {
   data: {
     plan: SubscriptionPlanWithModules;
-    subscription: CompanySubscription & { subscription_plan?: SubscriptionPlanWithModules };
+    subscription: CompanySubscription & {
+      subscription_plan?: SubscriptionPlanWithModules;
+    };
   };
+  availablePlans?: SubscriptionPlanWithModules[];
+  companyId?: string;
+  showUpgradeCTA?: boolean;
 }
 
-export function CurrentPlanCard({ data }: CurrentPlanCardProps) {
+export function CurrentPlanCard({
+  data,
+  availablePlans = [],
+  companyId,
+  showUpgradeCTA = true,
+}: CurrentPlanCardProps) {
   const { plan, subscription } = data;
   const limits = getPlanLimitsDisplay(plan);
   const isFree = isFreePlan(plan.name);
+
+  // Find the next tier plan for upgrade suggestion
+  const nextTierPlan = availablePlans.find(
+    (p) => p.price_monthly > plan.price_monthly
+  );
+  const shouldShowUpgrade = showUpgradeCTA && nextTierPlan && companyId;
 
   return (
     <Card>
@@ -41,11 +68,15 @@ export function CurrentPlanCard({ data }: CurrentPlanCardProps) {
           <div className="space-y-2">
             <h3 className="text-2xl font-bold">{plan.display_name}</h3>
             <div className="flex items-center gap-2">
-              <Badge variant={getSubscriptionStatusVariant(subscription.status)}>
+              <Badge
+                variant={getSubscriptionStatusVariant(subscription.status)}
+              >
                 {getSubscriptionStatusLabel(subscription.status)}
               </Badge>
               <span className="text-sm text-muted-foreground">
-                {isFree ? "Plan darmowy" : `Ważny do: ${formatSubscriptionDate(subscription.current_period_end)}`}
+                {isFree
+                  ? "Plan darmowy"
+                  : `Ważny do: ${formatSubscriptionDate(subscription.current_period_end)}`}
               </span>
             </div>
           </div>
@@ -58,7 +89,9 @@ export function CurrentPlanCard({ data }: CurrentPlanCardProps) {
             <h4 className="font-medium">Limity planu</h4>
             <div className="space-y-1 text-sm text-muted-foreground">
               {limits.map((limit, index) => (
-                <div key={index}>{limit.label}: {limit.value}</div>
+                <div key={index}>
+                  {limit.label}: {limit.value}
+                </div>
               ))}
             </div>
           </div>
@@ -66,10 +99,14 @@ export function CurrentPlanCard({ data }: CurrentPlanCardProps) {
             <h4 className="font-medium">Następne rozliczenie</h4>
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4" />
-              {isFree ? "Brak rozliczenia" : formatSubscriptionDate(subscription.current_period_end)}
+              {isFree
+                ? "Brak rozliczenia"
+                : formatSubscriptionDate(subscription.current_period_end)}
             </div>
             <div className="text-sm text-muted-foreground">
-              {isFree ? "Plan darmowy" : `Cykl: ${getBillingCycleLabel(subscription.billing_cycle)}`}
+              {isFree
+                ? "Plan darmowy"
+                : `Cykl: ${getBillingCycleLabel(subscription.billing_cycle)}`}
             </div>
           </div>
         </div>
@@ -82,6 +119,10 @@ export function CurrentPlanCard({ data }: CurrentPlanCardProps) {
               <PlanFeatureList features={plan.features} />
             </div>
           </>
+        )}
+
+        {shouldShowUpgrade && nextTierPlan && (
+          <UpgradePlanCta nextTierPlan={nextTierPlan} currentPlan={plan} />
         )}
       </CardContent>
     </Card>

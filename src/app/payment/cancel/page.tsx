@@ -13,13 +13,15 @@ import { XCircle, ArrowLeft } from "lucide-react";
 
 export default function PaymentCancelPage() {
   const router = useRouter();
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const isUpgrade = searchParams.get('upgrade') === 'true';
 
   const handleGoToDashboard = () => {
-    router.push("/dashboard");
+    router.push("/company_owner");
   };
 
   const handleTryAgain = () => {
-    router.push("/admin/companies");
+    router.push("/company_owner/subscription");
   };
 
   return (
@@ -29,17 +31,22 @@ export default function PaymentCancelPage() {
           <div className="mx-auto mb-4 w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
             <XCircle className="h-8 w-8 text-yellow-600" />
           </div>
-          <CardTitle className="text-2xl">Payment Cancelled</CardTitle>
+          <CardTitle className="text-2xl">{isUpgrade ? 'Upgrade Cancelled' : 'Payment Cancelled'}</CardTitle>
           <CardDescription>
-            Your payment was cancelled and no charges were made to your card.
+            {isUpgrade 
+              ? 'Your plan upgrade was cancelled and no charges were made to your card.'
+              : 'Your payment was cancelled and no charges were made to your card.'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-gray-600 text-center">
             <p>Don&apos;t worry! You can try again anytime.</p>
             <p className="mt-2">
-              Your account remains active with your current plan until
-              you&apos;re ready to upgrade.
+              {isUpgrade 
+                ? 'Your current plan remains active and you can try upgrading again anytime.'
+                : 'Your account remains active with your current plan until you\'re ready to upgrade.'
+              }
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">

@@ -4,6 +4,7 @@ import { ROUTE_CONFIGS, ROLE_REDIRECT_MAP } from "@/lib/auth/routes";
 import { type UserRole } from "@/lib/types/database";
 
 const PUBLIC_ROUTES = ["/business", "/404"];
+const PAYMENT_ROUTES = ["/payment"];
 const AUTH_ROUTES = ["/login", "/register"];
 const ADMIN_ROUTES = ["/admin"];
 interface SupabaseUser {
@@ -18,11 +19,13 @@ function getUserRole(user: SupabaseUser | null): UserRole | null {
 
 function getRouteType(
   pathname: string
-): "public" | "auth" | "protected" | "admin" | "other" {
+): "public" | "auth" | "protected" | "payments" | "admin" | "other" {
   // check if any route is included in the pathname
   if (pathname === "/") return "public";
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) return "auth";
   if (ADMIN_ROUTES.some((route) => pathname.startsWith(route))) return "admin";
+  if (PAYMENT_ROUTES.some((route) => pathname.startsWith(route)))
+    return "payments";
   if (Object.values(ROUTE_CONFIGS).some((cfg) => pathname.startsWith(cfg.path)))
     return "protected";
   if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route)))
@@ -90,6 +93,12 @@ export async function middleware(request: NextRequest) {
       return createRedirect(request, "/404");
     }
 
+    if (
+      routeType === "payments" &&
+      user?.user_metadata.role !== "company_owner"
+    ) {
+      return createRedirect(request, "/404");
+    }
     if (routeType === "protected" && user) {
       const config = Object.values(ROUTE_CONFIGS).find((cfg) =>
         pathname.startsWith(cfg.path)

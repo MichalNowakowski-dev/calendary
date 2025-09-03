@@ -1,60 +1,83 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
-import { handlePaymentSuccess } from '@/lib/actions/payments';
-import { PaymentProcessingLoader, usePaymentProcessingState } from '@/components/subscription/PaymentProcessingLoader';
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
+import { handlePaymentSuccess } from "@/lib/actions/payments";
+import {
+  PaymentProcessingLoader,
+  usePaymentProcessingState,
+} from "@/components/subscription/PaymentProcessingLoader";
 
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { state, message, updateState } = usePaymentProcessingState();
-  
-  const sessionId = searchParams.get('session_id');
+
+  const sessionId = searchParams.get("session_id");
+  const isUpgrade = searchParams.get("upgrade") === "true";
 
   useEffect(() => {
     const processPayment = async () => {
       if (!sessionId) {
-        updateState('error', 'No session ID provided');
+        updateState("error", "No session ID provided");
         return;
       }
 
       try {
-        updateState('processing_payment', 'Confirming payment with Stripe...');
-        
+        updateState("processing_payment", "Confirming payment with Stripe...");
+
         // Simulate some processing time for better UX
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        updateState('activating_subscription', 'Activating your subscription...');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        updateState(
+          "activating_subscription",
+          isUpgrade
+            ? "Upgrading your subscription..."
+            : "Activating your subscription..."
+        );
         await handlePaymentSuccess(sessionId);
-        
-        updateState('completing_setup', 'Finalizing your account...');
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        updateState('success', 'Your subscription has been activated successfully!');
+
+        updateState("completing_setup", "Finalizing your account...");
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        updateState(
+          "success",
+          isUpgrade
+            ? "Your plan has been upgraded successfully!"
+            : "Your subscription has been activated successfully!"
+        );
       } catch (err) {
-        console.error('Payment processing error:', err);
-        updateState('error', 'Failed to process payment confirmation. Please contact support if you were charged.');
+        console.error("Payment processing error:", err);
+        updateState(
+          "error",
+          "Failed to process payment confirmation. Please contact support if you were charged."
+        );
       }
     };
 
     processPayment();
-  }, [sessionId, updateState]);
+  }, []);
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard');
+    router.push("/company_owner");
   };
 
   // Show loading states during processing
-  if (state !== 'success' && state !== 'error') {
+  if (state !== "success" && state !== "error") {
     return <PaymentProcessingLoader state={state} message={message} />;
   }
 
   // Show error state
-  if (state === 'error') {
+  if (state === "error") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
@@ -67,13 +90,23 @@ export default function PaymentSuccessPage() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <div className="text-sm text-gray-600">
-              <p>If you were charged and are seeing this error, please contact support immediately.</p>
+              <p>
+                If you were charged and are seeing this error, please contact
+                support immediately.
+              </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button onClick={handleGoToDashboard} variant="outline" className="flex-1">
+              <Button
+                onClick={handleGoToDashboard}
+                variant="outline"
+                className="flex-1"
+              >
                 Go to Dashboard
               </Button>
-              <Button onClick={() => window.location.href = '/support'} className="flex-1">
+              <Button
+                onClick={() => (window.location.href = "/support")}
+                className="flex-1"
+              >
                 Contact Support
               </Button>
             </div>
@@ -91,9 +124,13 @@ export default function PaymentSuccessPage() {
           <div className="mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
-          <CardTitle className="text-2xl">Payment Successful!</CardTitle>
+          <CardTitle className="text-2xl">
+            {isUpgrade ? "Upgrade Successful!" : "Payment Successful!"}
+          </CardTitle>
           <CardDescription>
-            Your subscription has been activated successfully. You now have access to all the features included in your plan.
+            {isUpgrade
+              ? "Your plan has been upgraded successfully. You now have access to all the new features in your upgraded plan."
+              : "Your subscription has been activated successfully. You now have access to all the features included in your plan."}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center space-y-4">

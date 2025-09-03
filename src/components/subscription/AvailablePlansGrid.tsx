@@ -3,15 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PlanFeatureList } from "./PlanFeatureList";
+import { UpgradeButton } from "./UpgradeButton";
 import { isCurrentPlan } from "@/lib/utils/subscription";
 import type { SubscriptionPlanWithModules } from "@/lib/types/database";
 
 interface AvailablePlansGridProps {
   plans: SubscriptionPlanWithModules[];
   currentPlan: SubscriptionPlanWithModules;
+  companyId: string;
 }
 
-export function AvailablePlansGrid({ plans, currentPlan }: AvailablePlansGridProps) {
+export function AvailablePlansGrid({ plans, currentPlan, companyId }: AvailablePlansGridProps) {
   if (plans.length === 0) {
     return null;
   }
@@ -20,12 +22,14 @@ export function AvailablePlansGrid({ plans, currentPlan }: AvailablePlansGridPro
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Dostępne plany</h2>
       <p className="text-muted-foreground">
-        Skontaktuj się z administratorem w celu zmiany planu subskrypcji
+        Ulepsz swój plan, aby uzyskać dostęp do dodatkowych funkcji
       </p>
       
       <div className="grid gap-6 md:grid-cols-3">
         {plans.map((plan) => {
           const isCurrent = isCurrentPlan(currentPlan.id, plan.id);
+          const isUpgrade = plan.price_monthly > currentPlan.price_monthly;
+          const isDowngrade = plan.price_monthly < currentPlan.price_monthly;
           
           return (
             <Card key={plan.id} className="relative">
@@ -47,6 +51,11 @@ export function AvailablePlansGrid({ plans, currentPlan }: AvailablePlansGridPro
                   {plan.price_yearly > 0 && (
                     <div className="text-sm text-muted-foreground">
                       lub {plan.price_yearly}zł/rok
+                      {plan.price_yearly < plan.price_monthly * 12 && (
+                        <Badge variant="secondary" className="ml-2">
+                          Zaoszczędź {(plan.price_monthly * 12) - plan.price_yearly}zł
+                        </Badge>
+                      )}
                     </div>
                   )}
                 </div>
@@ -64,13 +73,30 @@ export function AvailablePlansGrid({ plans, currentPlan }: AvailablePlansGridPro
                   </div>
                 )}
 
-                <Button 
-                  variant="secondary"
-                  className="w-full"
-                  disabled
-                >
-                  {isCurrent ? "Obecny plan" : "Skontaktuj się z administratorem"}
-                </Button>
+                {isCurrent ? (
+                  <Button 
+                    variant="secondary"
+                    className="w-full"
+                    disabled
+                  >
+                    Obecny plan
+                  </Button>
+                ) : isUpgrade ? (
+                  <UpgradeButton 
+                    plan={plan}
+                    currentPlan={currentPlan}
+                    companyId={companyId}
+                    className="w-full"
+                  />
+                ) : (
+                  <Button 
+                    variant="outline"
+                    className="w-full"
+                    disabled
+                  >
+                    {isDowngrade ? "Obniżenie planu niedostępne" : "Niedostępny"}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           );

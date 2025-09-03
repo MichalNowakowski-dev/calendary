@@ -12,11 +12,19 @@ async function SubscriptionContent() {
 
     return (
       <div className="space-y-8">
-        <CurrentPlanCard data={subscriptionData.current} />
-        <AvailablePlansGrid 
-          plans={subscriptionData.available} 
-          currentPlan={subscriptionData.current.plan} 
+        <CurrentPlanCard 
+          data={subscriptionData.current}
+          availablePlans={subscriptionData.available}
+          companyId={subscriptionData.company.id}
+          showUpgradeCTA={true}
         />
+        <div id="available-plans">
+          <AvailablePlansGrid 
+            plans={subscriptionData.available} 
+            currentPlan={subscriptionData.current.plan}
+            companyId={subscriptionData.company.id}
+          />
+        </div>
       </div>
     );
   } catch (error) {
