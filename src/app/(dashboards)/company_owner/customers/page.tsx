@@ -39,7 +39,7 @@ export default function CustomersPage() {
       if (!user) return;
 
       const companies = await getUserCompanies(user.id);
-      if (companies.length === 0) return;
+      if (!companies || companies?.length === 0) return;
 
       const userCompany = companies[0]?.company as unknown as Company;
       setUserCompany(userCompany);

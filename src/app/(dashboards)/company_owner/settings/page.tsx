@@ -81,7 +81,7 @@ export default function CompanySettingsPage() {
 
         // Get user's company
         const companies = await getUserCompanies(user.id);
-        if (companies.length === 0) {
+        if (!companies || companies?.length === 0) {
           showToast.error(
             "Nie znaleziono firmy przypisanej do tego użytkownika"
           );
