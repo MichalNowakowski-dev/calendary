@@ -8,10 +8,10 @@ const CTASection = () => {
       aria-labelledby="cta-heading"
     >
       <div className="max-w-4xl mx-auto text-center text-white">
-        <h3 id="cta-heading" className="text-3xl font-bold mb-4">
+        <h3 id="cta-heading" className="text-3xl font-bold mb-4 text-black">
           Gotowy na zwiększenie przychodów?
         </h3>
-        <p className="text-xl mb-8 opacity-90">
+        <p className="text-xl mb-8 opacity-90 text-black">
           Dołącz do tysięcy firm, które już korzystają z Calendary.pl
         </p>
         <Link href="/register">

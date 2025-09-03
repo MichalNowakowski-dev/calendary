@@ -111,18 +111,7 @@ export async function createCompanyAction(
       };
     }
 
-    // Update company with owner_id reference
-    const { error: updateError } = await supabase
-      .from("companies")
-      .update({ owner_id: ownerData.id })
-      .eq("id", company.id);
-
-    if (updateError) {
-      return {
-        success: false,
-        message: `Błąd podczas łączenia właściciela z firmą: ${updateError.message}`,
-      };
-    }
+    // Relationship is already established through company_owners.company_id
 
     revalidatePath("/dashboard");
     return {
@@ -241,13 +230,7 @@ export const createCompany = async (data: CompanyInsert): Promise<Company> => {
 
   if (ownerError) throw ownerError;
 
-  // Update company with owner_id reference
-  const { error: updateError } = await supabase
-    .from("companies")
-    .update({ owner_id: ownerData.id })
-    .eq("id", company.id);
-
-  if (updateError) throw updateError;
+  // Relationship is already established through company_owners.company_id
 
   return company;
 };

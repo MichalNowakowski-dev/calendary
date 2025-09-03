@@ -134,7 +134,7 @@ export const serverDb = {
         id,
         user_id,
         company_id,
-        company:companies (
+        company:companies!company_owners_company_id_fkey (
           id,
           name,
           slug,

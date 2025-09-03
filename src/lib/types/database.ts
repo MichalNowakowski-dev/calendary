@@ -15,7 +15,6 @@ export interface Database {
           industry: string;
           created_at: string;
           plan_id: string;
-          owner_id: string | null;
         };
         Insert: {
           id?: string;
@@ -28,7 +27,6 @@ export interface Database {
           industry: string;
           created_at?: string;
           plan_id?: string;
-          owner_id?: string | null;
         };
         Update: {
           id?: string;
@@ -41,7 +39,6 @@ export interface Database {
           industry?: string;
           created_at?: string;
           plan_id?: string;
-          owner_id?: string | null;
         };
       };
       company_owners: {

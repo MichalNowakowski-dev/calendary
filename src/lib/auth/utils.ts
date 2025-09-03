@@ -89,13 +89,7 @@ export const registerUser = async (data: RegistrationData) => {
 
       if (ownerError) throw ownerError;
 
-      // Update company with owner_id reference
-      const { error: updateError } = await supabase
-        .from("companies")
-        .update({ owner_id: ownerData.id })
-        .eq("id", companyData.id);
-
-      if (updateError) throw updateError;
+      // Relationship is already established through company_owners.company_id
     }
 
     // If this is a customer, create customer record
