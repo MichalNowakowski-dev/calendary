@@ -51,6 +51,9 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {
       return NextResponse.next();
     }
+    if (pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico)$/)) {
+      return NextResponse.next();
+    }
 
     // Public routes always allowed
     if (routeType === "public") {
@@ -105,6 +108,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|_next/webpack-hmr|favicon.ico|.*\\.(png|jpg|jpeg|gif|svg|webp|ico)).*)",
+    "/((?!api|_next/static|_next/image|_next/webpack-hmr|favicon.ico).*)",
   ],
 };
