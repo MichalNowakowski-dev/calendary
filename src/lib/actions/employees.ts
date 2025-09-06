@@ -22,6 +22,17 @@ export async function createEmployee(
 ): Promise<EmployeeActionResult> {
   const supabase = await createServerClient();
 
+  // Check module permission
+  const { checkModulePermission } = await import("@/lib/utils/server-module-gating");
+  const hasEmployeeAccess = await checkModulePermission(data.companyId, "employee_management");
+  
+  if (!hasEmployeeAccess) {
+    return {
+      success: false,
+      message: "Access denied: Employee management module not available",
+    };
+  }
+
   // Server-side validation
   const validationResult = employeeFormSchema.safeParse(data);
   if (!validationResult.success) {
@@ -175,6 +186,14 @@ export async function createEmployee(
 
 export async function getEmployeesWithServices(companyId: string) {
   try {
+    // Check module permission
+    const { checkModulePermission } = await import("@/lib/utils/server-module-gating");
+    const hasEmployeeAccess = await checkModulePermission(companyId, "employee_management");
+    
+    if (!hasEmployeeAccess) {
+      throw new Error("Access denied: Employee management module not available");
+    }
+
     const employees = await serverDb.getEmployeesWithDetails(companyId);
     return employees;
   } catch (error) {
@@ -188,6 +207,31 @@ export async function updateEmployee(
   data: EmployeeFormData
 ): Promise<EmployeeActionResult> {
   const supabase = await createServerClient();
+
+  // Get employee's company ID to check permissions
+  const { data: employee } = await supabase
+    .from("employees")
+    .select("company_id")
+    .eq("id", employeeId)
+    .single();
+
+  if (!employee) {
+    return {
+      success: false,
+      message: "Employee not found",
+    };
+  }
+
+  // Check module permission
+  const { checkModulePermission } = await import("@/lib/utils/server-module-gating");
+  const hasEmployeeAccess = await checkModulePermission(employee.company_id, "employee_management");
+  
+  if (!hasEmployeeAccess) {
+    return {
+      success: false,
+      message: "Access denied: Employee management module not available",
+    };
+  }
 
   // Server-side validation
   const validationResult = employeeFormSchema.safeParse(data);
@@ -281,6 +325,28 @@ export async function updateEmployee(
 }
 
 export async function deleteEmployee(employeeId: string) {
+  const supabase = await createServerClient();
+  
+  // Get employee's company ID to check permissions
+  const { data: employee } = await supabase
+    .from("employees")
+    .select("company_id")
+    .eq("auth_user_id", employeeId)
+    .single();
+
+  if (employee) {
+    // Check module permission
+    const { checkModulePermission } = await import("@/lib/utils/server-module-gating");
+    const hasEmployeeAccess = await checkModulePermission(employee.company_id, "employee_management");
+    
+    if (!hasEmployeeAccess) {
+      return { 
+        success: false, 
+        message: "Access denied: Employee management module not available" 
+      };
+    }
+  }
+
   const supabaseAdmin = createAdminClient();
 
   const { error } = await supabaseAdmin.auth.admin.deleteUser(employeeId);

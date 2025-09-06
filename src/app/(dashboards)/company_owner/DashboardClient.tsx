@@ -19,18 +19,31 @@ import {
 import { signOut } from "@/lib/auth/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/lib/context/AuthProvider";
+import { useModulePermissions } from "@/lib/hooks/useModulePermissions";
+import { NavUpgradePrompt } from "@/components/permissions";
+import type { ModuleName } from "@/lib/types/database";
 
-const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
-  const baseItems = [
+interface SidebarItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  requiredModule?: ModuleName;
+  alwaysShow?: boolean;
+}
+
+const getSidebarItems = (role: "company_owner" | "admin" | "employee"): SidebarItem[] => {
+  const baseItems: SidebarItem[] = [
     {
       name: "Przegląd",
       href: `/${role}`,
       icon: Home,
+      alwaysShow: true,
     },
     {
       name: "Kalendarz",
       href: `/${role}/appointments`,
       icon: Calendar,
+      alwaysShow: true,
     },
   ];
 
@@ -41,31 +54,37 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
         name: "Usługi",
         href: `/${role}/services`,
         icon: Briefcase,
+        alwaysShow: true,
       },
       {
         name: "Pracownicy",
         href: `/${role}/employees`,
         icon: Users,
+        requiredModule: "employee_management",
       },
       {
         name: "Klienci",
         href: `/${role}/customers`,
         icon: Users,
+        requiredModule: "employee_management",
       },
       {
         name: "Statystyki",
         href: `/${role}/analytics`,
         icon: BarChart3,
+        requiredModule: "analytics",
       },
       {
         name: "Subskrypcja",
         href: `/${role}/subscription`,
         icon: CreditCard,
+        alwaysShow: true,
       },
       {
         name: "Ustawienia",
         href: `/${role}/settings`,
         icon: Settings,
+        alwaysShow: true,
       },
     ];
   } else if (role === "admin") {
@@ -75,16 +94,19 @@ const getSidebarItems = (role: "company_owner" | "admin" | "employee") => {
         name: "Pracownicy",
         href: `/${role}/employees`,
         icon: Users,
+        alwaysShow: true,
       },
       {
         name: "Klienci",
         href: `/${role}/customers`,
         icon: Users,
+        alwaysShow: true,
       },
       {
         name: "Statystyki",
         href: `/${role}/analytics`,
         icon: BarChart3,
+        alwaysShow: true,
       },
     ];
   } else {
@@ -101,6 +123,7 @@ export default function DashboardClient({ children }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
+  const { hasModule, loading: permissionsLoading } = useModulePermissions();
 
   const userRole = user?.role as "company_owner" | "admin" | "employee";
 
@@ -172,17 +195,51 @@ export default function DashboardClient({ children }: DashboardClientProps) {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
-            {getSidebarItems(userRole).map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </Link>
-            ))}
+            {getSidebarItems(userRole).map((item) => {
+              // Always show items without module requirements or admin items
+              if (item.alwaysShow || userRole === "admin") {
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              }
+
+              // For items that require modules, check permissions
+              if (item.requiredModule && !permissionsLoading) {
+                const hasAccess = hasModule(item.requiredModule);
+                
+                if (hasAccess) {
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                } else {
+                  // Show upgrade prompt for locked features
+                  return (
+                    <div key={item.name}>
+                      <NavUpgradePrompt requiredModule={item.requiredModule} />
+                    </div>
+                  );
+                }
+              }
+
+              // Hide items while permissions are loading
+              return null;
+            })}
           </nav>
 
           {/* Theme toggle and sign out buttons */}

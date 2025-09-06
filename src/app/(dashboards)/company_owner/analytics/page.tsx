@@ -1,10 +1,11 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import PageHeading from "@/components/PageHeading";
 import AnalyticsClient from "./AnalyticsClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAnalyticsData } from "@/lib/actions/analytics";
+import { ModuleGate } from "@/components/permissions";
 
 // Force dynamic rendering since we use cookies for authentication
 export const dynamic = "force-dynamic";
@@ -19,24 +20,34 @@ export default async function AnalyticsPage({
   const { range } = await searchParams;
   const timeRange = range || "30";
 
-  const analyticsData = await getAnalyticsData(timeRange);
+  try {
+    const analyticsData = await getAnalyticsData(timeRange);
 
-  if (!analyticsData) {
-    notFound();
+    if (!analyticsData) {
+      notFound();
+    }
+
+    return (
+      <ModuleGate requiredModule="analytics">
+        <div className="space-y-6">
+          <PageHeading
+            text="Statystyki"
+            description="Szczegółowe analizy i statystyki Twojej firmy"
+          />
+
+          <Suspense fallback={<AnalyticsSkeleton />}>
+            <AnalyticsClient analyticsData={analyticsData} timeRange={timeRange} />
+          </Suspense>
+        </div>
+      </ModuleGate>
+    );
+  } catch (error) {
+    // If access denied, redirect to subscription page
+    if (error instanceof Error && error.message.includes("Access denied")) {
+      redirect("/company_owner/subscription");
+    }
+    throw error;
   }
-
-  return (
-    <div className="space-y-6">
-      <PageHeading
-        text="Statystyki"
-        description="Szczegółowe analizy i statystyki Twojej firmy"
-      />
-
-      <Suspense fallback={<AnalyticsSkeleton />}>
-        <AnalyticsClient analyticsData={analyticsData} timeRange={timeRange} />
-      </Suspense>
-    </div>
-  );
 }
 
 function AnalyticsSkeleton() {

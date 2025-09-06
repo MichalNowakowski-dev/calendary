@@ -11,6 +11,7 @@ import CustomerSearch from "@/components/customers/CustomerSearch";
 import CustomerStats from "@/components/customers/CustomerStats";
 import { getCustomers, type CustomerWithStats } from "@/lib/actions/customers";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { ModuleGate } from "@/components/permissions";
 
 export default function CustomersPage() {
   const { user } = useAuth();
@@ -123,39 +124,41 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeading
-        text="Klienci"
-        description="Zarządzaj bazą klientów i historią wizyt"
-      />
+    <ModuleGate requiredModule="employee_management">
+      <div className="space-y-6">
+        <PageHeading
+          text="Klienci"
+          description="Zarządzaj bazą klientów i historią wizyt"
+        />
 
-      {/* Customer Statistics */}
-      <CustomerStats customers={customers} />
+        {/* Customer Statistics */}
+        <CustomerStats customers={customers} />
 
-      {/* Search and Filters */}
-      <CustomerSearch
-        searchTerm={searchTerm}
-        onSearch={handleSearch}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSort={handleSort}
-      />
+        {/* Search and Filters */}
+        <CustomerSearch
+          searchTerm={searchTerm}
+          onSearch={handleSearch}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
 
-      {/* Customer List */}
-      <CustomerList
-        customers={pagination.paginatedData}
-        totalCustomers={pagination.totalItems}
-        pagination={{
-          currentPage: pagination.currentPage,
-          totalPages: pagination.totalPages,
-          onPageChange: pagination.setCurrentPage,
-          startIndex: pagination.startIndex,
-          endIndex: pagination.endIndex,
-        }}
-        onRefresh={loadCustomers}
-        isLoading={isLoading}
-        companyId={userCompany?.id || ""}
-      />
-    </div>
+        {/* Customer List */}
+        <CustomerList
+          customers={pagination.paginatedData}
+          totalCustomers={pagination.totalItems}
+          pagination={{
+            currentPage: pagination.currentPage,
+            totalPages: pagination.totalPages,
+            onPageChange: pagination.setCurrentPage,
+            startIndex: pagination.startIndex,
+            endIndex: pagination.endIndex,
+          }}
+          onRefresh={loadCustomers}
+          isLoading={isLoading}
+          companyId={userCompany?.id || ""}
+        />
+      </div>
+    </ModuleGate>
   );
 }

@@ -59,6 +59,14 @@ export async function getAnalyticsData(
 
     const userCompany = companies[0]?.company as unknown as Company;
 
+    // Check if user has analytics module permission
+    const { checkModulePermission } = await import("@/lib/utils/server-module-gating");
+    const hasAnalyticsAccess = await checkModulePermission(userCompany.id, "analytics");
+    
+    if (!hasAnalyticsAccess) {
+      throw new Error("Access denied: Analytics module not available");
+    }
+
     // Calculate date range based on timeRange
     const endDate = new Date();
     const startDate = new Date();

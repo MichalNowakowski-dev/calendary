@@ -28,7 +28,7 @@ export interface RegistrationData {
     plan: string;
   };
 }
-const supabase = await createClient();
+const supabase = createClient();
 
 /**
  * Register a new user with the specified role
@@ -280,7 +280,7 @@ export async function getUserRoleInCompany(
   userId: string,
   companyId: string
 ): Promise<"company_owner" | "admin" | "employee" | null> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Check if user is the owner of this company
   const { data: companyOwner, error: ownerError } = await supabase

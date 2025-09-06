@@ -1,10 +1,13 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { serverAuth } from "@/lib/auth/server";
 import { EmployeeCardSkeleton } from "@/components/employees";
 import EmployeesList from "@/components/employees/EmployeesList";
 import EmployeesListClient from "@/components/employees/EmployeesListClient";
 import { Company } from "@/lib/types/database";
 import PageHeading from "@/components/PageHeading";
+import { ModuleGate } from "@/components/permissions";
+import { checkModulePermission } from "@/lib/utils/server-module-gating";
 
 // Force dynamic rendering since we use cookies for authentication
 export const dynamic = "force-dynamic";
@@ -26,20 +29,29 @@ async function EmployeesPageContent() {
     throw new Error("Company data not found");
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="space-y-6">
-        {/* Page header */}
-        <PageHeading
-          text="Pracownicy"
-          description="Zarządzaj pracownikami i ich harmonogramami pracy"
-        />
-        <EmployeesListClient employees={[]} companyId={userCompany.id} />
-      </div>
+  // Check if user has employee management module permission
+  const hasEmployeeAccess = await checkModulePermission(userCompany.id, "employee_management");
+  
+  if (!hasEmployeeAccess) {
+    redirect("/company_owner/subscription");
+  }
 
-      {/* Employees list */}
-      <EmployeesList companyId={userCompany.id} />
-    </div>
+  return (
+    <ModuleGate requiredModule="employee_management">
+      <div className="space-y-6">
+        <div className="space-y-6">
+          {/* Page header */}
+          <PageHeading
+            text="Pracownicy"
+            description="Zarządzaj pracownikami i ich harmonogramami pracy"
+          />
+          <EmployeesListClient employees={[]} companyId={userCompany.id} />
+        </div>
+
+        {/* Employees list */}
+        <EmployeesList companyId={userCompany.id} />
+      </div>
+    </ModuleGate>
   );
 }
 
