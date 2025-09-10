@@ -155,6 +155,16 @@ export const updateCompanySubscription = async (
       result = data;
     }
 
+    // Update company's plan_id to reflect the new subscription
+    const { error: companyUpdateError } = await supabase
+      .from("companies")
+      .update({ plan_id: planId })
+      .eq("id", companyId);
+
+    if (companyUpdateError) {
+      console.error("Failed to update company plan_id:", companyUpdateError);
+    }
+
     // Handle module lifecycle changes
     const lifecycleResult =
       await moduleLifecycleManager.handleSubscriptionChange(

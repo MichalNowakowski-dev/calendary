@@ -82,7 +82,7 @@ export function useModulePermissions(companyId?: string) {
         .eq("company_id", targetCompanyId)
         .single();
 
-      // If no subscription, assume free plan
+      // Initialize default values
       const planModules: Record<ModuleName, boolean> = {
         employee_management: false,
         employee_schedules: false,
@@ -92,16 +92,41 @@ export function useModulePermissions(companyId?: string) {
         api_access: false,
       };
 
-      let maxEmployees: number | null = 2; // Free plan default
+      let maxEmployees: number | null = 2;
       let maxLocations: number | null = 1;
       let planName = "free";
       let subscriptionStatus: "active" | "inactive" | "cancelled" | "past_due" = "active";
       let expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      let plan: SubscriptionPlanWithModules | null = null;
 
       if (subscription && subscription.subscription_plan) {
-        const plan = subscription.subscription_plan as SubscriptionPlanWithModules;
-        
-        // Set plan-based modules
+        // Use active subscription plan
+        plan = subscription.subscription_plan as SubscriptionPlanWithModules;
+        subscriptionStatus = subscription.status;
+        expiresAt = subscription.current_period_end;
+      } else {
+        // Fallback to company's default plan from companies.plan_id
+        const { data: companyWithPlan } = await supabase
+          .from("companies")
+          .select(
+            `
+            plan_id,
+            subscription_plan:subscription_plans (
+              *,
+              plan_modules (*)
+            )
+          `
+          )
+          .eq("id", targetCompanyId)
+          .single();
+
+        if (companyWithPlan?.subscription_plan) {
+          plan = companyWithPlan.subscription_plan as SubscriptionPlanWithModules;
+        }
+      }
+
+      // Apply plan modules if we have a plan
+      if (plan) {
         plan.plan_modules.forEach((planModule) => {
           if (planModule.is_enabled && planModule.module_name in planModules) {
             planModules[planModule.module_name as ModuleName] = true;
@@ -111,8 +136,6 @@ export function useModulePermissions(companyId?: string) {
         maxEmployees = plan.max_employees;
         maxLocations = plan.max_locations;
         planName = plan.display_name;
-        subscriptionStatus = subscription.status;
-        expiresAt = subscription.current_period_end;
       }
 
       // Get company-specific module overrides
