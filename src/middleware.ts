@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ROUTE_CONFIGS, ROLE_REDIRECT_MAP } from "@/lib/auth/routes";
 import { type UserRole } from "@/lib/types/database";
 
-const PUBLIC_ROUTES = ["/business", "/404"];
+const PUBLIC_ROUTES = ["/business"];
 const PAYMENT_ROUTES = ["/payment"];
 const AUTH_ROUTES = ["/login", "/register"];
 const ADMIN_ROUTES = ["/admin"];
@@ -26,8 +26,37 @@ function getRouteType(
   if (ADMIN_ROUTES.some((route) => pathname.startsWith(route))) return "admin";
   if (PAYMENT_ROUTES.some((route) => pathname.startsWith(route)))
     return "payments";
-  if (Object.values(ROUTE_CONFIGS).some((cfg) => pathname.startsWith(cfg.path)))
+    
+  // More specific check for protected routes
+  // Only consider it protected if it's exactly the base path or a known subpath
+  const validProtectedPaths = [
+    "/company_owner",
+    "/company_owner/analytics", 
+    "/company_owner/appointments",
+    "/company_owner/customers",
+    "/company_owner/employees", 
+    "/company_owner/services",
+    "/company_owner/settings",
+    "/company_owner/subscription",
+    "/employee",
+    "/employee/appointments",
+    "/employee/schedule", 
+    "/employee/services",
+    "/employee/settings",
+    "/customer",
+    "/customer/booking",
+    "/admin",
+    "/admin/analytics",
+    "/admin/companies", 
+    "/admin/permissions",
+    "/admin/settings",
+    "/admin/subscriptions"
+  ];
+  
+  if (validProtectedPaths.some(validPath => pathname === validPath || pathname.startsWith(validPath + "/"))) {
     return "protected";
+  }
+  
   if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route)))
     return "public";
   return "other";
@@ -45,27 +74,28 @@ function createRedirect(
   return NextResponse.redirect(url);
 }
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, response: NextResponse) {
   try {
     const { pathname } = request.nextUrl;
-    const routeType = getRouteType(pathname);
-    console.log(routeType);
-    // Skip static and API
+    
+    // Skip static and API early
     if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {
       return NextResponse.next();
     }
     if (pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico)$/)) {
       return NextResponse.next();
     }
+    
+    const routeType = getRouteType(pathname);
 
     // Public routes always allowed
     if (routeType === "public") {
       return NextResponse.next();
     }
 
-    // if pathname is non existing page redirect to /404
+    // Let Next.js handle 404 for other routes naturally
     if (routeType === "other") {
-      return createRedirect(request, "/404");
+      return NextResponse.next();
     }
 
     // Fetch user
@@ -75,7 +105,6 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
     const role = getUserRole(user);
 
-    console.log(role);
     // Auth rules
     if (routeType === "protected" && !user) {
       return createRedirect(request, "/login", { redirectTo: pathname });
@@ -108,6 +137,8 @@ export async function middleware(request: NextRequest) {
       }
     }
 
+    // Let Next.js handle the actual route resolution
+    // If the route doesn't exist, Next.js will show the 404 page
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware error:", error);

@@ -95,8 +95,11 @@ export function useModulePermissions(companyId?: string) {
       let maxEmployees: number | null = 2;
       let maxLocations: number | null = 1;
       let planName = "free";
-      let subscriptionStatus: "active" | "inactive" | "cancelled" | "past_due" = "active";
-      let expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      let subscriptionStatus: "active" | "inactive" | "cancelled" | "past_due" =
+        "active";
+      let expiresAt = new Date(
+        Date.now() + 365 * 24 * 60 * 60 * 1000
+      ).toISOString();
       let plan: SubscriptionPlanWithModules | null = null;
 
       if (subscription && subscription.subscription_plan) {
@@ -121,7 +124,8 @@ export function useModulePermissions(companyId?: string) {
           .single();
 
         if (companyWithPlan?.subscription_plan) {
-          plan = companyWithPlan.subscription_plan as SubscriptionPlanWithModules;
+          plan =
+            companyWithPlan.subscription_plan as unknown as SubscriptionPlanWithModules;
         }
       }
 
@@ -148,7 +152,8 @@ export function useModulePermissions(companyId?: string) {
       if (companyModules) {
         companyModules.forEach((companyModule: CompanyModule) => {
           if (companyModule.module_name in planModules) {
-            planModules[companyModule.module_name as ModuleName] = companyModule.is_enabled;
+            planModules[companyModule.module_name as ModuleName] =
+              companyModule.is_enabled;
           }
         });
       }
@@ -198,7 +203,9 @@ export function useModulePermissions(companyId?: string) {
     (requiredModules: ModuleName | ModuleName[]): boolean => {
       if (!state.permissions) return false;
 
-      const modules = Array.isArray(requiredModules) ? requiredModules : [requiredModules];
+      const modules = Array.isArray(requiredModules)
+        ? requiredModules
+        : [requiredModules];
       return modules.every((module) => state.permissions!.modules[module]);
     },
     [state.permissions]
@@ -208,9 +215,10 @@ export function useModulePermissions(companyId?: string) {
     (limitType: "employees" | "locations", currentCount: number): boolean => {
       if (!state.permissions) return false;
 
-      const limit = limitType === "employees" 
-        ? state.permissions.limits.maxEmployees 
-        : state.permissions.limits.maxLocations;
+      const limit =
+        limitType === "employees"
+          ? state.permissions.limits.maxEmployees
+          : state.permissions.limits.maxLocations;
 
       return limit === null || currentCount < limit;
     },
@@ -218,7 +226,7 @@ export function useModulePermissions(companyId?: string) {
   );
 
   const refreshPermissions = useCallback(() => {
-    setState(prev => ({ ...prev, loading: true }));
+    setState((prev) => ({ ...prev, loading: true }));
     fetchPermissions();
   }, [fetchPermissions]);
 

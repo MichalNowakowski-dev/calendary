@@ -58,6 +58,7 @@ export default function CompanyOwnerRegistration() {
 
   const onSubmit = async (data: CompanyOwnerRegistrationFormData) => {
     setIsLoading(true);
+    console.log("rejestracjaaaa");
 
     try {
       // Use the centralized registerUser function
@@ -232,7 +233,7 @@ export default function CompanyOwnerRegistration() {
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="industry"
+              name="plan"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Plan *</FormLabel>

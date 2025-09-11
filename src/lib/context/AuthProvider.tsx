@@ -91,6 +91,44 @@ export const AuthProvider = ({
           return;
         }
 
+        // Skip refresh for invalid protected routes to prevent infinite loops
+        const validProtectedPaths = [
+          "/company_owner",
+          "/company_owner/analytics", 
+          "/company_owner/appointments",
+          "/company_owner/customers",
+          "/company_owner/employees", 
+          "/company_owner/services",
+          "/company_owner/settings",
+          "/company_owner/subscription",
+          "/employee",
+          "/employee/appointments",
+          "/employee/schedule", 
+          "/employee/services",
+          "/employee/settings",
+          "/customer",
+          "/customer/booking",
+          "/admin",
+          "/admin/analytics",
+          "/admin/companies", 
+          "/admin/permissions",
+          "/admin/settings",
+          "/admin/subscriptions"
+        ];
+        
+        const isProtectedPrefix = ["/company_owner", "/employee", "/customer", "/admin"].some(prefix => 
+          pathname.startsWith(prefix)
+        );
+        
+        const isValidProtectedPath = validProtectedPaths.some(validPath => 
+          pathname === validPath || pathname.startsWith(validPath + "/")
+        );
+        
+        if (isProtectedPrefix && !isValidProtectedPath) {
+          console.log("Skipping refresh for invalid protected route:", pathname);
+          return;
+        }
+
         // Skip refresh for non-existing paths to prevent infinite loops
         if (pathname && !pathname.startsWith("/") && pathname !== "/") {
           console.log(

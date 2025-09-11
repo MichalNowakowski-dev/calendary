@@ -258,6 +258,27 @@ export async function handleCheckoutSessionCompleted(
   }
 
   console.log("✅ Successfully upserted subscription:", upsertedData);
+
+  // Update company's plan_id to reflect the new subscription
+  console.log("🔄 Updating company plan_id to:", planId);
+  const { error: companyUpdateError } = await supabase
+    .from("companies")
+    .update({ plan_id: planId })
+    .eq("id", companyId);
+
+  if (companyUpdateError) {
+    console.error("❌ Failed to update company plan_id:", {
+      error: companyUpdateError.message,
+      code: companyUpdateError.code,
+      companyId,
+      planId,
+    });
+    throw new StripeWebhookError(
+      `Failed to update company plan_id: ${companyUpdateError.message}`
+    );
+  }
+
+  console.log("✅ Successfully updated company plan_id");
   console.log("🎉 Checkout session completed successfully for company:", companyId);
 }
 
@@ -402,10 +423,48 @@ export async function handleSubscriptionDeleted(
     );
   }
 
+  // Update subscription status to cancelled
   await updateCompanySubscription(companyId, {
     payment_status: "canceled",
     status: "cancelled",
   });
+
+  // Reset company back to free plan
+  console.log("🔄 Resetting company to free plan after subscription deletion");
+  const supabase = createAdminClient();
+  
+  // Get the free plan ID
+  const { data: freePlan, error: freePlanError } = await supabase
+    .from("subscription_plans")
+    .select("id")
+    .eq("name", "free")
+    .single();
+
+  if (freePlanError || !freePlan) {
+    console.error("❌ Failed to find free plan:", freePlanError?.message);
+    throw new StripeWebhookError(
+      `Failed to find free plan: ${freePlanError?.message}`
+    );
+  }
+
+  // Update company's plan_id back to free plan
+  const { error: companyUpdateError } = await supabase
+    .from("companies")
+    .update({ plan_id: freePlan.id })
+    .eq("id", companyId);
+
+  if (companyUpdateError) {
+    console.error("❌ Failed to reset company to free plan:", {
+      error: companyUpdateError.message,
+      companyId,
+      freePlanId: freePlan.id,
+    });
+    throw new StripeWebhookError(
+      `Failed to reset company to free plan: ${companyUpdateError.message}`
+    );
+  }
+
+  console.log("✅ Successfully reset company to free plan");
 }
 
 export async function processWebhookEvent(event: Stripe.Event): Promise<void> {

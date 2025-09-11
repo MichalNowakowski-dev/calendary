@@ -26,6 +26,7 @@ export const INDUSTRIES = [
 ] as const;
 
 export const PLANS = [
+  { value: "free", label: "Darmowy" },
   { value: "basic", label: "Podstawowy" },
   { value: "pro", label: "Profesjonalny" },
   { value: "enterprise", label: "Enterprise" },

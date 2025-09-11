@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/types/database";
+import { success } from "zod";
 
 export interface AuthUser {
   id: string;
@@ -35,6 +36,30 @@ const supabase = createClient();
  */
 export const registerUser = async (data: RegistrationData) => {
   try {
+    if (data.role === "company_owner") {
+      // check if email already exists
+      const { data: existingUser } = await supabase
+        .from("company_owners")
+        .select("user_id")
+        .eq("email", data.email)
+        .single();
+
+      if (existingUser) {
+        throw new Error("Email is already registered as a company owner.");
+      }
+    } else if (data.role === "customer") {
+      // check if email already exists
+      const { data: existingUser } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("email", data.email)
+        .single();
+
+      if (existingUser) {
+        throw new Error("Email is already registered as a customer.");
+      }
+    }
+
     // Register user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
